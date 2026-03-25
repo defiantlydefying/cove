@@ -14,6 +14,15 @@ Cove is a daily planner and self-management tool built around toggleable modules
 
 Primary: teens through working adults (13-40) across the neurodivergent spectrum -- ADHD, autism, dyslexia, dyscalculia, anxiety, and more. Accessible to all ages. The app does not require a diagnosis; anyone who struggles with executive function is welcome.
 
+## Layout Model
+
+The app has a two-zone layout:
+
+- **Sidebar (right):** The Task Manager lives here by default. It is always visible unless the user explicitly dismisses it with an X button. It can be reopened at any time. This gives tasks persistent peripheral visibility without requiring navigation.
+- **Main area (center):** The Daily View occupies this space. Other modules (Routine Builder, Wellness Tracker, etc.) appear here as tab-like elements -- similar to folder tabs -- that users can switch between. Only one module tab is active at a time in the main area.
+
+This means the Task Manager is not a "tab" like other modules -- it has its own dedicated zone. All other modules live in the tabbed main area.
+
 ## Architecture: The Module System
 
 The app is built around independent, toggleable modules. Each module:
@@ -21,15 +30,15 @@ The app is built around independent, toggleable modules. Each module:
 - Can be enabled or disabled at any time
 - Has its own settings
 - Communicates with other modules through a shared data layer (e.g., the AI companion can read wellness data to make smarter suggestions)
-- Can be rearranged on the daily view
+- Can be rearranged within the main area tab bar
 
 ### Modules
 
 **Daily View** (always on)
-The home screen. Shows today's tasks, active routines, and check-ins from enabled modules. Customizable layout and density. Modules appear as tab-like elements that users can toggle between -- similar to folder tabs. This is the hub that ties everything together.
+The home screen and default tab. An aggregator that pulls in content from whatever modules are enabled -- if only Routine Builder is active, it shows today's routines; if Task Manager and Wellness Tracker are both on, it shows tasks and the latest check-in. As more modules are enabled, the Daily View adapts its layout to include their relevant data. Users can take inline actions directly (check off a task, complete a routine step, do a quick check-in) without navigating to the module's dedicated tab. Customizable layout and density.
 
 **Task Manager** (persistent sidebar)
-Deadlines, priorities, subtask breakdown, recurring tasks. Supports multiple views (list, board, timeline). Tasks can be tagged by energy level required (e.g., "low energy," "high focus"). The task manager appears as a persistent side panel that is always visible by default, even when not actively being used. Users can dismiss it with an X button and reopen it at any time.
+Deadlines, priorities, subtask breakdown, recurring tasks. Supports multiple views (list, board, timeline). Tasks can be tagged by energy level required (e.g., "low energy," "high focus"). Lives in the sidebar zone -- always visible by default, dismissable with an X, reopenable at any time. This is the only module that occupies the sidebar rather than the tabbed main area.
 
 **Routine Builder**
 Create daily routines (morning, wind-down, work, exercise, etc.). Supports step-by-step guided mode or simple checklist mode. Flexible timing -- routines are not rigid schedules. Users can skip steps without penalty.
@@ -94,9 +103,10 @@ Customization is a core principle, not an afterthought. Sensory sensitivities, v
 1. **No punishment** -- missed tasks roll forward, streaks pause instead of breaking, no guilt language, no red warning colors for overdue items
 2. **Low floor, high ceiling** -- simple to start, powerful when you want it
 3. **Sensory-aware** -- every visual and audio element is controllable
-4. **Privacy-first** -- user data stays with the user, community features are anonymous and opt-in
+4. **Privacy-first** -- community features are anonymous and opt-in. When the AI Companion is enabled, only the minimum necessary context (current task, recent wellness check-ins) is sent to the AI provider. No raw conversation history or personal data is stored server-side beyond what the user explicitly saves. Users are clearly informed about what data the AI sees before enabling it.
 5. **Gentle defaults** -- new users get a calm, minimal setup with prompts to explore more
 6. **Autonomy** -- every feature is toggleable; the user is always in control
+7. **Accessible from day one** -- WCAG 2.1 AA compliance as a baseline from Phase 1. Keyboard navigation, screen reader support, and high contrast are not future considerations -- they are requirements. Many neurodivergent users have co-occurring motor or visual processing differences.
 
 ## Tech Stack
 
@@ -111,10 +121,29 @@ Customization is a core principle, not an afterthought. Sensory sensitivities, v
 
 Launch free. Monetization strategy to be determined after the app gains traction and user feedback reveals what features people value most. This builds trust with a community often burned by paywalled accessibility features.
 
+## MVP Scope (Phase 1)
+
+The first release ships with the core experience:
+
+1. **Daily View** -- the home screen hub
+2. **Task Manager** -- sidebar with basic task CRUD, deadlines, and energy tags
+3. **Routine Builder** -- create and follow daily routines
+4. **Wellness Tracker** -- mood, energy, sleep check-ins with pattern detection
+5. **Reminders and Nudges** -- customizable gentle reminders
+6. **Gamification** -- toggleable XP, streaks, achievements
+7. **Onboarding** -- welcome flow and module setup
+8. **Customization** -- themes, density, animations toggle
+
+**Phase 2:**
+- AI Companion
+- Community Strategies
+
+This phasing ships a fully featured personal planner first, then layers in the social and AI features based on real user feedback.
+
 ## Future Considerations
 
 - Mobile app via React Native (planned expansion after web launch)
 - Offline support
 - Data export (users own their data)
-- Accessibility audit (screen readers, keyboard navigation, high contrast)
+- Comprehensive accessibility audit beyond WCAG 2.1 AA baseline
 - Localization/internationalization
