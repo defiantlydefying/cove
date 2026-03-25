@@ -1,0 +1,44 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, it, expect, vi } from "vitest";
+import RoutineForm from "./RoutineForm";
+
+describe("RoutineForm", () => {
+  it("renders name input", () => {
+    render(<RoutineForm onSubmit={vi.fn()} />);
+    expect(screen.getByPlaceholderText("Routine name")).toBeInTheDocument();
+  });
+
+  it("can add step inputs", async () => {
+    render(<RoutineForm onSubmit={vi.fn()} />);
+    expect(screen.getByPlaceholderText("Step 1")).toBeInTheDocument();
+    await userEvent.click(screen.getByText("+ Add step"));
+    expect(screen.getByPlaceholderText("Step 2")).toBeInTheDocument();
+  });
+
+  it("calls onSubmit with routine data", async () => {
+    const onSubmit = vi.fn();
+    render(<RoutineForm onSubmit={onSubmit} />);
+
+    await userEvent.type(screen.getByPlaceholderText("Routine name"), "Evening wind-down");
+    await userEvent.type(screen.getByPlaceholderText("Step 1"), "Read a book");
+    await userEvent.click(screen.getByText("+ Add step"));
+    await userEvent.type(screen.getByPlaceholderText("Step 2"), "Brush teeth");
+    await userEvent.click(screen.getByText("Create routine"));
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      name: "Evening wind-down",
+      steps: ["Read a book", "Brush teeth"],
+    });
+  });
+
+  it("shows Save changes button when editing", () => {
+    render(
+      <RoutineForm
+        onSubmit={vi.fn()}
+        initialData={{ name: "Existing", steps: ["Step A"] }}
+      />
+    );
+    expect(screen.getByText("Save changes")).toBeInTheDocument();
+  });
+});

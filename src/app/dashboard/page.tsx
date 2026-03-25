@@ -2,9 +2,13 @@
 
 import AppShell from "@/components/app-shell/AppShell";
 import TaskList from "@/components/tasks/TaskList";
+import RoutineList from "@/components/routines/RoutineList";
 import { useState } from "react";
 
-const defaultTabs = [{ id: "daily-view", label: "Daily View" }];
+const defaultTabs = [
+  { id: "daily-view", label: "Daily View" },
+  { id: "routines", label: "Routines" },
+];
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("daily-view");
@@ -16,10 +20,13 @@ export default function DashboardPage() {
       onTabChange={setActiveTab}
       sidebarContent={<TaskList />}
     >
-      <div className="text-gray-500">
-        <h2 className="text-lg font-medium mb-2">Welcome to Cove</h2>
-        <p>Your daily view will appear here.</p>
-      </div>
+      {activeTab === "daily-view" && (
+        <div className="text-gray-500">
+          <h2 className="text-lg font-medium mb-2">Welcome to Cove</h2>
+          <p>Your daily view will appear here.</p>
+        </div>
+      )}
+      {activeTab === "routines" && <RoutineList />}
     </AppShell>
   );
 }
