@@ -3,11 +3,15 @@
 import AppShell from "@/components/app-shell/AppShell";
 import TaskList from "@/components/tasks/TaskList";
 import RoutineList from "@/components/routines/RoutineList";
+import WellnessTracker from "@/components/wellness/WellnessTracker";
+import ReminderList from "@/components/reminders/ReminderList";
 import { useState } from "react";
 
 const defaultTabs = [
   { id: "daily-view", label: "Daily View" },
   { id: "routines", label: "Routines" },
+  { id: "wellness", label: "Wellness" },
+  { id: "reminders", label: "Reminders" },
 ];
 
 export default function DashboardPage() {
@@ -27,6 +31,8 @@ export default function DashboardPage() {
         </div>
       )}
       {activeTab === "routines" && <RoutineList />}
+      {activeTab === "wellness" && <WellnessTracker />}
+      {activeTab === "reminders" && <ReminderList />}
     </AppShell>
   );
 }
