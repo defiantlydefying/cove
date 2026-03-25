@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  hashedPassword String?
+  image          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts         Account[]
+  sessions         Session[]
+  tasks            Task[]
+  routines         Routine[]
+  wellnessCheckins WellnessCheckin[]
+  reminders        Reminder[]
+  achievements     UserAchievement[]
+  streaks          UserStreak[]
+  moduleSettings   ModuleSetting[]
+  userSettings     UserSettings?
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Task {
+  id             String    @id @default(cuid())
+  userId         String
+  title          String
+  description    String?
+  completed      Boolean   @default(false)
+  completedAt    DateTime?
+  deadline       DateTime?
+  priority       String    @default("medium")
+  energyLevel    String?
+  parentId       String?
+  sortOrder      Int       @default(0)
+  isRecurring    Boolean   @default(false)
+  recurrenceRule String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent   Task?  @relation("SubTasks", fields: [parentId], references: [id])
+  subtasks Task[] @relation("SubTasks")
+}
+
+model Routine {
+  id        String        @id @default(cuid())
+  userId    String
+  name      String
+  schedule  String?
+  isActive  Boolean       @default(true)
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  steps RoutineStep[]
+  logs  RoutineLog[]
+}
+
+model RoutineStep {
+  id        String  @id @default(cuid())
+  routineId String
+  title     String
+  sortOrder Int     @default(0)
+
+  routine Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+}
+
+model RoutineLog {
+  id             String   @id @default(cuid())
+  routineId      String
+  date           DateTime @db.Date
+  completedSteps String[]
+  createdAt      DateTime @default(now())
+
+  routine Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+
+  @@unique([routineId, date])
+}
+
+model WellnessCheckin {
+  id        String   @id @default(cuid())
+  userId    String
+  date      DateTime @db.Date
+  mood      Int?
+  energy    Int?
+  sleep     Int?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+model Reminder {
+  id           String    @id @default(cuid())
+  userId       String
+  title        String
+  message      String?
+  type         String    @default("custom")
+  schedule     String?
+  enabled      Boolean   @default(true)
+  snoozedUntil DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Achievement {
+  id          String @id @default(cuid())
+  key         String @unique
+  name        String
+  description String
+  xpReward    Int    @default(0)
+
+  userAchievements UserAchievement[]
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+}
+
+model UserStreak {
+  id            String    @id @default(cuid())
+  userId        String
+  type          String
+  currentStreak Int       @default(0)
+  longestStreak Int       @default(0)
+  lastActiveAt  DateTime?
+  pausedAt      DateTime?
+  totalXp       Int       @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+}
+
+model ModuleSetting {
+  id       String  @id @default(cuid())
+  userId   String
+  moduleId String
+  enabled  Boolean @default(true)
+  config   Json    @default("{}")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId])
+}
+
+model UserSettings {
+  id             String  @id @default(cuid())
+  userId         String  @unique
+  theme          String  @default("light")
+  accentColor    String  @default("#4F7CAC")
+  density        String  @default("comfortable")
+  animationsOn   Boolean @default(true)
+  soundsOn       Boolean @default(true)
+  fontSize       String  @default("medium")
+  tone           String  @default("encouraging")
+  sidebarVisible Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
