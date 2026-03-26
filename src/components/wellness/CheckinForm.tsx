@@ -24,6 +24,50 @@ interface CheckinFormProps {
   onSubmit: (data: WellnessCheckinData) => void;
 }
 
+function SadFace() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-cove-muted"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="9" cy="10" r="0.5" fill="currentColor" />
+      <circle cx="15" cy="10" r="0.5" fill="currentColor" />
+      <path d="M8 16c1.5-2 6.5-2 8 0" transform="rotate(180 12 16)" />
+    </svg>
+  );
+}
+
+function HappyFace() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-cove-muted"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="9" cy="10" r="0.5" fill="currentColor" />
+      <circle cx="15" cy="10" r="0.5" fill="currentColor" />
+      <path d="M8 14c1.5 2 6.5 2 8 0" />
+    </svg>
+  );
+}
+
 export default function CheckinForm({
   existingCheckin,
   onSubmit,
@@ -54,44 +98,107 @@ export default function CheckinForm({
   const renderRow = (
     label: string,
     value: number | null,
-    onChange: (v: number) => void
-  ) => (
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-cove-charcoal mb-2">
-        {label}
-      </label>
-      <div className="flex gap-2" role="radiogroup" aria-label={label}>
-        {LEVELS.map((level) => (
-          <button
-            key={level}
-            type="button"
-            role="radio"
-            aria-checked={value === level}
-            aria-label={`${label} ${LABELS[level]}`}
-            onClick={() => onChange(level)}
-            className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
-              value === level
-                ? "bg-cove-accent text-white border-cove-accent"
-                : "bg-cove-card text-cove-charcoal border-cove-border hover:bg-cove-sand-light"
-            }`}
-          >
-            {LABELS[level]}
-          </button>
-        ))}
+    onChange: (v: number) => void,
+    showFaces?: boolean
+  ) => {
+    const selectedIndex = value ? value - 1 : -1;
+    const fillPercent = value ? (value / 5) * 100 : 0;
+
+    return (
+      <div className="rounded-2xl bg-cove-card border border-cove-border p-5 mb-4">
+        <label className="block text-base font-semibold text-cove-charcoal mb-3">
+          {label}
+        </label>
+        <div className="flex items-center gap-3">
+          {showFaces && <SadFace />}
+          <div className="flex-1">
+            {/* Progress bar track */}
+            <div className="relative">
+              <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-2 rounded-full bg-cove-offwhite overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-300 ease-out"
+                  style={{
+                    width: `${fillPercent}%`,
+                    background: "linear-gradient(to right, var(--color-cove-accent-light), var(--color-cove-accent), var(--color-cove-blue))",
+                  }}
+                />
+              </div>
+              {/* Level buttons */}
+              <div
+                className="relative flex justify-between"
+                role="radiogroup"
+                aria-label={label}
+              >
+                {LEVELS.map((level) => {
+                  const isSelected = value === level;
+                  const isFilled = value !== null && level <= value;
+                  return (
+                    <button
+                      key={level}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      aria-label={`${label} ${LABELS[level]}`}
+                      onClick={() => onChange(level)}
+                      className="flex flex-col items-center gap-1.5 group focus:outline-none"
+                    >
+                      <div
+                        className={`
+                          w-10 h-10 rounded-full flex items-center justify-center
+                          text-xs font-semibold border-2
+                          transition-all duration-200 ease-out
+                          ${
+                            isSelected
+                              ? "scale-125 shadow-lg border-transparent text-white"
+                              : isFilled
+                              ? "scale-100 border-transparent text-white"
+                              : "scale-100 border-cove-border bg-cove-offwhite text-cove-muted group-hover:border-cove-accent group-hover:scale-110"
+                          }
+                        `}
+                        style={
+                          isFilled
+                            ? {
+                                background: `linear-gradient(135deg, var(--color-cove-accent), var(--color-cove-blue))`,
+                                opacity: isSelected ? 1 : 0.5 + (level / 5) * 0.5,
+                              }
+                            : undefined
+                        }
+                      >
+                        {level}
+                      </div>
+                      <span
+                        className={`text-[10px] font-medium transition-colors ${
+                          isSelected
+                            ? "text-cove-charcoal"
+                            : "text-cove-muted"
+                        }`}
+                      >
+                        {LABELS[level]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          {showFaces && <HappyFace />}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <form onSubmit={handleSubmit} aria-label="Wellness check-in form">
-      <h2 className="text-lg font-semibold mb-4">Daily Check-in</h2>
-      {renderRow("Mood", mood, setMood)}
+      <h2 className="text-xl font-bold text-cove-charcoal mb-6">
+        Daily Check-in
+      </h2>
+      {renderRow("Mood", mood, setMood, true)}
       {renderRow("Energy", energy, setEnergy)}
       {renderRow("Sleep", sleep, setSleep)}
-      <div className="mb-4">
+      <div className="rounded-2xl bg-cove-card border border-cove-border p-5 mb-6">
         <label
           htmlFor="wellness-notes"
-          className="block text-sm font-medium text-cove-charcoal mb-2"
+          className="block text-base font-semibold text-cove-charcoal mb-3"
         >
           Notes
         </label>
@@ -99,14 +206,17 @@ export default function CheckinForm({
           id="wellness-notes"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full border border-cove-border rounded-md p-2 text-sm"
-          rows={3}
+          className="w-full border border-cove-border rounded-xl p-4 text-sm text-cove-charcoal bg-cove-offwhite placeholder:text-cove-muted focus:outline-none focus:ring-2 focus:ring-cove-accent/30 focus:border-cove-accent transition-all resize-none"
+          rows={4}
           placeholder="How are you feeling today?"
         />
       </div>
       <button
         type="submit"
-        className="bg-cove-accent text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-cove-accent"
+        className="w-full py-3 rounded-2xl text-white font-semibold text-sm tracking-wide shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+        style={{
+          background: "linear-gradient(to right, var(--color-cove-accent), var(--color-cove-blue))",
+        }}
       >
         Save check-in
       </button>
