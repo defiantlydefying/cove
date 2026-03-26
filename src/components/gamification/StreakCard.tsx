@@ -36,24 +36,24 @@ export default function StreakCard({ streak }: { streak: Streak }) {
   const label = TYPE_LABELS[streak.type] ?? streak.type;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+    <div className="rounded-lg border border-cove-border bg-cove-card p-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
+        <h3 className="text-sm font-medium text-cove-charcoal">
           {label}
         </h3>
         {paused && (
-          <span className="text-xs text-gray-400 dark:text-gray-500">
+          <span className="text-xs text-cove-muted">
             Paused
           </span>
         )}
       </div>
-      <p className="mt-1 text-3xl font-bold text-gray-900 dark:text-white">
+      <p className="mt-1 text-3xl font-bold text-cove-charcoal">
         {streak.currentStreak}
-        <span className="ml-1 text-sm font-normal text-gray-500">
+        <span className="ml-1 text-sm font-normal text-cove-muted">
           day{streak.currentStreak !== 1 ? "s" : ""}
         </span>
       </p>
-      <div className="mt-2 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+      <div className="mt-2 flex items-center justify-between text-sm text-cove-muted">
         <span>Longest: {streak.longestStreak}</span>
         <span>{streak.totalXp} XP</span>
       </div>

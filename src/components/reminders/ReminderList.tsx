@@ -87,12 +87,12 @@ export default function ReminderList() {
   }
 
   if (loading) {
-    return <p className="text-sm text-gray-400">Loading reminders...</p>;
+    return <p className="text-sm text-cove-muted">Loading reminders...</p>;
   }
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="font-medium text-sm text-gray-700">Reminders</p>
+      <p className="font-medium text-sm text-cove-charcoal">Reminders</p>
 
       <button
         onClick={() => setShowForm((v) => !v)}
@@ -116,7 +116,7 @@ export default function ReminderList() {
       </div>
 
       {reminders.length === 0 && (
-        <p className="text-xs text-gray-400">No reminders yet.</p>
+        <p className="text-xs text-cove-muted">No reminders yet.</p>
       )}
     </div>
   );

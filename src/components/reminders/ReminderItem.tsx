@@ -22,7 +22,7 @@ const badgeColors: Record<string, string> = {
   break: "bg-green-50 text-green-600",
   medication: "bg-purple-50 text-purple-600",
   "self-care": "bg-pink-50 text-pink-600",
-  custom: "bg-gray-100 text-gray-500",
+  custom: "bg-cove-offwhite text-cove-muted",
 };
 
 export default function ReminderItem({
@@ -45,7 +45,7 @@ export default function ReminderItem({
         aria-label={`Toggle ${reminder.title}`}
         onClick={() => onToggle(reminder.id, !reminder.enabled)}
         className={`mt-0.5 shrink-0 relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-          reminder.enabled ? "bg-indigo-500" : "bg-gray-300"
+          reminder.enabled ? "bg-indigo-500" : "bg-cove-border"
         }`}
       >
         <span
@@ -58,14 +58,14 @@ export default function ReminderItem({
       <div className="flex-1 min-w-0">
         <span
           className={
-            reminder.enabled ? "text-gray-900" : "text-gray-400"
+            reminder.enabled ? "text-cove-charcoal" : "text-cove-muted"
           }
         >
           {reminder.title}
         </span>
 
         {reminder.message && (
-          <p className="text-xs text-gray-500 mt-0.5">{reminder.message}</p>
+          <p className="text-xs text-cove-muted mt-0.5">{reminder.message}</p>
         )}
 
         <div className="flex flex-wrap gap-1 mt-1">
@@ -79,7 +79,7 @@ export default function ReminderItem({
           </span>
 
           {isSnoozed && (
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-cove-muted">
               Snoozed until{" "}
               {new Date(reminder.snoozedUntil!).toLocaleTimeString()}
             </span>
@@ -90,7 +90,7 @@ export default function ReminderItem({
       <button
         onClick={() => onSnooze(reminder.id)}
         aria-label={`Snooze ${reminder.title}`}
-        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 shrink-0 mt-0.5 text-xs"
+        className="opacity-0 group-hover:opacity-100 text-cove-muted hover:text-cove-charcoal shrink-0 mt-0.5 text-xs"
       >
         Snooze
       </button>
@@ -98,7 +98,7 @@ export default function ReminderItem({
       <button
         onClick={() => onDelete(reminder.id)}
         aria-label={`Delete ${reminder.title}`}
-        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 shrink-0 mt-0.5"
+        className="opacity-0 group-hover:opacity-100 text-cove-muted hover:text-cove-charcoal shrink-0 mt-0.5"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

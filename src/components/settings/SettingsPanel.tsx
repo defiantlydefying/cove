@@ -98,8 +98,8 @@ export default function SettingsPanel() {
             onClick={() => updateSetting("theme", "light")}
             className={`px-4 py-2 border rounded-lg ${
               settings.theme === "light"
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-300"
+                ? "border-cove-accent bg-cove-accent-light"
+                : "border-cove-border"
             }`}
           >
             Light
@@ -108,8 +108,8 @@ export default function SettingsPanel() {
             onClick={() => updateSetting("theme", "dark")}
             className={`px-4 py-2 border rounded-lg ${
               settings.theme === "dark"
-                ? "border-blue-500 bg-blue-50"
-                : "border-gray-300"
+                ? "border-cove-accent bg-cove-accent-light"
+                : "border-cove-border"
             }`}
           >
             Dark
@@ -128,7 +128,7 @@ export default function SettingsPanel() {
               aria-label={`Select color ${color}`}
               className={`w-8 h-8 rounded-full border-2 ${
                 settings.accentColor === color
-                  ? "border-gray-800"
+                  ? "border-cove-charcoal"
                   : "border-transparent"
               }`}
               style={{ backgroundColor: color }}
@@ -165,7 +165,7 @@ export default function SettingsPanel() {
           aria-checked={settings.animationsOn}
           aria-label="Toggle animations"
           className={`w-12 h-6 rounded-full relative transition-colors ${
-            settings.animationsOn ? "bg-blue-500" : "bg-gray-300"
+            settings.animationsOn ? "bg-cove-accent" : "bg-cove-border"
           }`}
         >
           <span
@@ -185,7 +185,7 @@ export default function SettingsPanel() {
           aria-checked={settings.soundsOn}
           aria-label="Toggle sounds"
           className={`w-12 h-6 rounded-full relative transition-colors ${
-            settings.soundsOn ? "bg-blue-500" : "bg-gray-300"
+            settings.soundsOn ? "bg-cove-accent" : "bg-cove-border"
           }`}
         >
           <span
@@ -253,7 +253,7 @@ export default function SettingsPanel() {
                   aria-checked={enabled}
                   aria-label={`Toggle ${mod.name}`}
                   className={`w-12 h-6 rounded-full relative transition-colors ${
-                    enabled ? "bg-blue-500" : "bg-gray-300"
+                    enabled ? "bg-cove-accent" : "bg-cove-border"
                   }`}
                 >
                   <span
@@ -272,7 +272,7 @@ export default function SettingsPanel() {
       <section>
         <a
           href="/onboarding"
-          className="text-blue-500 hover:underline text-sm"
+          className="text-cove-accent hover:underline text-sm"
         >
           Re-run onboarding wizard
         </a>

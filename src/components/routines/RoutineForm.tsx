@@ -51,7 +51,7 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Routine name"
-        className="w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-gray-300"
+        className="w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-cove-border"
       />
       <div className="flex flex-col gap-1">
         {steps.map((step, index) => (
@@ -61,14 +61,14 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
               value={step}
               onChange={(e) => handleStepChange(index, e.target.value)}
               placeholder={`Step ${index + 1}`}
-              className="flex-1 px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-gray-300"
+              className="flex-1 px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-cove-border"
             />
             {steps.length > 1 && (
               <button
                 type="button"
                 onClick={() => handleRemoveStep(index)}
                 aria-label={`Remove step ${index + 1}`}
-                className="text-gray-400 hover:text-red-500 text-xs px-1"
+                className="text-cove-muted hover:text-red-500 text-xs px-1"
               >
                 x
               </button>
@@ -79,13 +79,13 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
       <button
         type="button"
         onClick={handleAddStep}
-        className="text-xs text-gray-500 hover:text-gray-700 self-start"
+        className="text-xs text-cove-muted hover:text-cove-charcoal self-start"
       >
         + Add step
       </button>
       <button
         type="submit"
-        className="px-3 py-1.5 text-sm bg-gray-900 text-white rounded hover:bg-gray-800"
+        className="px-3 py-1.5 text-sm bg-cove-charcoal text-white rounded hover:bg-cove-charcoal"
       >
         {isEditing ? "Save changes" : "Create routine"}
       </button>

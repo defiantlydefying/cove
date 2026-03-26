@@ -81,16 +81,16 @@ export default function RoutineList() {
   }
 
   if (loading) {
-    return <p className="text-sm text-gray-400">Loading routines...</p>;
+    return <p className="text-sm text-cove-muted">Loading routines...</p>;
   }
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <p className="font-medium text-sm text-gray-700">Routines</p>
+        <p className="font-medium text-sm text-cove-charcoal">Routines</p>
         <button
           onClick={() => setShowForm((v) => !v)}
-          className="text-xs text-gray-500 hover:text-gray-700"
+          className="text-xs text-cove-muted hover:text-cove-charcoal"
         >
           {showForm ? "Cancel" : "+ New routine"}
         </button>
@@ -112,7 +112,7 @@ export default function RoutineList() {
       </div>
 
       {routines.length === 0 && !showForm && (
-        <p className="text-xs text-gray-400">No routines yet.</p>
+        <p className="text-xs text-cove-muted">No routines yet.</p>
       )}
     </div>
   );

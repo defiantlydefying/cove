@@ -60,7 +60,7 @@ export default function WellnessHistory({
 
       {patterns && (
         <div
-          className="mb-4 p-3 bg-blue-50 rounded-md text-sm text-gray-700"
+          className="mb-4 p-3 bg-cove-accent-light rounded-md text-sm text-cove-charcoal"
           data-testid="patterns-summary"
         >
           <p className="font-medium mb-1">30-Day Averages</p>
@@ -77,7 +77,7 @@ export default function WellnessHistory({
       )}
 
       {checkins.length === 0 ? (
-        <p className="text-sm text-gray-500">No check-ins yet.</p>
+        <p className="text-sm text-cove-muted">No check-ins yet.</p>
       ) : (
         <table className="w-full text-sm" aria-label="Check-in history">
           <thead>

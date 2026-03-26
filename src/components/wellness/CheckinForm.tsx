@@ -57,7 +57,7 @@ export default function CheckinForm({
     onChange: (v: number) => void
   ) => (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-cove-charcoal mb-2">
         {label}
       </label>
       <div className="flex gap-2" role="radiogroup" aria-label={label}>
@@ -71,8 +71,8 @@ export default function CheckinForm({
             onClick={() => onChange(level)}
             className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
               value === level
-                ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                ? "bg-cove-accent text-white border-cove-accent"
+                : "bg-cove-card text-cove-charcoal border-cove-border hover:bg-cove-sand-light"
             }`}
           >
             {LABELS[level]}
@@ -91,7 +91,7 @@ export default function CheckinForm({
       <div className="mb-4">
         <label
           htmlFor="wellness-notes"
-          className="block text-sm font-medium text-gray-700 mb-2"
+          className="block text-sm font-medium text-cove-charcoal mb-2"
         >
           Notes
         </label>
@@ -99,14 +99,14 @@ export default function CheckinForm({
           id="wellness-notes"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full border border-gray-300 rounded-md p-2 text-sm"
+          className="w-full border border-cove-border rounded-md p-2 text-sm"
           rows={3}
           placeholder="How are you feeling today?"
         />
       </div>
       <button
         type="submit"
-        className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+        className="bg-cove-accent text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-cove-accent"
       >
         Save check-in
       </button>

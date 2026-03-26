@@ -168,11 +168,11 @@ export default function DailyView() {
   }
 
   if (loading) {
-    return <p className="text-sm text-gray-400">Loading daily view...</p>;
+    return <p className="text-sm text-cove-muted">Loading daily view...</p>;
   }
 
   if (!data) {
-    return <p className="text-sm text-gray-400">Failed to load daily view.</p>;
+    return <p className="text-sm text-cove-muted">Failed to load daily view.</p>;
   }
 
   const hasTasks = data.tasks.length > 0;
@@ -184,7 +184,7 @@ export default function DailyView() {
   if (!hasAnything) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 text-sm">All caught up! Nothing on your plate today.</p>
+        <p className="text-cove-muted text-sm">All caught up! Nothing on your plate today.</p>
       </div>
     );
   }
@@ -193,7 +193,7 @@ export default function DailyView() {
     <div className="flex flex-col gap-6 max-w-2xl">
       {hasTasks && (
         <section>
-          <h2 className="font-medium text-sm text-gray-700 mb-2">Tasks</h2>
+          <h2 className="font-medium text-sm text-cove-charcoal mb-2">Tasks</h2>
           <div className="flex flex-col divide-y">
             {data.tasks.map((task) => (
               <div
@@ -211,8 +211,8 @@ export default function DailyView() {
                 <span
                   className={
                     task.completed
-                      ? "line-through text-gray-400 text-sm"
-                      : "text-gray-900 text-sm"
+                      ? "line-through text-cove-muted text-sm"
+                      : "text-cove-charcoal text-sm"
                   }
                 >
                   {task.title}
@@ -225,7 +225,7 @@ export default function DailyView() {
 
       {hasRoutines && (
         <section>
-          <h2 className="font-medium text-sm text-gray-700 mb-2">Routines</h2>
+          <h2 className="font-medium text-sm text-cove-charcoal mb-2">Routines</h2>
           <div className="flex flex-col gap-3">
             {data.routines.map((routine) => {
               const completedSteps = routine.logs[0]?.completedSteps ?? [];
@@ -235,7 +235,7 @@ export default function DailyView() {
                   className="border rounded p-3"
                   data-testid="daily-routine"
                 >
-                  <h3 className="font-medium text-sm text-gray-900 mb-1">
+                  <h3 className="font-medium text-sm text-cove-charcoal mb-1">
                     {routine.name}
                   </h3>
                   <div className="flex flex-col gap-1">
@@ -261,8 +261,8 @@ export default function DailyView() {
                           <span
                             className={
                               checked
-                                ? "line-through text-gray-400"
-                                : "text-gray-700"
+                                ? "line-through text-cove-muted"
+                                : "text-cove-charcoal"
                             }
                           >
                             {step.title}
@@ -280,11 +280,11 @@ export default function DailyView() {
 
       {hasWellness && (
         <section>
-          <h2 className="font-medium text-sm text-gray-700 mb-2">
+          <h2 className="font-medium text-sm text-cove-charcoal mb-2">
             How are you feeling?
           </h2>
           {data.wellness ? (
-            <div className="border rounded p-3 text-sm text-gray-600" data-testid="wellness-summary">
+            <div className="border rounded p-3 text-sm text-cove-charcoal" data-testid="wellness-summary">
               <div className="flex gap-4">
                 {data.wellness.mood != null && (
                   <span>Mood: {data.wellness.mood}/5</span>
@@ -297,7 +297,7 @@ export default function DailyView() {
                 )}
               </div>
               {data.wellness.notes && (
-                <p className="mt-1 text-gray-500">{data.wellness.notes}</p>
+                <p className="mt-1 text-cove-muted">{data.wellness.notes}</p>
               )}
             </div>
           ) : (
@@ -308,7 +308,7 @@ export default function DailyView() {
 
       {hasReminders && (
         <section>
-          <h2 className="font-medium text-sm text-gray-700 mb-2">Reminders</h2>
+          <h2 className="font-medium text-sm text-cove-charcoal mb-2">Reminders</h2>
           <div className="flex flex-col divide-y">
             {data.reminders.map((reminder) => (
               <div
@@ -317,16 +317,16 @@ export default function DailyView() {
                 data-testid="daily-reminder"
               >
                 <div>
-                  <span className="text-sm text-gray-900">
+                  <span className="text-sm text-cove-charcoal">
                     {reminder.title}
                   </span>
                   {reminder.message && (
-                    <p className="text-xs text-gray-500">{reminder.message}</p>
+                    <p className="text-xs text-cove-muted">{reminder.message}</p>
                   )}
                 </div>
                 <button
                   onClick={() => handleSnooze(reminder.id)}
-                  className="text-xs text-gray-400 hover:text-gray-600"
+                  className="text-xs text-cove-muted hover:text-cove-charcoal"
                   aria-label={`Snooze ${reminder.title}`}
                 >
                   Snooze

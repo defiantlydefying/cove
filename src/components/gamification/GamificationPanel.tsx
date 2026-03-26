@@ -37,7 +37,7 @@ export default function GamificationPanel() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <p className="text-gray-500">Loading...</p>
+        <p className="text-cove-muted">Loading...</p>
       </div>
     );
   }
@@ -45,7 +45,7 @@ export default function GamificationPanel() {
   if (!data) {
     return (
       <div className="p-8">
-        <p className="text-gray-500">Failed to load gamification data.</p>
+        <p className="text-cove-muted">Failed to load gamification data.</p>
       </div>
     );
   }
@@ -53,8 +53,8 @@ export default function GamificationPanel() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <p className="text-sm text-gray-500 dark:text-gray-400">Total XP</p>
-        <p className="text-4xl font-bold text-gray-900 dark:text-white">
+        <p className="text-sm text-cove-muted">Total XP</p>
+        <p className="text-4xl font-bold text-cove-charcoal">
           {data.totalXp}
         </p>
       </div>
@@ -67,24 +67,24 @@ export default function GamificationPanel() {
 
       {data.achievements.length > 0 && (
         <div>
-          <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-white">
+          <h2 className="mb-3 text-lg font-semibold text-cove-charcoal">
             Achievements
           </h2>
           <ul className="space-y-2">
             {data.achievements.map((a) => (
               <li
                 key={a.id}
-                className="rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-800"
+                className="rounded-lg border border-cove-border bg-cove-card p-3"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  <span className="font-medium text-cove-charcoal">
                     {a.name}
                   </span>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-cove-muted">
                     +{a.xpReward} XP
                   </span>
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-cove-muted">
                   {a.description}
                 </p>
               </li>

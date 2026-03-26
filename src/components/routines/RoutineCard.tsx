@@ -39,19 +39,19 @@ export default function RoutineCard({
       data-testid="routine-card"
     >
       <div className="flex items-center justify-between">
-        <h3 className="font-medium text-sm text-gray-900">{routine.name}</h3>
+        <h3 className="font-medium text-sm text-cove-charcoal">{routine.name}</h3>
         <div className="flex items-center gap-1">
           <button
             onClick={() => onEdit(routine.id)}
             aria-label={`Edit ${routine.name}`}
-            className="text-gray-400 hover:text-gray-600 text-xs"
+            className="text-cove-muted hover:text-cove-charcoal text-xs"
           >
             Edit
           </button>
           <button
             onClick={() => onDelete(routine.id)}
             aria-label={`Delete ${routine.name}`}
-            className="text-gray-400 hover:text-red-500"
+            className="text-cove-muted hover:text-red-500"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -84,7 +84,7 @@ export default function RoutineCard({
                 }
                 aria-label={`Toggle ${step.title}`}
               />
-              <span className={checked ? "line-through text-gray-400" : "text-gray-700"}>
+              <span className={checked ? "line-through text-cove-muted" : "text-cove-charcoal"}>
                 {step.title}
               </span>
             </label>
@@ -92,7 +92,7 @@ export default function RoutineCard({
         })}
       </div>
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-cove-muted">
         {doneCount}/{routine.steps.length} steps done
       </p>
     </div>
