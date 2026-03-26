@@ -56,9 +56,21 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
   const [theme, setTheme] = useState("light");
   const [density, setDensity] = useState("comfortable");
   const [animationsOn, setAnimationsOn] = useState(true);
+  const [age, setAge] = useState("");
+  const [conditions, setConditions] = useState<string[]>([]);
+  const [medications, setMedications] = useState("");
+  const [profileNotes, setProfileNotes] = useState("");
 
   const toggleModule = (id: string) => {
     setModules((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleCondition = (condition: string) => {
+    setConditions((prev) =>
+      prev.includes(condition)
+        ? prev.filter((c) => c !== condition)
+        : [...prev, condition]
+    );
   };
 
   const handleComplete = async () => {
@@ -76,7 +88,18 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
       body: JSON.stringify({ theme, density, animationsOn }),
     });
 
-    await Promise.all([...modulePromises, settingsPromise]);
+    const profilePromise = fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        age: age ? parseInt(age) : null,
+        conditions,
+        medications: medications ? medications.split(",").map((m) => m.trim()).filter(Boolean) : [],
+        notes: profileNotes || null,
+      }),
+    });
+
+    await Promise.all([...modulePromises, settingsPromise, profilePromise]);
     onComplete();
   };
 
@@ -93,6 +116,96 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
       )}
 
       {step === 1 && (
+        <div data-testid="profile-step">
+          <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-2">About you</h2>
+          <p className="text-cove-muted mb-2 leading-relaxed">
+            Help us personalize your experience. This is completely optional --
+            skip anything you are not comfortable sharing. You can always update this later in settings.
+          </p>
+          <p className="text-sm text-cove-blue mb-8">
+            None of these fields are mandatory. Leave them blank if you prefer.
+          </p>
+
+          <div className="space-y-6">
+            <div>
+              <label className="block font-medium text-cove-charcoal mb-2">Age</label>
+              <input
+                type="number"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                placeholder="Your age (optional)"
+                min="1"
+                max="120"
+                className="w-full max-w-[200px] px-4 py-2.5 border border-cove-border rounded-xl bg-cove-offwhite text-cove-charcoal placeholder:text-cove-muted/60 focus:outline-none focus:ring-2 focus:ring-cove-accent/20 focus:border-cove-accent transition-colors"
+              />
+            </div>
+
+            <div>
+              <label className="block font-medium text-cove-charcoal mb-2">
+                Conditions or diagnoses
+              </label>
+              <p className="text-sm text-cove-muted mb-3">
+                Select any that apply, or leave blank.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "ADHD",
+                  "Autism / ASD",
+                  "Anxiety",
+                  "Depression",
+                  "Dyslexia",
+                  "Dyscalculia",
+                  "OCD",
+                  "PTSD",
+                  "Bipolar",
+                  "Other",
+                ].map((condition) => (
+                  <button
+                    key={condition}
+                    type="button"
+                    onClick={() => toggleCondition(condition)}
+                    className={`px-4 py-2 rounded-xl text-sm transition-all duration-200 ${
+                      conditions.includes(condition)
+                        ? "bg-cove-accent text-white shadow-sm"
+                        : "bg-cove-card border border-cove-border text-cove-muted hover:border-cove-accent/40 hover:text-cove-charcoal"
+                    }`}
+                  >
+                    {condition}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-medium text-cove-charcoal mb-2">
+                Medications
+              </label>
+              <input
+                type="text"
+                value={medications}
+                onChange={(e) => setMedications(e.target.value)}
+                placeholder="e.g., Adderall, Lexapro (optional, comma-separated)"
+                className="w-full px-4 py-2.5 border border-cove-border rounded-xl bg-cove-offwhite text-cove-charcoal placeholder:text-cove-muted/60 focus:outline-none focus:ring-2 focus:ring-cove-accent/20 focus:border-cove-accent transition-colors"
+              />
+            </div>
+
+            <div>
+              <label className="block font-medium text-cove-charcoal mb-2">
+                Anything else you want us to know?
+              </label>
+              <textarea
+                value={profileNotes}
+                onChange={(e) => setProfileNotes(e.target.value)}
+                placeholder="Optional -- anything that helps us help you better"
+                rows={3}
+                className="w-full px-4 py-3 border border-cove-border rounded-xl bg-cove-offwhite text-cove-charcoal placeholder:text-cove-muted/60 focus:outline-none focus:ring-2 focus:ring-cove-accent/20 focus:border-cove-accent transition-colors resize-none"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {step === 2 && (
         <div data-testid="modules-step">
           <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-3">Choose your modules</h2>
           <p className="text-cove-muted mb-8 leading-relaxed">
@@ -137,7 +250,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
         </div>
       )}
 
-      {step === 2 && (
+      {step === 3 && (
         <div data-testid="theme-step">
           <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-6">Customize your experience</h2>
           <div className="space-y-8">
@@ -206,7 +319,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
         </div>
       )}
 
-      {step === 3 && (
+      {step === 4 && (
         <div data-testid="done-step">
           <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-4">Your cove is ready</h2>
           <p className="text-cove-muted mb-10 leading-relaxed">
@@ -222,7 +335,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
       )}
 
       <div className="flex justify-between mt-10">
-        {step > 0 && step < 3 && (
+        {step > 0 && step < 4 && (
           <button
             onClick={() => setStep((s) => s - 1)}
             className="px-5 py-2.5 border border-cove-border rounded-lg text-cove-muted hover:text-cove-charcoal hover:border-cove-accent/30 transition-colors"
@@ -231,7 +344,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
           </button>
         )}
         {step === 0 && <div />}
-        {step < 3 && (
+        {step < 4 && (
           <button
             onClick={() => setStep((s) => s + 1)}
             className="px-5 py-2.5 bg-cove-accent text-white rounded-lg ml-auto shadow-sm hover:bg-cove-accent-hover transition-colors focus:outline-none focus:ring-2 focus:ring-cove-accent/40"

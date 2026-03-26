@@ -10,10 +10,20 @@ describe("OnboardingWizard", () => {
     expect(screen.getByText("Welcome to Cove")).toBeInTheDocument();
   });
 
-  it("navigates to module selection on Next", async () => {
+  it("navigates to profile step on Next", async () => {
     const user = userEvent.setup();
     render(<OnboardingWizard onComplete={vi.fn()} />);
 
+    await user.click(screen.getByText("Next"));
+    expect(screen.getByTestId("profile-step")).toBeInTheDocument();
+    expect(screen.getByText("About you")).toBeInTheDocument();
+  });
+
+  it("navigates to module selection", async () => {
+    const user = userEvent.setup();
+    render(<OnboardingWizard onComplete={vi.fn()} />);
+
+    await user.click(screen.getByText("Next"));
     await user.click(screen.getByText("Next"));
     expect(screen.getByTestId("modules-step")).toBeInTheDocument();
     expect(screen.getByText("Choose your modules")).toBeInTheDocument();
@@ -25,6 +35,7 @@ describe("OnboardingWizard", () => {
 
     await user.click(screen.getByText("Next"));
     await user.click(screen.getByText("Next"));
+    await user.click(screen.getByText("Next"));
     expect(screen.getByTestId("theme-step")).toBeInTheDocument();
     expect(screen.getByText("Customize your experience")).toBeInTheDocument();
   });
@@ -33,6 +44,7 @@ describe("OnboardingWizard", () => {
     const user = userEvent.setup();
     render(<OnboardingWizard onComplete={vi.fn()} />);
 
+    await user.click(screen.getByText("Next"));
     await user.click(screen.getByText("Next"));
     await user.click(screen.getByText("Next"));
     await user.click(screen.getByText("Next"));
@@ -51,6 +63,7 @@ describe("OnboardingWizard", () => {
 
     render(<OnboardingWizard onComplete={onComplete} />);
 
+    await user.click(screen.getByText("Next"));
     await user.click(screen.getByText("Next"));
     await user.click(screen.getByText("Next"));
     await user.click(screen.getByText("Next"));

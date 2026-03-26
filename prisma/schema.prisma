@@ -26,6 +26,7 @@ model User {
   streaks          UserStreak[]
   moduleSettings   ModuleSetting[]
   userSettings     UserSettings?
+  profile          UserProfile?
 }
 
 model Account {
@@ -199,6 +200,19 @@ model ModuleSetting {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, moduleId])
+}
+
+model UserProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  age          Int?
+  conditions   String[] // e.g., ["ADHD", "Autism", "Anxiety", "Dyslexia"]
+  medications  String[] // e.g., ["Adderall", "Lexapro"]
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserSettings {
