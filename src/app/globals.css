@@ -1,23 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F7F5F2;
-  --foreground: #2D3436;
-  --cove-accent: #4F7CAC;
-  --cove-accent-hover: #3E6A96;
-  --cove-accent-light: #E8EFF6;
-  --cove-sage: #8FAE8F;
-  --cove-sage-light: #EDF2ED;
-  --cove-sand: #E8DCC8;
-  --cove-sand-light: #F3EDE2;
-  --cove-offwhite: #F7F5F2;
-  --cove-charcoal: #2D3436;
-  --cove-muted: #6B7C85;
-  --cove-border: #D8D3CB;
-  --cove-border-light: #E8E4DC;
+  --background: #F4F2FB;
+  --foreground: #2B2D42;
+  --cove-accent: #5B4EC4;
+  --cove-accent-hover: #4A3DB3;
+  --cove-accent-light: #EDEAFC;
+  --cove-sage: #8B8FC7;
+  --cove-sage-light: #ECEDF8;
+  --cove-sand: #E6E0F3;
+  --cove-sand-light: #F0ECF8;
+  --cove-offwhite: #F4F2FB;
+  --cove-charcoal: #2B2D42;
+  --cove-muted: #8E8EA0;
+  --cove-border: #D8D5E8;
+  --cove-border-light: #E8E6F2;
   --cove-card: #FFFFFF;
-  --cove-sidebar: #F0EDE8;
-  --cove-selection: #4F7CAC33;
+  --cove-sidebar: #3B2D7B;
+  --cove-sidebar-text: #FFFFFF;
+  --cove-selection: #5B4EC433;
+  --cove-gradient-start: #5B4EC4;
+  --cove-gradient-end: #8B7FE8;
 }
 
 @theme inline {
@@ -37,28 +40,34 @@
   --color-cove-border-light: var(--cove-border-light);
   --color-cove-card: var(--cove-card);
   --color-cove-sidebar: var(--cove-sidebar);
+  --color-cove-sidebar-text: var(--cove-sidebar-text);
+  --color-cove-gradient-start: var(--cove-gradient-start);
+  --color-cove-gradient-end: var(--cove-gradient-end);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 [data-theme="dark"] {
-  --background: #1A1E20;
-  --foreground: #E0DDD8;
-  --cove-accent: #6A9BC7;
-  --cove-accent-hover: #7DAED6;
-  --cove-accent-light: #2A3A4A;
-  --cove-sage: #8FAE8F;
-  --cove-sage-light: #2A3A2A;
-  --cove-sand: #3D3630;
-  --cove-sand-light: #2E2924;
-  --cove-offwhite: #1A1E20;
-  --cove-charcoal: #E0DDD8;
-  --cove-muted: #8A9AA3;
-  --cove-border: #3A3F42;
-  --cove-border-light: #2E3335;
-  --cove-card: #242829;
-  --cove-sidebar: #1F2325;
-  --cove-selection: #6A9BC733;
+  --background: #151521;
+  --foreground: #E4E2F0;
+  --cove-accent: #8B7FE8;
+  --cove-accent-hover: #9D93F0;
+  --cove-accent-light: #262340;
+  --cove-sage: #8B8FC7;
+  --cove-sage-light: #22223A;
+  --cove-sand: #2A2740;
+  --cove-sand-light: #201E35;
+  --cove-offwhite: #151521;
+  --cove-charcoal: #E4E2F0;
+  --cove-muted: #8E8EA0;
+  --cove-border: #35335A;
+  --cove-border-light: #2A2848;
+  --cove-card: #1E1C30;
+  --cove-sidebar: #1A1830;
+  --cove-sidebar-text: #E4E2F0;
+  --cove-selection: #8B7FE833;
+  --cove-gradient-start: #5B4EC4;
+  --cove-gradient-end: #8B7FE8;
 }
 
 body {

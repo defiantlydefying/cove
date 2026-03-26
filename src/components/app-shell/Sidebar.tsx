@@ -11,7 +11,7 @@ interface SidebarProps {
 export default function Sidebar({ visible, onClose, children }: SidebarProps) {
   return (
     <aside
-      className={`border-l border-cove-border-light bg-cove-sidebar transition-all duration-300 ${
+      className={`border-l border-cove-sidebar/20 bg-cove-sidebar text-cove-sidebar-text transition-all duration-300 ${
         visible
           ? "w-80 opacity-100"
           : "w-0 opacity-0 overflow-hidden pointer-events-none"
@@ -21,7 +21,7 @@ export default function Sidebar({ visible, onClose, children }: SidebarProps) {
         <button
           onClick={onClose}
           aria-label="Close sidebar"
-          className="p-1 rounded-md text-cove-muted hover:text-cove-charcoal hover:bg-cove-sand-light transition-colors"
+          className="p-1 rounded-md text-cove-sidebar-text/60 hover:text-cove-sidebar-text hover:bg-white/10 transition-colors"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

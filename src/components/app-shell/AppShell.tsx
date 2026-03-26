@@ -28,13 +28,13 @@ export default function AppShell({
 
   return (
     <div className="flex flex-col h-full">
-      <header className="flex items-center justify-between px-5 py-3 border-b border-cove-border-light bg-cove-card">
-        <span className="text-lg font-light tracking-tight text-cove-accent">Cove</span>
+      <header className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-cove-gradient-start to-cove-gradient-end text-white shadow-sm">
+        <span className="text-lg font-semibold tracking-tight">Cove</span>
         {!sidebarVisible && (
           <button
             onClick={() => setSidebarVisible(true)}
             aria-label="Open sidebar"
-            className="px-3 py-1.5 text-sm border border-cove-border rounded-lg text-cove-muted hover:text-cove-charcoal hover:border-cove-accent/30 transition-colors"
+            className="px-3 py-1.5 text-sm border border-white/30 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
           >
             Tasks
           </button>
