@@ -1,16 +1,14 @@
-"use client";
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import OnboardingClient from "./OnboardingClient";
 
-import { useRouter } from "next/navigation";
-import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
+export default async function OnboardingPage() {
+  const session = await getServerSession(authOptions);
 
-export default function OnboardingPage() {
-  const router = useRouter();
+  if (!session) {
+    redirect("/login");
+  }
 
-  return (
-    <OnboardingWizard
-      onComplete={() => {
-        router.push("/dashboard");
-      }}
-    />
-  );
+  return <OnboardingClient />;
 }
