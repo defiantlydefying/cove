@@ -27,11 +27,13 @@ export default function DashboardPage() {
       onTabChange={setActiveTab}
       sidebarContent={<TaskList />}
     >
-      {activeTab === "daily-view" && <DailyView />}
-      {activeTab === "routines" && <RoutineList />}
-      {activeTab === "wellness" && <WellnessTracker />}
-      {activeTab === "reminders" && <ReminderList />}
-      {activeTab === "gamification" && <GamificationPanel />}
+      <div key={activeTab} className="animate-soft-bounce">
+        {activeTab === "daily-view" && <DailyView />}
+        {activeTab === "routines" && <RoutineList />}
+        {activeTab === "wellness" && <WellnessTracker />}
+        {activeTab === "reminders" && <ReminderList />}
+        {activeTab === "gamification" && <GamificationPanel />}
+      </div>
     </AppShell>
   );
 }

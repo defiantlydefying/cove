@@ -47,7 +47,7 @@ export default function AppShell({
             id={`tabpanel-${activeTab}`}
             role="tabpanel"
             aria-labelledby={`tab-${activeTab}`}
-            className="flex-1 overflow-auto p-5"
+            className="flex-1 overflow-auto p-5 bg-cove-card rounded-tl-3xl"
           >
             {children}
           </main>
