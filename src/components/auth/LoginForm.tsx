@@ -31,12 +31,12 @@ export default function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
+    <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5">
       {error && (
         <p className="text-sm text-red-600">{error}</p>
       )}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="email" className="block text-sm font-medium text-cove-charcoal mb-1.5">
           Email
         </label>
         <input
@@ -45,11 +45,11 @@ export default function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="mt-1 block w-full rounded-lg border border-cove-border px-3 py-2.5 text-sm bg-cove-offwhite text-cove-charcoal placeholder:text-cove-muted focus:border-cove-accent focus:outline-none focus:ring-2 focus:ring-cove-accent/20 transition-colors"
         />
       </div>
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="password" className="block text-sm font-medium text-cove-charcoal mb-1.5">
           Password
         </label>
         <input
@@ -58,19 +58,19 @@ export default function LoginForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="mt-1 block w-full rounded-lg border border-cove-border px-3 py-2.5 text-sm bg-cove-offwhite text-cove-charcoal placeholder:text-cove-muted focus:border-cove-accent focus:outline-none focus:ring-2 focus:ring-cove-accent/20 transition-colors"
         />
       </div>
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+        className="w-full rounded-lg bg-cove-accent px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-cove-accent-hover focus:outline-none focus:ring-2 focus:ring-cove-accent/40 focus:ring-offset-2 disabled:opacity-50 transition-colors"
       >
         {loading ? "Signing in..." : "Sign in"}
       </button>
-      <p className="text-center text-sm text-gray-600">
+      <p className="text-center text-sm text-cove-muted">
         Don&apos;t have an account?{" "}
-        <Link href="/register" className="text-blue-600 hover:underline">
+        <Link href="/register" className="text-cove-sage font-medium hover:underline">
           Create one
         </Link>
       </p>

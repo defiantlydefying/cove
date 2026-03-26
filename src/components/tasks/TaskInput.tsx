@@ -23,7 +23,7 @@ export default function TaskInput({ onAdd }: TaskInputProps) {
       onChange={(e) => setValue(e.target.value)}
       onKeyDown={handleKeyDown}
       placeholder="Add a task..."
-      className="w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-gray-300"
+      className="w-full px-3 py-2.5 text-sm border border-cove-border rounded-lg bg-cove-card text-cove-charcoal placeholder:text-cove-muted focus:outline-none focus:ring-2 focus:ring-cove-accent/20 focus:border-cove-accent transition-colors"
     />
   );
 }

@@ -67,14 +67,14 @@ export default function TaskList() {
   }
 
   if (loading) {
-    return <p className="text-sm text-gray-400">Loading tasks...</p>;
+    return <p className="text-sm text-cove-muted">Loading tasks...</p>;
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <p className="font-medium text-sm text-gray-700">Tasks</p>
+    <div className="flex flex-col gap-3">
+      <p className="font-medium text-sm text-cove-charcoal">Tasks</p>
       <TaskInput onAdd={handleAdd} />
-      <div className="flex flex-col divide-y">
+      <div className="flex flex-col divide-y divide-cove-border-light">
         {tasks.map((task) => (
           <TaskItem
             key={task.id}
@@ -85,7 +85,7 @@ export default function TaskList() {
         ))}
       </div>
       {tasks.length === 0 && (
-        <p className="text-xs text-gray-400">No tasks yet.</p>
+        <p className="text-xs text-cove-muted">No tasks yet.</p>
       )}
     </div>
   );

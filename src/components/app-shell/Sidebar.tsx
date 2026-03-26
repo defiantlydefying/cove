@@ -11,14 +11,18 @@ interface SidebarProps {
 export default function Sidebar({ visible, onClose, children }: SidebarProps) {
   return (
     <aside
-      className={`border-l bg-white transition-all duration-300 ${
+      className={`border-l border-cove-border-light bg-cove-sidebar transition-all duration-300 ${
         visible
           ? "w-80 opacity-100"
           : "w-0 opacity-0 overflow-hidden pointer-events-none"
       }`}
     >
       <div className="flex items-center justify-end p-2">
-        <button onClick={onClose} aria-label="Close sidebar">
+        <button
+          onClick={onClose}
+          aria-label="Close sidebar"
+          className="p-1 rounded-md text-cove-muted hover:text-cove-charcoal hover:bg-cove-sand-light transition-colors"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"

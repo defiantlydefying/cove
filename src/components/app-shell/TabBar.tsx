@@ -32,7 +32,7 @@ export default function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
   }
 
   return (
-    <div ref={tabListRef} role="tablist" className="flex border-b">
+    <div ref={tabListRef} role="tablist" className="flex border-b border-cove-border-light bg-cove-card">
       {tabs.map((tab, index) => {
         const isActive = tab.id === activeTab;
         return (
@@ -45,10 +45,10 @@ export default function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
             tabIndex={isActive ? 0 : -1}
             onClick={() => onTabChange(tab.id)}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            className={`px-4 py-2 border-b-2 ${
+            className={`px-4 py-2.5 text-sm border-b-2 transition-colors ${
               isActive
-                ? "border-blue-500 text-blue-600"
-                : "border-gray-200 text-gray-600"
+                ? "border-cove-accent text-cove-accent font-medium"
+                : "border-transparent text-cove-muted hover:text-cove-charcoal"
             }`}
           >
             {tab.label}

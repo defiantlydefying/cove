@@ -17,39 +17,39 @@ interface TaskItemProps {
 
 export default function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
   return (
-    <div className="flex items-start gap-2 py-2 group" data-testid="task-item">
+    <div className="flex items-start gap-3 py-3 px-2 group rounded-lg hover:bg-cove-sand-light/50 transition-colors" data-testid="task-item">
       <input
         type="checkbox"
         checked={task.completed}
         onChange={() => onToggle(task.id)}
         aria-label={`Toggle ${task.title}`}
-        className="mt-1 shrink-0"
+        className="mt-1 shrink-0 h-4 w-4 rounded border-cove-border text-cove-accent accent-cove-accent focus:ring-cove-accent/30"
       />
       <div className="flex-1 min-w-0">
         <span
           className={
             task.completed
-              ? "line-through text-gray-400"
-              : "text-gray-900"
+              ? "line-through text-cove-muted"
+              : "text-cove-charcoal"
           }
         >
           {task.title}
         </span>
-        <div className="flex flex-wrap gap-1 mt-0.5">
+        <div className="flex flex-wrap gap-1.5 mt-1">
           {task.deadline && (
-            <span className="text-xs text-gray-400">{task.deadline}</span>
+            <span className="text-xs text-cove-muted">{task.deadline}</span>
           )}
           {task.energyLevel && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">
+            <span className="text-xs px-1.5 py-0.5 rounded-md bg-cove-sage-light text-cove-sage">
               {task.energyLevel}
             </span>
           )}
           {task.priority && task.priority !== "medium" && (
             <span
-              className={`text-xs px-1.5 py-0.5 rounded ${
+              className={`text-xs px-1.5 py-0.5 rounded-md ${
                 task.priority === "high"
                   ? "bg-red-50 text-red-600"
-                  : "bg-blue-50 text-blue-500"
+                  : "bg-cove-accent-light text-cove-accent"
               }`}
             >
               {task.priority}
@@ -60,7 +60,7 @@ export default function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
       <button
         onClick={() => onDelete(task.id)}
         aria-label={`Delete ${task.title}`}
-        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 shrink-0 mt-0.5"
+        className="opacity-0 group-hover:opacity-100 text-cove-muted hover:text-cove-charcoal shrink-0 mt-0.5 transition-opacity"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

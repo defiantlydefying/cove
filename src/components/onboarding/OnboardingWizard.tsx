@@ -81,11 +81,11 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-8">
+    <div className="max-w-2xl mx-auto p-10">
       {step === 0 && (
         <div data-testid="welcome-step">
-          <h1 className="text-3xl font-bold mb-4">Welcome to Cove</h1>
-          <p className="text-gray-600 mb-8">
+          <h1 className="text-4xl font-light tracking-tight text-cove-accent mb-3">Welcome to Cove</h1>
+          <p className="text-cove-muted mb-10 text-lg leading-relaxed">
             Your personal executive function companion. Calm by default,
             customizable in every direction.
           </p>
@@ -94,8 +94,8 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
 
       {step === 1 && (
         <div data-testid="modules-step">
-          <h2 className="text-2xl font-bold mb-4">Choose your modules</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-3">Choose your modules</h2>
+          <p className="text-cove-muted mb-8 leading-relaxed">
             Select the tools you want to start with. You can always change these
             later.
           </p>
@@ -103,18 +103,18 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
             {AVAILABLE_MODULES.map((mod) => (
               <div
                 key={mod.id}
-                className="flex items-center justify-between p-4 border rounded-lg"
+                className="flex items-center justify-between p-5 border border-cove-border-light rounded-xl bg-cove-card shadow-[0_1px_4px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.07)] transition-shadow"
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">{mod.name}</span>
+                    <span className="font-medium text-cove-charcoal">{mod.name}</span>
                     {mod.recommended && (
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+                      <span className="text-xs bg-cove-accent-light text-cove-accent px-2 py-0.5 rounded-md">
                         Recommended
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-gray-500">{mod.description}</p>
+                  <p className="text-sm text-cove-muted mt-0.5">{mod.description}</p>
                 </div>
                 <button
                   onClick={() => toggleModule(mod.id)}
@@ -122,11 +122,11 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
                   aria-checked={modules[mod.id]}
                   aria-label={`Toggle ${mod.name}`}
                   className={`w-12 h-6 rounded-full relative transition-colors ${
-                    modules[mod.id] ? "bg-blue-500" : "bg-gray-300"
+                    modules[mod.id] ? "bg-cove-accent" : "bg-cove-border"
                   }`}
                 >
                   <span
-                    className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
+                    className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-sm ${
                       modules[mod.id] ? "translate-x-6" : "translate-x-0.5"
                     }`}
                   />
@@ -139,27 +139,27 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
 
       {step === 2 && (
         <div data-testid="theme-step">
-          <h2 className="text-2xl font-bold mb-4">Customize your experience</h2>
-          <div className="space-y-6">
+          <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-6">Customize your experience</h2>
+          <div className="space-y-8">
             <div>
-              <label className="block font-medium mb-2">Theme</label>
+              <label className="block font-medium text-cove-charcoal mb-3">Theme</label>
               <div className="flex gap-3">
                 <button
                   onClick={() => setTheme("light")}
-                  className={`px-4 py-2 border rounded-lg ${
+                  className={`px-5 py-2.5 border rounded-lg transition-colors ${
                     theme === "light"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-300"
+                      ? "border-cove-accent bg-cove-accent-light text-cove-accent"
+                      : "border-cove-border text-cove-muted hover:border-cove-accent/30"
                   }`}
                 >
                   Light
                 </button>
                 <button
                   onClick={() => setTheme("dark")}
-                  className={`px-4 py-2 border rounded-lg ${
+                  className={`px-5 py-2.5 border rounded-lg transition-colors ${
                     theme === "dark"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-300"
+                      ? "border-cove-accent bg-cove-accent-light text-cove-accent"
+                      : "border-cove-border text-cove-muted hover:border-cove-accent/30"
                   }`}
                 >
                   Dark
@@ -167,16 +167,16 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
               </div>
             </div>
             <div>
-              <label className="block font-medium mb-2">Density</label>
+              <label className="block font-medium text-cove-charcoal mb-3">Density</label>
               <div className="flex gap-3">
                 {["compact", "comfortable", "spacious"].map((d) => (
                   <button
                     key={d}
                     onClick={() => setDensity(d)}
-                    className={`px-4 py-2 border rounded-lg capitalize ${
+                    className={`px-5 py-2.5 border rounded-lg capitalize transition-colors ${
                       density === d
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-300"
+                        ? "border-cove-accent bg-cove-accent-light text-cove-accent"
+                        : "border-cove-border text-cove-muted hover:border-cove-accent/30"
                     }`}
                   >
                     {d}
@@ -185,18 +185,18 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="font-medium">Animations</span>
+              <span className="font-medium text-cove-charcoal">Animations</span>
               <button
                 onClick={() => setAnimationsOn((v) => !v)}
                 role="switch"
                 aria-checked={animationsOn}
                 aria-label="Toggle animations"
                 className={`w-12 h-6 rounded-full relative transition-colors ${
-                  animationsOn ? "bg-blue-500" : "bg-gray-300"
+                  animationsOn ? "bg-cove-accent" : "bg-cove-border"
                 }`}
               >
                 <span
-                  className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
+                  className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-sm ${
                     animationsOn ? "translate-x-6" : "translate-x-0.5"
                   }`}
                 />
@@ -208,24 +208,24 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
 
       {step === 3 && (
         <div data-testid="done-step">
-          <h2 className="text-2xl font-bold mb-4">Your cove is ready</h2>
-          <p className="text-gray-600 mb-8">
+          <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-4">Your cove is ready</h2>
+          <p className="text-cove-muted mb-10 leading-relaxed">
             Everything is set up. You can always adjust your settings later.
           </p>
           <button
             onClick={handleComplete}
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600"
+            className="px-8 py-3 bg-cove-accent text-white rounded-lg font-medium shadow-sm hover:bg-cove-accent-hover transition-colors focus:outline-none focus:ring-2 focus:ring-cove-accent/40"
           >
             Get started
           </button>
         </div>
       )}
 
-      <div className="flex justify-between mt-8">
+      <div className="flex justify-between mt-10">
         {step > 0 && step < 3 && (
           <button
             onClick={() => setStep((s) => s - 1)}
-            className="px-4 py-2 border border-gray-300 rounded-lg"
+            className="px-5 py-2.5 border border-cove-border rounded-lg text-cove-muted hover:text-cove-charcoal hover:border-cove-accent/30 transition-colors"
           >
             Back
           </button>
@@ -234,7 +234,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
         {step < 3 && (
           <button
             onClick={() => setStep((s) => s + 1)}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg ml-auto"
+            className="px-5 py-2.5 bg-cove-accent text-white rounded-lg ml-auto shadow-sm hover:bg-cove-accent-hover transition-colors focus:outline-none focus:ring-2 focus:ring-cove-accent/40"
           >
             Next
           </button>
