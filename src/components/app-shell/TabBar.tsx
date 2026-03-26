@@ -11,9 +11,17 @@ interface TabBarProps {
   tabs: Tab[];
   activeTab: string;
   onTabChange: (id: string) => void;
+  moduleStates?: Record<string, boolean>;
+  onToggleModule?: (tabId: string, enabled: boolean) => void;
 }
 
-export default function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
+export default function TabBar({
+  tabs,
+  activeTab,
+  onTabChange,
+  moduleStates,
+  onToggleModule,
+}: TabBarProps) {
   const tabListRef = useRef<HTMLDivElement>(null);
 
   function handleKeyDown(e: React.KeyboardEvent, index: number) {
@@ -27,9 +35,12 @@ export default function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
     }
     e.preventDefault();
     onTabChange(tabs[nextIndex].id);
-    const buttons = tabListRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+    const buttons =
+      tabListRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]');
     buttons?.[nextIndex]?.focus();
   }
+
+  const showToggles = moduleStates !== undefined && onToggleModule !== undefined;
 
   return (
     <div
@@ -39,6 +50,9 @@ export default function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
     >
       {tabs.map((tab, index) => {
         const isActive = tab.id === activeTab;
+        const isAlwaysOn = tab.id === "daily-view";
+        const isEnabled = !showToggles || isAlwaysOn || moduleStates[tab.id] !== false;
+
         return (
           <button
             key={tab.id}
@@ -49,16 +63,48 @@ export default function TabBar({ tabs, activeTab, onTabChange }: TabBarProps) {
             tabIndex={isActive ? 0 : -1}
             onClick={() => onTabChange(tab.id)}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            className={`relative px-5 py-2.5 text-sm rounded-t-2xl transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+            className={`relative flex items-center gap-1.5 px-5 py-2.5 text-sm rounded-t-2xl transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
               isActive
-                ? "bg-cove-card text-cove-accent font-medium shadow-[0_-2px_8px_rgba(123,111,212,0.08)] translate-y-0 scale-100"
-                : "bg-transparent text-cove-muted hover:text-cove-charcoal hover:bg-cove-card/50 translate-y-0.5 scale-[0.98]"
+                ? "bg-cove-card font-medium shadow-[0_-2px_8px_rgba(123,111,212,0.08)] translate-y-0 scale-100"
+                : "bg-transparent hover:bg-cove-card/50 translate-y-0.5 scale-[0.98]"
+            } ${
+              isEnabled
+                ? isActive
+                  ? "text-cove-accent"
+                  : "text-cove-muted hover:text-cove-charcoal"
+                : "text-cove-muted/40"
             }`}
             style={{
               transformOrigin: "bottom center",
             }}
           >
             {tab.label}
+            {showToggles && !isAlwaysOn && (
+              <span
+                role="switch"
+                aria-checked={isEnabled}
+                aria-label={`Toggle ${tab.label}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleModule(tab.id, !isEnabled);
+                }}
+                className={`relative inline-flex items-center flex-shrink-0 rounded-full transition-all duration-200 cursor-pointer ${
+                  isEnabled ? "bg-cove-accent" : "bg-gray-300"
+                }`}
+                style={{ width: 28, height: 16 }}
+              >
+                <span
+                  className="inline-block rounded-full bg-white shadow transition-all duration-200"
+                  style={{
+                    width: 12,
+                    height: 12,
+                    transform: isEnabled
+                      ? "translateX(14px)"
+                      : "translateX(2px)",
+                  }}
+                />
+              </span>
+            )}
             {isActive && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-cove-accent to-cove-blue rounded-full" />
             )}

@@ -15,6 +15,8 @@ interface AppShellProps {
   onTabChange: (id: string) => void;
   sidebarContent: ReactNode;
   children: ReactNode;
+  moduleStates?: Record<string, boolean>;
+  onToggleModule?: (tabId: string, enabled: boolean) => void;
 }
 
 export default function AppShell({
@@ -23,6 +25,8 @@ export default function AppShell({
   onTabChange,
   sidebarContent,
   children,
+  moduleStates,
+  onToggleModule,
 }: AppShellProps) {
   const [sidebarVisible, setSidebarVisible] = useState(true);
 
@@ -42,7 +46,13 @@ export default function AppShell({
       </header>
       <div className="flex flex-1 overflow-hidden">
         <div className="flex flex-col flex-1 bg-cove-offwhite">
-          <TabBar tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} />
+          <TabBar
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={onTabChange}
+            moduleStates={moduleStates}
+            onToggleModule={onToggleModule}
+          />
           <main
             id={`tabpanel-${activeTab}`}
             role="tabpanel"
