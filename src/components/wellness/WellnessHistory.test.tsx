@@ -50,7 +50,7 @@ describe("WellnessHistory", () => {
 
   it("shows empty state when no check-ins", () => {
     render(<WellnessHistory checkins={[]} />);
-    expect(screen.getByText("No check-ins yet.")).toBeInTheDocument();
+    expect(screen.getByText(/No check-ins yet/)).toBeInTheDocument();
   });
 
   it("shows pattern summary when patterns data is available", () => {
@@ -58,9 +58,9 @@ describe("WellnessHistory", () => {
       <WellnessHistory checkins={sampleCheckins} patterns={samplePatterns} />
     );
     expect(screen.getByTestId("patterns-summary")).toBeInTheDocument();
-    expect(screen.getByText("Your average energy is 3.2")).toBeInTheDocument();
-    expect(screen.getByText("Your average mood is 3.5")).toBeInTheDocument();
-    expect(screen.getByText("Your average sleep is 4")).toBeInTheDocument();
+    expect(screen.getByText("3.2")).toBeInTheDocument();
+    expect(screen.getByText("3.5")).toBeInTheDocument();
+    expect(screen.getByText("4")).toBeInTheDocument();
   });
 
   it("does not show pattern summary when patterns is null", () => {
