@@ -40,5 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .superpowers/
+.agents/
+.claude/
+skills-lock.json
 
 /src/generated/prisma

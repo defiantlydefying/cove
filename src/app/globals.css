@@ -1,28 +1,34 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F5F3FC;
-  --foreground: #2B2D42;
-  --cove-accent: #7B6FD4;
-  --cove-accent-hover: #6A5EC3;
-  --cove-accent-light: #EEEAFD;
-  --cove-blue: #6BAFDE;
-  --cove-blue-light: #E4F1FA;
-  --cove-sage: #9BA3D6;
-  --cove-sage-light: #ECEDF8;
-  --cove-sand: #E6E0F3;
-  --cove-sand-light: #F2EEFC;
-  --cove-offwhite: #F5F3FC;
-  --cove-charcoal: #2B2D42;
-  --cove-muted: #9494AC;
-  --cove-border: #DDD8EE;
-  --cove-border-light: #EAE6F5;
-  --cove-card: #FFFFFF;
-  --cove-sidebar: #5A4BAA;
-  --cove-sidebar-text: #FFFFFF;
-  --cove-selection: #7B6FD433;
-  --cove-gradient-start: #7B6FD4;
-  --cove-gradient-end: #6BAFDE;
+  --background: #F7F5F0;
+  --foreground: #3D3832;
+  --cove-accent: #6B8F71;
+  --cove-accent-hover: #5A7D60;
+  --cove-accent-light: #EAF0EB;
+  --cove-blue: #7EAAA0;
+  --cove-blue-light: #E6F0ED;
+  --cove-sage: #8FA89A;
+  --cove-sage-light: #ECF2EE;
+  --cove-sand: #E8E0D4;
+  --cove-sand-light: #F2EDE5;
+  --cove-offwhite: #F7F5F0;
+  --cove-charcoal: #3D3832;
+  --cove-muted: #9A928A;
+  --cove-border: #DDD6CC;
+  --cove-border-light: #EBE6DE;
+  --cove-card: #FFFDF9;
+  --cove-sidebar: #4A5D4E;
+  --cove-sidebar-text: #F7F5F0;
+  --cove-selection: #6B8F7133;
+  --cove-gradient-start: #4A5D4E;
+  --cove-gradient-end: #6B8F71;
+  --cove-terracotta: #C4795B;
+  --cove-terracotta-light: #F5E8E1;
+  --cove-amber: #C4A055;
+  --cove-amber-light: #F5EFE0;
+  --cove-heather: #A08BA0;
+  --cove-heather-light: #F0EBF0;
 }
 
 @theme inline {
@@ -47,39 +53,51 @@
   --color-cove-sidebar-text: var(--cove-sidebar-text);
   --color-cove-gradient-start: var(--cove-gradient-start);
   --color-cove-gradient-end: var(--cove-gradient-end);
+  --color-cove-terracotta: var(--cove-terracotta);
+  --color-cove-terracotta-light: var(--cove-terracotta-light);
+  --color-cove-amber: var(--cove-amber);
+  --color-cove-amber-light: var(--cove-amber-light);
+  --color-cove-heather: var(--cove-heather);
+  --color-cove-heather-light: var(--cove-heather-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 [data-theme="dark"] {
-  --background: #151521;
-  --foreground: #E4E2F0;
-  --cove-accent: #9B8FEE;
-  --cove-accent-hover: #ADA3F5;
-  --cove-accent-light: #262340;
-  --cove-blue: #7BBFE8;
-  --cove-blue-light: #1E2A38;
-  --cove-sage: #9BA3D6;
-  --cove-sage-light: #22223A;
-  --cove-sand: #2A2740;
-  --cove-sand-light: #201E35;
-  --cove-offwhite: #151521;
-  --cove-charcoal: #E4E2F0;
-  --cove-muted: #8E8EA0;
-  --cove-border: #35335A;
-  --cove-border-light: #2A2848;
-  --cove-card: #1E1C30;
-  --cove-sidebar: #2A2550;
-  --cove-sidebar-text: #E4E2F0;
-  --cove-selection: #9B8FEE33;
-  --cove-gradient-start: #7B6FD4;
-  --cove-gradient-end: #6BAFDE;
+  --background: #1C1B18;
+  --foreground: #E5E0D8;
+  --cove-accent: #8DB893;
+  --cove-accent-hover: #9EC8A4;
+  --cove-accent-light: #2A3328;
+  --cove-blue: #8FBFB5;
+  --cove-blue-light: #1E2D2A;
+  --cove-sage: #8FA89A;
+  --cove-sage-light: #252E28;
+  --cove-sand: #33302A;
+  --cove-sand-light: #282520;
+  --cove-offwhite: #1C1B18;
+  --cove-charcoal: #E5E0D8;
+  --cove-muted: #8E887F;
+  --cove-border: #3D3830;
+  --cove-border-light: #302C26;
+  --cove-card: #242220;
+  --cove-sidebar: #2A3328;
+  --cove-sidebar-text: #E5E0D8;
+  --cove-selection: #8DB89333;
+  --cove-gradient-start: #2A3328;
+  --cove-gradient-end: #6B8F71;
+  --cove-terracotta: #D4896B;
+  --cove-terracotta-light: #3A2820;
+  --cove-amber: #D4B065;
+  --cove-amber-light: #3A3220;
+  --cove-heather: #B89DB8;
+  --cove-heather-light: #302830;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
 ::selection {
@@ -111,10 +129,30 @@ body {
   animation: softBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-* {
-  border-radius: inherit;
-}
-
 button, input, select, textarea {
   border-radius: 0.75rem;
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-toast-in {
+  animation: toastIn 0.25s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
