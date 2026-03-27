@@ -17,6 +17,11 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
   const [steps, setSteps] = useState<string[]>(
     initialData?.steps ?? [""]
   );
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [modifyPrompt, setModifyPrompt] = useState("");
+  const [modifyLoading, setModifyLoading] = useState(false);
+  const [modifyError, setModifyError] = useState("");
 
   function handleAddStep() {
     setSteps((prev) => [...prev, ""]);
@@ -39,53 +44,224 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
     if (!initialData) {
       setName("");
       setSteps([""]);
+      setAiSuggestions([]);
+    }
+  }
+
+  async function handleAskAiSuggestions() {
+    if (!name.trim()) return;
+    setLoadingSuggestions(true);
+    try {
+      const res = await fetch("/api/routines/suggest-steps", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          steps: steps.filter((s) => s.trim()),
+        }),
+      });
+      const data = await res.json();
+      setAiSuggestions(data.suggestions ?? []);
+    } catch {
+      // silently fail
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  }
+
+  function handleAddSuggestion(suggestion: string) {
+    setSteps((prev) => {
+      // If the last step is empty, replace it
+      if (prev.length > 0 && prev[prev.length - 1].trim() === "") {
+        return [...prev.slice(0, -1), suggestion];
+      }
+      return [...prev, suggestion];
+    });
+    setAiSuggestions((prev) => prev.filter((s) => s !== suggestion));
+  }
+
+  async function handleModify() {
+    if (!modifyPrompt.trim() || steps.filter(s => s.trim()).length === 0) return;
+    setModifyLoading(true);
+    setModifyError("");
+    try {
+      const res = await fetch("/api/routines/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: `Modify this existing routine called "${name}".\n\nCurrent steps:\n${steps.filter(s => s.trim()).map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\nModification requested: ${modifyPrompt.trim()}`,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setModifyError(data.error || "Failed to modify. Try again.");
+        return;
+      }
+      if (data.name && data.steps) {
+        setName(data.name);
+        setSteps(data.steps);
+        setModifyPrompt("");
+      }
+    } catch {
+      setModifyError("Could not reach the AI. Try again.");
+    } finally {
+      setModifyLoading(false);
     }
   }
 
   const isEditing = !!initialData;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-2 border rounded p-3">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-cove-card rounded-xl border border-cove-border-light p-6 flex flex-col gap-4 shadow-sm"
+    >
+      {/* Name input */}
       <input
         type="text"
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Routine name"
-        className="w-full px-3 py-2 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-cove-border"
+        placeholder="Name your routine..."
+        className="w-full px-4 py-3 text-base font-medium bg-cove-offwhite border border-cove-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300 text-cove-charcoal placeholder:text-cove-muted"
       />
-      <div className="flex flex-col gap-1">
+
+      {/* Steps list */}
+      <div className="flex flex-col gap-2">
         {steps.map((step, index) => (
-          <div key={index} className="flex items-center gap-1">
+          <div
+            key={index}
+            className="flex items-center gap-2 animate-fade-in-up"
+          >
+            {/* Drag handle (visual only) */}
+            <div className="flex-shrink-0 text-cove-muted cursor-grab" aria-label="Drag handle">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </div>
+
+            {/* Step input */}
             <input
               type="text"
               value={step}
               onChange={(e) => handleStepChange(index, e.target.value)}
               placeholder={`Step ${index + 1}`}
-              className="flex-1 px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-cove-border"
+              className="flex-1 px-4 py-2.5 text-sm bg-cove-offwhite border border-cove-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300 text-cove-charcoal placeholder:text-cove-muted"
             />
+
+            {/* Remove button */}
             {steps.length > 1 && (
               <button
                 type="button"
                 onClick={() => handleRemoveStep(index)}
                 aria-label={`Remove step ${index + 1}`}
-                className="text-cove-muted hover:text-red-500 text-xs px-1"
+                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-cove-muted hover:text-red-500 hover:bg-red-50 transition-colors"
               >
-                x
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             )}
           </div>
         ))}
       </div>
+
+      {/* Add step button */}
       <button
         type="button"
         onClick={handleAddStep}
-        className="text-xs text-cove-muted hover:text-cove-charcoal self-start"
+        className="w-full py-2.5 text-sm text-cove-muted hover:text-cove-charcoal border border-dashed border-cove-border-light rounded-xl hover:border-cove-border transition-colors"
       >
-        + Add step
+        + Add a step
       </button>
+
+      {/* AI suggestions button */}
+      <button
+        type="button"
+        onClick={handleAskAiSuggestions}
+        disabled={loadingSuggestions || !name.trim()}
+        className="w-full py-2.5 text-sm font-medium text-purple-600 bg-cove-accent-light border border-purple-200 rounded-xl hover:bg-purple-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {loadingSuggestions ? "Getting suggestions..." : "Ask AI for suggestions"}
+      </button>
+
+      {/* AI suggestions display */}
+      {aiSuggestions.length > 0 && (
+        <div className="flex flex-col gap-2 p-4 bg-cove-accent-light rounded-xl border border-purple-200">
+          <p className="text-xs font-medium text-purple-600">
+            AI Suggestions -- click to add:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {aiSuggestions.map((suggestion, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => handleAddSuggestion(suggestion)}
+                className="px-3 py-1.5 text-sm bg-white text-cove-charcoal rounded-lg border border-purple-200 hover:bg-purple-50 hover:border-purple-300 transition-colors"
+              >
+                + {suggestion}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* AI Modify section -- only show when there are steps */}
+      {steps.filter(s => s.trim()).length > 0 && (
+        <div className="flex flex-col gap-2 p-4 bg-cove-offwhite rounded-xl border border-cove-border-light">
+          <p className="text-xs font-medium text-cove-muted">
+            Ask AI to modify this routine
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={modifyPrompt}
+              onChange={(e) => setModifyPrompt(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleModify(); } }}
+              placeholder="e.g. Make it shorter, add a meditation step, shift everything 30 min later..."
+              className="flex-1 px-3 py-2 text-sm bg-cove-card border border-cove-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300 text-cove-charcoal placeholder:text-cove-muted"
+            />
+            <button
+              type="button"
+              onClick={handleModify}
+              disabled={modifyLoading || !modifyPrompt.trim()}
+              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            >
+              {modifyLoading ? "Modifying..." : "Modify"}
+            </button>
+          </div>
+          {modifyError && (
+            <p className="text-xs text-red-400">{modifyError}</p>
+          )}
+        </div>
+      )}
+
+      {/* Submit button */}
       <button
         type="submit"
-        className="px-3 py-1.5 text-sm bg-cove-charcoal text-white rounded hover:bg-cove-charcoal"
+        className="w-full py-3 text-sm font-semibold text-white bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl hover:from-purple-600 hover:to-blue-600 transition-all shadow-sm"
       >
         {isEditing ? "Save changes" : "Create routine"}
       </button>

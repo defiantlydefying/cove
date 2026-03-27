@@ -6,13 +6,13 @@ import RoutineForm from "./RoutineForm";
 describe("RoutineForm", () => {
   it("renders name input", () => {
     render(<RoutineForm onSubmit={vi.fn()} />);
-    expect(screen.getByPlaceholderText("Routine name")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Name your routine...")).toBeInTheDocument();
   });
 
   it("can add step inputs", async () => {
     render(<RoutineForm onSubmit={vi.fn()} />);
     expect(screen.getByPlaceholderText("Step 1")).toBeInTheDocument();
-    await userEvent.click(screen.getByText("+ Add step"));
+    await userEvent.click(screen.getByText("+ Add a step"));
     expect(screen.getByPlaceholderText("Step 2")).toBeInTheDocument();
   });
 
@@ -20,9 +20,9 @@ describe("RoutineForm", () => {
     const onSubmit = vi.fn();
     render(<RoutineForm onSubmit={onSubmit} />);
 
-    await userEvent.type(screen.getByPlaceholderText("Routine name"), "Evening wind-down");
+    await userEvent.type(screen.getByPlaceholderText("Name your routine..."), "Evening wind-down");
     await userEvent.type(screen.getByPlaceholderText("Step 1"), "Read a book");
-    await userEvent.click(screen.getByText("+ Add step"));
+    await userEvent.click(screen.getByText("+ Add a step"));
     await userEvent.type(screen.getByPlaceholderText("Step 2"), "Brush teeth");
     await userEvent.click(screen.getByText("Create routine"));
 
