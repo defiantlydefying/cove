@@ -47,7 +47,7 @@ export default function RoutineCard({
       {/* Progress bar */}
       <div className="w-full h-2 bg-cove-offwhite rounded-full overflow-hidden">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-300"
+          className="h-full rounded-full bg-cove-accent transition-all duration-300"
           style={{ width: `${progressPercent}%` }}
           data-testid="progress-bar"
         />
@@ -153,8 +153,8 @@ export default function RoutineCard({
                   <div
                     className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all ${
                       checked
-                        ? "bg-gradient-to-r from-purple-500 to-blue-500 border-transparent"
-                        : "border-cove-border hover:border-purple-400"
+                        ? "bg-cove-accent border-transparent"
+                        : "border-cove-border hover:border-cove-accent"
                     }`}
                   >
                     {checked && (

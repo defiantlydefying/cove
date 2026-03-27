@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const steps: { title: string }[] = body.steps ?? [];
+  const rawSteps: (string | { title: string })[] = body.steps ?? [];
 
   const routine = await prisma.$transaction(async (tx) => {
     const created = await tx.routine.create({
@@ -59,11 +59,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (steps.length > 0) {
+    if (rawSteps.length > 0) {
       await tx.routineStep.createMany({
-        data: steps.map((step, index) => ({
+        data: rawSteps.map((step, index) => ({
           routineId: created.id,
-          title: step.title,
+          title: typeof step === "string" ? step : step.title,
           sortOrder: index,
         })),
       });

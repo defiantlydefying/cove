@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/components/providers/ToastProvider";
 
 export interface RoutineFormData {
   name: string;
@@ -22,6 +23,7 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
   const [modifyPrompt, setModifyPrompt] = useState("");
   const [modifyLoading, setModifyLoading] = useState(false);
   const [modifyError, setModifyError] = useState("");
+  const { toast } = useToast();
 
   function handleAddStep() {
     setSteps((prev) => [...prev, ""]);
@@ -63,7 +65,7 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
       const data = await res.json();
       setAiSuggestions(data.suggestions ?? []);
     } catch {
-      // silently fail
+      toast("Couldn\u2019t get suggestions. Try again.", "error");
     } finally {
       setLoadingSuggestions(false);
     }
@@ -122,7 +124,9 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Name your routine..."
-        className="w-full px-4 py-3 text-base font-medium bg-cove-offwhite border border-cove-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300 text-cove-charcoal placeholder:text-cove-muted"
+        maxLength={100}
+        required
+        className="w-full px-4 py-3 text-base font-medium bg-cove-offwhite border border-cove-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-cove-accent/40 text-cove-charcoal placeholder:text-cove-muted"
       />
 
       {/* Steps list */}
@@ -157,7 +161,7 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
               value={step}
               onChange={(e) => handleStepChange(index, e.target.value)}
               placeholder={`Step ${index + 1}`}
-              className="flex-1 px-4 py-2.5 text-sm bg-cove-offwhite border border-cove-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300 text-cove-charcoal placeholder:text-cove-muted"
+              className="flex-1 px-4 py-2.5 text-sm bg-cove-offwhite border border-cove-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-cove-accent/40 text-cove-charcoal placeholder:text-cove-muted"
             />
 
             {/* Remove button */}
@@ -202,15 +206,15 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
         type="button"
         onClick={handleAskAiSuggestions}
         disabled={loadingSuggestions || !name.trim()}
-        className="w-full py-2.5 text-sm font-medium text-purple-600 bg-cove-accent-light border border-purple-200 rounded-xl hover:bg-purple-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-2.5 text-sm font-medium text-cove-accent bg-cove-accent-light border border-cove-accent/20 rounded-xl hover:bg-cove-accent-light/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loadingSuggestions ? "Getting suggestions..." : "Ask AI for suggestions"}
       </button>
 
       {/* AI suggestions display */}
       {aiSuggestions.length > 0 && (
-        <div className="flex flex-col gap-2 p-4 bg-cove-accent-light rounded-xl border border-purple-200">
-          <p className="text-xs font-medium text-purple-600">
+        <div className="flex flex-col gap-2 p-4 bg-cove-accent-light rounded-xl border border-cove-accent/20">
+          <p className="text-xs font-medium text-cove-accent">
             AI Suggestions -- click to add:
           </p>
           <div className="flex flex-wrap gap-2">
@@ -219,7 +223,7 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
                 key={i}
                 type="button"
                 onClick={() => handleAddSuggestion(suggestion)}
-                className="px-3 py-1.5 text-sm bg-white text-cove-charcoal rounded-lg border border-purple-200 hover:bg-purple-50 hover:border-purple-300 transition-colors"
+                className="px-3 py-1.5 text-sm bg-cove-card text-cove-charcoal rounded-lg border border-cove-accent/20 hover:bg-cove-accent-light hover:border-cove-accent/30 transition-colors"
               >
                 + {suggestion}
               </button>
@@ -241,13 +245,13 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
               onChange={(e) => setModifyPrompt(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleModify(); } }}
               placeholder="e.g. Make it shorter, add a meditation step, shift everything 30 min later..."
-              className="flex-1 px-3 py-2 text-sm bg-cove-card border border-cove-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-300 text-cove-charcoal placeholder:text-cove-muted"
+              className="flex-1 px-3 py-2 text-sm bg-cove-card border border-cove-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-cove-accent/40 text-cove-charcoal placeholder:text-cove-muted"
             />
             <button
               type="button"
               onClick={handleModify}
               disabled={modifyLoading || !modifyPrompt.trim()}
-              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg hover:from-purple-600 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              className="px-4 py-2 text-sm font-medium text-white bg-cove-accent rounded-lg hover:bg-cove-accent-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               {modifyLoading ? "Modifying..." : "Modify"}
             </button>
@@ -261,7 +265,7 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
       {/* Submit button */}
       <button
         type="submit"
-        className="w-full py-3 text-sm font-semibold text-white bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl hover:from-purple-600 hover:to-blue-600 transition-all shadow-sm"
+        className="w-full py-3 text-sm font-semibold text-white bg-cove-accent rounded-xl hover:bg-cove-accent-hover transition-all shadow-sm"
       >
         {isEditing ? "Save changes" : "Create routine"}
       </button>

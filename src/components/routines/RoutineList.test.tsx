@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@/test-utils";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import RoutineList from "./RoutineList";
@@ -30,12 +30,13 @@ describe("RoutineList", () => {
     vi.spyOn(global, "fetch").mockImplementation(
       () => new Promise(() => {})
     );
-    render(<RoutineList />);
-    expect(screen.getByText("Loading routines...")).toBeInTheDocument();
+    const { container } = render(<RoutineList />);
+    expect(container.querySelector(".animate-pulse")).toBeInTheDocument();
   });
 
   it("renders routines after fetch", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce({
+      ok: true,
       json: async () => mockRoutines,
     } as Response);
 
@@ -48,6 +49,7 @@ describe("RoutineList", () => {
 
   it("shows new routine form when button clicked", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce({
+      ok: true,
       json: async () => [],
     } as Response);
 
@@ -62,6 +64,7 @@ describe("RoutineList", () => {
 
   it("renders template cards", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce({
+      ok: true,
       json: async () => [],
     } as Response);
 
@@ -78,6 +81,7 @@ describe("RoutineList", () => {
 
   it("shows AI prompt input", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce({
+      ok: true,
       json: async () => [],
     } as Response);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "@/components/providers/ToastProvider";
 import RoutineCard, { Routine } from "./RoutineCard";
 import RoutineForm, { RoutineFormData } from "./RoutineForm";
 
@@ -9,28 +10,36 @@ const TEMPLATES = [
     id: "morning",
     name: "Morning Routine",
     description: "Start your day with energy and focus",
-    gradient: "from-amber-500 to-orange-400",
+    bg: "bg-cove-amber-light border-cove-amber/30",
+    textColor: "text-cove-charcoal",
+    subtextColor: "text-cove-muted",
     steps: ["Stretch for 5 minutes", "Drink a glass of water", "Review your goals", "Eat a healthy breakfast"],
   },
   {
     id: "wind-down",
     name: "Wind-Down",
     description: "Ease into a restful evening",
-    gradient: "from-indigo-500 to-purple-400",
+    bg: "bg-cove-sage-light border-cove-sage/30",
+    textColor: "text-cove-charcoal",
+    subtextColor: "text-cove-muted",
     steps: ["Put away screens", "Light stretching or yoga", "Read for 15 minutes", "Prepare for tomorrow"],
   },
   {
     id: "work-focus",
     name: "Work Focus",
     description: "Get into deep work mode",
-    gradient: "from-blue-500 to-cyan-400",
+    bg: "bg-cove-blue-light border-cove-blue/30",
+    textColor: "text-cove-charcoal",
+    subtextColor: "text-cove-muted",
     steps: ["Clear your desk", "Set today's top 3 priorities", "Close unnecessary tabs", "Start a focus timer"],
   },
   {
     id: "self-care",
     name: "Self-Care",
     description: "Take time for yourself",
-    gradient: "from-pink-500 to-rose-400",
+    bg: "bg-cove-terracotta-light border-cove-terracotta/30",
+    textColor: "text-cove-charcoal",
+    subtextColor: "text-cove-muted",
     steps: ["Skincare routine", "Journal your thoughts", "Move your body", "Do something you enjoy"],
   },
 ];
@@ -38,21 +47,33 @@ const TEMPLATES = [
 export default function RoutineList() {
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [formInitialData, setFormInitialData] = useState<RoutineFormData | undefined>(undefined);
   const [completedSteps, setCompletedSteps] = useState<Record<string, string[]>>({});
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  async function fetchRoutines() {
+    setError(false);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/routines");
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setRoutines(data);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    fetch("/api/routines")
-      .then((res) => res.json())
-      .then((data) => {
-        setRoutines(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    fetchRoutines();
   }, []);
 
   async function handleCreate(data: RoutineFormData) {
@@ -62,22 +83,35 @@ export default function RoutineList() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+      if (!res.ok) throw new Error();
       const created = await res.json();
       setRoutines((prev) => [created, ...prev]);
       setShowForm(false);
       setFormInitialData(undefined);
+      toast("Routine created.", "success");
     } catch {
-      // silently fail
+      toast("Couldn\u2019t create routine. Try again.", "error");
     }
   }
 
-  async function handleDelete(routineId: string) {
+  function handleDeleteRequest(routineId: string) {
+    setConfirmDeleteId(routineId);
+  }
+
+  async function handleDeleteConfirm() {
+    if (!confirmDeleteId) return;
+    const id = confirmDeleteId;
+    setConfirmDeleteId(null);
+
     const prev = routines;
-    setRoutines((curr) => curr.filter((r) => r.id !== routineId));
+    setRoutines((curr) => curr.filter((r) => r.id !== id));
     try {
-      await fetch(`/api/routines/${routineId}`, { method: "DELETE" });
+      const res = await fetch(`/api/routines/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      toast("Routine deleted.", "success");
     } catch {
       setRoutines(prev);
+      toast("Couldn\u2019t delete routine. Try again.", "error");
     }
   }
 
@@ -95,11 +129,12 @@ export default function RoutineList() {
     });
 
     try {
-      await fetch(`/api/routines/${routineId}/log`, {
+      const res = await fetch(`/api/routines/${routineId}/log`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stepId, checked }),
       });
+      if (!res.ok) throw new Error();
     } catch {
       setCompletedSteps((prev) => {
         const current = prev[routineId] ?? [];
@@ -108,11 +143,11 @@ export default function RoutineList() {
           : [...current, stepId];
         return { ...prev, [routineId]: reverted };
       });
+      toast("Couldn\u2019t save step progress. Try again.", "error");
     }
   }
 
   function handleEdit(routineId: string) {
-    // Placeholder for edit functionality
     console.log("Edit routine", routineId);
   }
 
@@ -154,7 +189,35 @@ export default function RoutineList() {
   }
 
   if (loading) {
-    return <p className="text-sm text-cove-muted">Loading routines...</p>;
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold tracking-tight text-cove-charcoal">Routines</h2>
+        </div>
+        <div className="flex flex-col gap-3">
+          {[1, 2].map((i) => (
+            <div key={i} className="rounded-xl bg-cove-card border border-cove-border-light p-5 h-24 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col gap-6">
+        <h2 className="font-semibold text-lg text-cove-charcoal">Routines</h2>
+        <div className="rounded-xl bg-cove-card border border-cove-border-light p-8 text-center">
+          <p className="text-cove-muted">Couldn&apos;t load routines.</p>
+          <button
+            onClick={fetchRoutines}
+            className="mt-3 px-5 py-2.5 text-sm font-medium rounded-xl bg-cove-accent text-white hover:bg-cove-accent-hover transition-colors"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -162,7 +225,7 @@ export default function RoutineList() {
       {/* Creation section */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-lg text-cove-charcoal">Routines</h2>
+          <h2 className="text-lg font-semibold tracking-tight text-cove-charcoal">Routines</h2>
           <button
             onClick={() => {
               if (showForm) {
@@ -191,13 +254,13 @@ export default function RoutineList() {
                   <button
                     key={template.id}
                     onClick={() => handleTemplateClick(template)}
-                    className={`p-3 rounded-xl bg-gradient-to-br ${template.gradient} text-left hover:shadow-md hover:scale-[1.02] transition-all`}
+                    className={`p-3 rounded-xl border ${template.bg} text-left hover:shadow-md hover:scale-[1.02] transition-all`}
                     data-testid={`template-${template.id}`}
                   >
-                    <p className="text-sm font-semibold text-white">
+                    <p className={`text-sm font-semibold ${template.textColor}`}>
                       {template.name}
                     </p>
-                    <p className="text-xs text-white/80 mt-0.5">
+                    <p className={`text-xs ${template.subtextColor} mt-0.5`}>
                       {template.description}
                     </p>
                   </button>
@@ -216,16 +279,17 @@ export default function RoutineList() {
                   onChange={(e) => setAiPrompt(e.target.value)}
                   placeholder="e.g. Build me a morning routine for ADHD"
                   rows={3}
-                  className="w-full px-4 py-3 text-sm bg-cove-offwhite border border-cove-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-300 text-cove-charcoal placeholder:text-cove-muted resize-none"
+                  maxLength={500}
+                  className="w-full px-4 py-3 text-sm bg-cove-offwhite border border-cove-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-cove-accent/40 text-cove-charcoal placeholder:text-cove-muted resize-none"
                   data-testid="ai-prompt-input"
                 />
                 {aiError && (
-                  <p className="text-sm text-red-400">{aiError}</p>
+                  <p className="text-sm text-red-500" role="alert">{aiError}</p>
                 )}
                 <button
                   onClick={handleAiGenerate}
                   disabled={aiLoading || !aiPrompt.trim()}
-                  className="w-full py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl hover:from-purple-600 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-2.5 text-sm font-semibold text-white bg-cove-accent rounded-xl hover:bg-cove-accent-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   data-testid="ai-generate-btn"
                 >
                   {aiLoading ? "Generating..." : "Generate"}
@@ -254,16 +318,38 @@ export default function RoutineList() {
             routine={routine}
             completedSteps={completedSteps[routine.id] ?? []}
             onStepToggle={handleStepToggle}
-            onDelete={handleDelete}
+            onDelete={handleDeleteRequest}
             onEdit={handleEdit}
           />
         ))}
       </div>
 
       {routines.length === 0 && !showForm && (
-        <p className="text-sm text-cove-muted text-center py-6">
-          No routines yet. Pick a template or create your own above.
-        </p>
+        <div className="text-center py-8 px-6 rounded-xl bg-cove-card border border-cove-border-light">
+          <p className="text-base font-medium text-cove-charcoal mb-2">Routines bring structure to your day</p>
+          <p className="text-sm text-cove-muted leading-relaxed max-w-md mx-auto">
+            A routine is a series of small steps you repeat. Pick a template above to get started, or create your own from scratch. You can always adjust the steps later.
+          </p>
+        </div>
+      )}
+
+      {/* Delete confirmation */}
+      {confirmDeleteId && (
+        <div className="flex items-center gap-2 p-4 rounded-xl bg-red-50 border border-red-200">
+          <p className="text-sm text-cove-charcoal flex-1">Delete this routine? This can&apos;t be undone.</p>
+          <button
+            onClick={handleDeleteConfirm}
+            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+          >
+            Delete
+          </button>
+          <button
+            onClick={() => setConfirmDeleteId(null)}
+            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-cove-border text-cove-charcoal hover:bg-cove-border/80 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
       )}
     </div>
   );
