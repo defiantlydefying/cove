@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@/test-utils";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import GamificationPanel from "./GamificationPanel";
 
@@ -49,12 +49,13 @@ describe("GamificationPanel", () => {
 
   it("shows loading state", () => {
     (fetch as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
-    render(<GamificationPanel />);
-    expect(screen.getByText("Loading...")).toBeInTheDocument();
+    const { container } = render(<GamificationPanel />);
+    expect(container.querySelector(".animate-pulse")).toBeInTheDocument();
   });
 
   it("renders total XP and streaks after fetch", async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
       json: () => Promise.resolve(mockData),
     });
 
@@ -70,6 +71,7 @@ describe("GamificationPanel", () => {
 
   it("renders achievements", async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
       json: () => Promise.resolve(mockData),
     });
 

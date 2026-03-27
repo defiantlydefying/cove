@@ -47,7 +47,7 @@ export default function StreakCard({ streak }: { streak: Streak }) {
           </span>
         )}
       </div>
-      <p className="mt-1 text-3xl font-bold text-cove-charcoal">
+      <p className="mt-1 text-3xl font-bold text-cove-charcoal" aria-label={`${streak.currentStreak} day streak`}>
         {streak.currentStreak}
         <span className="ml-1 text-sm font-normal text-cove-muted">
           day{streak.currentStreak !== 1 ? "s" : ""}
@@ -55,7 +55,7 @@ export default function StreakCard({ streak }: { streak: Streak }) {
       </p>
       <div className="mt-2 flex items-center justify-between text-sm text-cove-muted">
         <span>Longest: {streak.longestStreak}</span>
-        <span>{streak.totalXp} XP</span>
+        <span className="text-cove-amber font-medium">{streak.totalXp} XP</span>
       </div>
     </div>
   );
