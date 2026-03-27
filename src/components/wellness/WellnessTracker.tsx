@@ -56,9 +56,13 @@ export default function WellnessTracker() {
   }
 
   return (
-    <div className="space-y-8 max-w-2xl">
-      <CheckinForm existingCheckin={todayCheckin} onSubmit={handleSubmit} />
-      <WellnessHistory checkins={checkins} patterns={patterns} />
+    <div className="flex gap-6">
+      <div className="w-[380px] shrink-0">
+        <CheckinForm existingCheckin={todayCheckin} onSubmit={handleSubmit} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <WellnessHistory checkins={checkins} patterns={patterns} />
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useState } from "react";
+import { useSession } from "next-auth/react";
 import Sidebar from "./Sidebar";
 import TabBar from "./TabBar";
 
@@ -29,11 +30,19 @@ export default function AppShell({
   onToggleModule,
 }: AppShellProps) {
   const [sidebarVisible, setSidebarVisible] = useState(true);
+  const { data: session } = useSession();
+  const userName = session?.user?.name;
 
   return (
     <div className="flex flex-col h-full">
       <header className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-cove-gradient-start to-cove-gradient-end text-white shadow-sm">
-        <span className="text-lg font-semibold tracking-tight">Cove</span>
+        <div className="flex items-center gap-3">
+          <span className="text-lg font-semibold tracking-tight">Cove</span>
+          <span className="text-white/30">|</span>
+          <span className="text-sm text-white/70">
+            {userName ? `Welcome, ${userName}` : "Your cove."}
+          </span>
+        </div>
         {!sidebarVisible && (
           <button
             onClick={() => setSidebarVisible(true)}

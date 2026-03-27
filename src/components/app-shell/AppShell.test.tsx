@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi } from "vitest";
+import { SessionProvider } from "next-auth/react";
 import AppShell from "./AppShell";
 
 const tabs = [
@@ -10,14 +11,16 @@ const tabs = [
 
 function renderShell() {
   return render(
-    <AppShell
-      tabs={tabs}
-      activeTab="plan"
-      onTabChange={vi.fn()}
-      sidebarContent={<p>Sidebar tasks</p>}
-    >
-      <p>Main content</p>
-    </AppShell>
+    <SessionProvider session={null}>
+      <AppShell
+        tabs={tabs}
+        activeTab="plan"
+        onTabChange={vi.fn()}
+        sidebarContent={<p>Sidebar tasks</p>}
+      >
+        <p>Main content</p>
+      </AppShell>
+    </SessionProvider>
   );
 }
 

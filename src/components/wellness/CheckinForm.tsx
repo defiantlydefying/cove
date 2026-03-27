@@ -41,7 +41,7 @@ function SadFace() {
       <circle cx="12" cy="12" r="10" />
       <circle cx="9" cy="10" r="0.5" fill="currentColor" />
       <circle cx="15" cy="10" r="0.5" fill="currentColor" />
-      <path d="M8 16c1.5-2 6.5-2 8 0" transform="rotate(180 12 16)" />
+      <path d="M9 16c1.5 -2 4.5 -2 6 0" />
     </svg>
   );
 }
