@@ -50,7 +50,7 @@ describe("WellnessHistory", () => {
 
   it("shows empty state when no check-ins", () => {
     render(<WellnessHistory checkins={[]} />);
-    expect(screen.getByText(/No check-ins yet/)).toBeInTheDocument();
+    expect(screen.getByText(/Your wellness story starts here/)).toBeInTheDocument();
   });
 
   it("shows pattern summary when patterns data is available", () => {

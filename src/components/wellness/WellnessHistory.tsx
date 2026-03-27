@@ -9,10 +9,10 @@ const LABELS: Record<number, string> = {
 };
 
 const LEVEL_COLORS: Record<number, { bg: string; text: string }> = {
-  1: { bg: "bg-red-100", text: "text-red-600" },
-  2: { bg: "bg-orange-100", text: "text-orange-600" },
-  3: { bg: "bg-yellow-100", text: "text-yellow-600" },
-  4: { bg: "bg-emerald-100", text: "text-emerald-600" },
+  1: { bg: "bg-cove-heather-light", text: "text-cove-heather" },
+  2: { bg: "bg-cove-amber-light", text: "text-cove-amber" },
+  3: { bg: "bg-cove-sand-light", text: "text-cove-muted" },
+  4: { bg: "bg-cove-blue-light", text: "text-cove-blue" },
   5: { bg: "bg-cove-accent-light", text: "text-cove-accent" },
 };
 
@@ -76,8 +76,8 @@ function MiniBar({ value }: { value: number | null | undefined }) {
               ? level >= 4
                 ? "bg-cove-accent"
                 : level >= 3
-                ? "bg-yellow-400"
-                : "bg-orange-400"
+                ? "bg-cove-blue"
+                : "bg-cove-amber"
               : "bg-cove-border-light"
           }`}
         />
@@ -96,7 +96,7 @@ function AvgStat({ label, value }: { label: string; value: number | null }) {
       <p className="text-lg font-semibold text-cove-charcoal">{rounded}</p>
       <div className="h-1.5 w-full bg-cove-border-light rounded-full mt-1 overflow-hidden">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-cove-accent to-cove-blue transition-all duration-500"
+          className="h-full rounded-full bg-cove-accent transition-all duration-500"
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -110,7 +110,7 @@ export default function WellnessHistory({
 }: WellnessHistoryProps) {
   return (
     <div className="flex flex-col h-full">
-      <h2 className="text-lg font-semibold text-cove-charcoal mb-4">Recent Check-ins</h2>
+      <h2 className="text-lg font-semibold tracking-tight text-cove-charcoal mb-4">Recent Check-ins</h2>
 
       {patterns && patterns.overall.totalCheckins > 0 && (
         <div
@@ -127,10 +127,15 @@ export default function WellnessHistory({
       )}
 
       {checkins.length === 0 ? (
-        <p className="text-sm text-cove-muted">No check-ins yet. Complete your first check-in to start tracking.</p>
+        <div className="rounded-2xl bg-cove-card border border-cove-border-light p-8 text-center">
+          <p className="text-base font-medium text-cove-charcoal mb-2">Your wellness story starts here</p>
+          <p className="text-sm text-cove-muted leading-relaxed max-w-sm mx-auto">
+            After you complete your first check-in, this space will show your mood, energy, and sleep patterns over time. Small insights that help you understand yourself better.
+          </p>
+        </div>
       ) : (
-        <div className="bg-cove-card border border-cove-border-light rounded-2xl shadow-sm overflow-hidden">
-          <table className="w-full text-sm" aria-label="Check-in history">
+        <div className="bg-cove-card border border-cove-border-light rounded-2xl shadow-sm overflow-x-auto">
+          <table className="w-full text-sm min-w-[480px]" aria-label="Check-in history">
             <thead>
               <tr className="bg-cove-offwhite">
                 <th className="py-3 px-4 text-left text-xs font-medium text-cove-muted uppercase tracking-wider">Date</th>

@@ -84,15 +84,22 @@ export default function CheckinForm({
   const [notes, setNotes] = useState<string>(
     existingCheckin?.notes ?? ""
   );
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      mood,
-      energy,
-      sleep,
-      notes: notes.trim() || null,
-    });
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await onSubmit({
+        mood,
+        energy,
+        sleep,
+        notes: notes.trim() || null,
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const renderRow = (
@@ -119,7 +126,7 @@ export default function CheckinForm({
                   className="h-full rounded-full transition-all duration-300 ease-out"
                   style={{
                     width: `${fillPercent}%`,
-                    background: "linear-gradient(to right, var(--color-cove-accent-light), var(--color-cove-accent), var(--color-cove-blue))",
+                    background: "linear-gradient(to right, var(--color-cove-accent-light), var(--color-cove-accent))",
                   }}
                 />
               </div>
@@ -140,7 +147,7 @@ export default function CheckinForm({
                       aria-checked={isSelected}
                       aria-label={`${label} ${LABELS[level]}`}
                       onClick={() => onChange(level)}
-                      className="flex flex-col items-center gap-1.5 group focus:outline-none"
+                      className="flex flex-col items-center gap-1.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-cove-accent focus-visible:ring-offset-2 rounded-xl"
                     >
                       <div
                         className={`
@@ -158,7 +165,7 @@ export default function CheckinForm({
                         style={
                           isFilled
                             ? {
-                                background: `linear-gradient(135deg, var(--color-cove-accent), var(--color-cove-blue))`,
+                                background: `var(--color-cove-accent)`,
                                 opacity: isSelected ? 1 : 0.5 + (level / 5) * 0.5,
                               }
                             : undefined
@@ -189,7 +196,7 @@ export default function CheckinForm({
 
   return (
     <form onSubmit={handleSubmit} aria-label="Wellness check-in form">
-      <h2 className="text-xl font-bold text-cove-charcoal mb-6">
+      <h2 className="text-lg font-semibold tracking-tight text-cove-charcoal mb-6">
         Daily Check-in
       </h2>
       {renderRow("Mood", mood, setMood, true)}
@@ -213,12 +220,13 @@ export default function CheckinForm({
       </div>
       <button
         type="submit"
-        className="w-full py-3 rounded-2xl text-white font-semibold text-sm tracking-wide shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+        disabled={submitting}
+        className="w-full py-3 rounded-2xl text-white font-semibold text-sm tracking-wide shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         style={{
-          background: "linear-gradient(to right, var(--color-cove-accent), var(--color-cove-blue))",
+          background: "var(--color-cove-accent)",
         }}
       >
-        Save check-in
+        {submitting ? "Saving..." : "Save check-in"}
       </button>
     </form>
   );

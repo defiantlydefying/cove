@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@/test-utils";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import WellnessTracker from "./WellnessTracker";
 
@@ -27,8 +27,8 @@ describe("WellnessTracker", () => {
     vi.spyOn(global, "fetch").mockImplementation(
       () => new Promise(() => {}) // never resolves
     );
-    render(<WellnessTracker />);
-    expect(screen.getByText("Loading wellness data...")).toBeInTheDocument();
+    const { container } = render(<WellnessTracker />);
+    expect(container.querySelector(".animate-pulse")).toBeInTheDocument();
   });
 
   it("renders check-in form and history after fetch", async () => {
