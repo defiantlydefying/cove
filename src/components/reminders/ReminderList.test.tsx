@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@/test-utils";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import ReminderList from "./ReminderList";
@@ -33,12 +33,13 @@ describe("ReminderList", () => {
     vi.spyOn(global, "fetch").mockImplementation(
       () => new Promise(() => {}) // never resolves
     );
-    render(<ReminderList />);
-    expect(screen.getByText("Loading reminders...")).toBeInTheDocument();
+    const { container } = render(<ReminderList />);
+    expect(container.querySelector(".animate-pulse")).toBeInTheDocument();
   });
 
   it("renders reminders after fetch", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce({
+      ok: true,
       json: async () => mockReminders,
     } as Response);
 
@@ -51,18 +52,17 @@ describe("ReminderList", () => {
 
   it("shows form when button clicked", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce({
+      ok: true,
       json: async () => [],
     } as Response);
 
-    render(<ReminderList />);
+    const { container } = render(<ReminderList />);
 
     await waitFor(() => {
-      expect(
-        screen.queryByText("Loading reminders...")
-      ).not.toBeInTheDocument();
+      expect(container.querySelector(".animate-pulse")).not.toBeInTheDocument();
     });
 
-    await userEvent.click(screen.getByText("+ New reminder"));
+    await userEvent.click(screen.getByText("+ Custom reminder"));
     expect(screen.getByLabelText("Reminder title")).toBeInTheDocument();
   });
 });

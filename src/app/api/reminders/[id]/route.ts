@@ -35,6 +35,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       ? new Date(body.snoozedUntil)
       : null;
   }
+  if (body.scheduledTime !== undefined) data.scheduledTime = body.scheduledTime;
+  if (body.intervalMinutes !== undefined) {
+    data.intervalMinutes = body.intervalMinutes != null ? Number(body.intervalMinutes) : null;
+  }
+  if (body.activeDays !== undefined) data.activeDays = body.activeDays;
+  if (body.presetKey !== undefined) data.presetKey = body.presetKey;
+  if (body.soundEnabled !== undefined) data.soundEnabled = body.soundEnabled;
+  if (body.notifyEnabled !== undefined) data.notifyEnabled = body.notifyEnabled;
 
   const updated = await prisma.reminder.update({
     where: { id },

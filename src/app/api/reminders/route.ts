@@ -40,6 +40,12 @@ export async function POST(request: NextRequest) {
       type: body.type ?? "custom",
       schedule: body.schedule ?? null,
       enabled: body.enabled ?? true,
+      scheduledTime: body.scheduledTime ?? null,
+      intervalMinutes: body.intervalMinutes != null ? Number(body.intervalMinutes) : null,
+      activeDays: body.activeDays ?? "0,1,2,3,4,5,6",
+      presetKey: body.presetKey ?? null,
+      soundEnabled: body.soundEnabled ?? true,
+      notifyEnabled: body.notifyEnabled ?? true,
     },
   });
 

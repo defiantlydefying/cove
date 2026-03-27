@@ -7,6 +7,7 @@ import WellnessTracker from "@/components/wellness/WellnessTracker";
 import ReminderList from "@/components/reminders/ReminderList";
 import DailyView from "@/components/daily/DailyView";
 import GamificationPanel from "@/components/gamification/GamificationPanel";
+import ReminderScheduler from "@/components/reminders/ReminderScheduler";
 import { useState, useEffect, useCallback } from "react";
 
 const defaultTabs = [
@@ -82,6 +83,7 @@ export default function DashboardPage() {
       moduleStates={moduleStates}
       onToggleModule={handleToggleModule}
     >
+      <ReminderScheduler />
       <div key={activeTab} className="animate-soft-bounce">
         {activeTab === "daily-view" && <DailyView />}
         {activeTab === "routines" && isModuleEnabled("routines") && (
