@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useToast } from "@/components/providers/ToastProvider";
+import { formatScheduleSummary } from "@/lib/reminder-presets";
 import CheckinForm, { WellnessCheckinData } from "@/components/wellness/CheckinForm";
 
 interface DailyTask {
@@ -33,6 +35,9 @@ interface DailyReminder {
   title: string;
   message?: string | null;
   type: string;
+  scheduledTime?: string | null;
+  intervalMinutes?: number | null;
+  activeDays?: string;
 }
 
 interface WellnessCheckin {
@@ -50,6 +55,14 @@ interface DailyData {
   reminders: DailyReminder[];
 }
 
+const MOOD_LABELS: Record<number, string> = {
+  1: "Rough",
+  2: "Low",
+  3: "Okay",
+  4: "Good",
+  5: "Great",
+};
+
 function getGreeting(): string {
   const hour = new Date().getHours();
   if (hour < 12) return "Good morning";
@@ -60,14 +73,18 @@ function getGreeting(): string {
 export default function DailyView() {
   const [data, setData] = useState<DailyData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
+    setError(false);
     try {
       const res = await fetch("/api/daily");
+      if (!res.ok) throw new Error();
       const json = await res.json();
       setData(json);
     } catch {
-      // silently handle
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -88,11 +105,12 @@ export default function DailyView() {
 
     try {
       const task = data.tasks.find((t) => t.id === id);
-      await fetch(`/api/tasks/${id}`, {
+      const res = await fetch(`/api/tasks/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completed: !task?.completed }),
       });
+      if (!res.ok) throw new Error();
     } catch {
       setData((prev) =>
         prev
@@ -104,6 +122,7 @@ export default function DailyView() {
             }
           : prev
       );
+      toast("Couldn\u2019t update task. Try again.", "error");
     }
   }
 
@@ -131,27 +150,30 @@ export default function DailyView() {
     });
 
     try {
-      await fetch(`/api/routines/${routineId}/log`, {
+      const res = await fetch(`/api/routines/${routineId}/log`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stepId, checked }),
       });
+      if (!res.ok) throw new Error();
     } catch {
-      // revert on error
       await fetchData();
+      toast("Couldn\u2019t save step progress. Try again.", "error");
     }
   }
 
   async function handleWellnessSubmit(checkinData: WellnessCheckinData) {
     try {
-      await fetch("/api/wellness", {
+      const res = await fetch("/api/wellness", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(checkinData),
       });
+      if (!res.ok) throw new Error();
       await fetchData();
+      toast("Check-in saved.", "success");
     } catch {
-      // silently handle
+      toast("Couldn\u2019t save check-in. Try again.", "error");
     }
   }
 
@@ -165,23 +187,57 @@ export default function DailyView() {
     });
 
     try {
-      await fetch(`/api/reminders/${id}`, {
+      const res = await fetch(`/api/reminders/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ snoozedUntil }),
       });
+      if (!res.ok) throw new Error();
+      toast("Snoozed for 30 minutes.", "success");
     } catch {
       await fetchData();
+      toast("Couldn\u2019t snooze reminder. Try again.", "error");
     }
   }
 
   if (loading) {
-    return <p className="text-sm text-cove-muted">Loading daily view...</p>;
+    return (
+      <div className="flex flex-col gap-6 max-w-4xl">
+        <div className="h-8 w-48 rounded-lg bg-cove-border-light animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-2xl bg-cove-card border border-cove-border-light p-5 h-32 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
-  if (!data) {
-    return <p className="text-sm text-cove-muted">Failed to load daily view.</p>;
+  if (error) {
+    return (
+      <div className="flex flex-col items-center max-w-2xl mx-auto gap-4">
+        <h1 className="text-2xl font-semibold tracking-tight text-cove-charcoal">
+          {getGreeting()}
+        </h1>
+        <div className="w-full rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-10 text-center">
+          <p className="text-cove-muted text-lg font-medium">
+            Couldn&apos;t load your daily view.
+          </p>
+          <p className="text-cove-muted text-sm mt-2">
+            Check your connection and try again.
+          </p>
+          <button
+            onClick={fetchData}
+            className="mt-4 px-5 py-2.5 text-sm font-medium rounded-xl bg-cove-accent text-white hover:bg-cove-accent-hover transition-colors"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
   }
+
+  if (!data) return null;
 
   const hasTasks = data.tasks.length > 0;
   const hasRoutines = data.routines.length > 0;
@@ -192,15 +248,15 @@ export default function DailyView() {
   if (!hasAnything) {
     return (
       <div className="flex flex-col items-center max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold text-cove-charcoal mb-6">
+        <h1 className="text-2xl font-semibold tracking-tight text-cove-charcoal mb-6">
           {getGreeting()}
         </h1>
         <div className="w-full rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-10 text-center">
-          <p className="text-cove-muted text-lg font-medium">
-            All caught up! Nothing on your plate today.
+          <p className="text-cove-charcoal text-lg font-medium mb-2">
+            A clean slate
           </p>
-          <p className="text-cove-muted text-sm mt-2">
-            Enjoy your free time or add something new.
+          <p className="text-cove-muted text-sm leading-relaxed max-w-md mx-auto">
+            Nothing scheduled for today. You can add tasks from the sidebar, set up routines from the Routines tab, or just enjoy the quiet.
           </p>
         </div>
       </div>
@@ -209,14 +265,14 @@ export default function DailyView() {
 
   return (
     <div className="flex flex-col gap-6 max-w-4xl">
-      <h1 className="text-2xl font-bold text-cove-charcoal">
+      <h1 className="text-2xl font-semibold tracking-tight text-cove-charcoal">
         {getGreeting()}
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Tasks Card */}
         {hasTasks && (
-          <section className="rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-5 border-l-4 border-l-cove-accent">
+          <section className="rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-5 border-l-4 border-l-cove-sage">
             <h2 className="font-semibold text-cove-charcoal mb-3">Tasks</h2>
             <div className="flex flex-col gap-2">
               {data.tasks.map((task) => (
@@ -235,17 +291,23 @@ export default function DailyView() {
                   <div className="flex flex-col min-w-0">
                     <div className="flex items-center gap-1.5">
                       {task.priority === "high" && (
-                        <span className="shrink-0 w-2 h-2 rounded-full bg-red-500" title="High priority" data-testid="priority-high" />
+                        <span className="shrink-0 inline-flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-cove-amber" aria-hidden="true" />
+                          <span className="sr-only">High priority</span>
+                        </span>
                       )}
                       {task.priority === "low" && (
-                        <span className="shrink-0 w-2 h-2 rounded-full bg-gray-400" title="Low priority" data-testid="priority-low" />
+                        <span className="shrink-0 inline-flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-cove-muted" aria-hidden="true" />
+                          <span className="sr-only">Low priority</span>
+                        </span>
                       )}
                       <span
-                        className={
+                        className={`break-words ${
                           task.completed
                             ? "line-through text-cove-muted text-sm"
                             : "text-cove-charcoal text-sm"
-                        }
+                        }`}
                       >
                         {task.title}
                       </span>
@@ -274,11 +336,11 @@ export default function DailyView() {
                   : 0;
                 return (
                   <div key={routine.id} data-testid="daily-routine">
-                    <h3 className="font-medium text-sm text-cove-charcoal mb-1">
+                    <h3 className="font-medium text-sm text-cove-charcoal mb-1 break-words">
                       {routine.name}
                     </h3>
                     {/* Progress bar */}
-                    <div className="w-full h-1.5 rounded-full bg-cove-border-light mb-2">
+                    <div className="w-full h-1.5 rounded-full bg-cove-border-light mb-2" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label={`${routine.name} progress`}>
                       <div
                         className="h-1.5 rounded-full bg-cove-blue transition-all"
                         style={{ width: `${progress}%` }}
@@ -305,11 +367,11 @@ export default function DailyView() {
                               aria-label={`Toggle ${step.title}`}
                             />
                             <span
-                              className={
+                              className={`break-words ${
                                 checked
                                   ? "line-through text-cove-muted"
                                   : "text-cove-charcoal"
-                              }
+                              }`}
                             >
                               {step.title}
                             </span>
@@ -326,25 +388,25 @@ export default function DailyView() {
 
         {/* Wellness Card */}
         {hasWellness && (
-          <section className="rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-5 border-l-4 border-l-green-400">
+          <section className="rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-5 border-l-4 border-l-cove-accent">
             <h2 className="font-semibold text-cove-charcoal mb-3">
               How are you feeling?
             </h2>
             {data.wellness ? (
               <div className="text-sm text-cove-charcoal" data-testid="wellness-summary">
-                <div className="flex gap-4">
+                <div className="flex gap-4 flex-wrap">
                   {data.wellness.mood != null && (
-                    <span>Mood: {data.wellness.mood}/5</span>
+                    <span>Mood: {MOOD_LABELS[data.wellness.mood] ?? data.wellness.mood}/5</span>
                   )}
                   {data.wellness.energy != null && (
-                    <span>Energy: {data.wellness.energy}/5</span>
+                    <span>Energy: {MOOD_LABELS[data.wellness.energy] ?? data.wellness.energy}/5</span>
                   )}
                   {data.wellness.sleep != null && (
-                    <span>Sleep: {data.wellness.sleep}/5</span>
+                    <span>Sleep: {MOOD_LABELS[data.wellness.sleep] ?? data.wellness.sleep}/5</span>
                   )}
                 </div>
                 {data.wellness.notes && (
-                  <p className="mt-1 text-cove-muted">{data.wellness.notes}</p>
+                  <p className="mt-1 text-cove-muted break-words">{data.wellness.notes}</p>
                 )}
               </div>
             ) : (
@@ -355,21 +417,26 @@ export default function DailyView() {
 
         {/* Reminders Card */}
         {hasReminders && (
-          <section className="rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-5 border-l-4 border-l-amber-400">
+          <section className="rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-5 border-l-4 border-l-cove-amber">
             <h2 className="font-semibold text-cove-charcoal mb-3">Reminders</h2>
             <div className="flex flex-col gap-2">
               {data.reminders.map((reminder) => (
                 <div
                   key={reminder.id}
-                  className="flex items-center justify-between"
+                  className="flex items-center justify-between gap-2"
                   data-testid="daily-reminder"
                 >
-                  <div>
-                    <span className="text-sm text-cove-charcoal">
+                  <div className="min-w-0 flex-1">
+                    <span className="text-sm text-cove-charcoal break-words">
                       {reminder.title}
                     </span>
+                    {reminder.scheduledTime && (
+                      <p className="text-xs text-cove-muted">
+                        {formatScheduleSummary(reminder.scheduledTime, reminder.intervalMinutes, reminder.activeDays)}
+                      </p>
+                    )}
                     {reminder.message && (
-                      <p className="text-xs text-cove-muted">{reminder.message}</p>
+                      <p className="text-xs text-cove-muted break-words">{reminder.message}</p>
                     )}
                   </div>
                   <button

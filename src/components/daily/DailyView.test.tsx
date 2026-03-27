@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@/test-utils";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import DailyView from "./DailyView";
 
@@ -33,12 +33,13 @@ describe("DailyView", () => {
     vi.spyOn(global, "fetch").mockImplementation(
       () => new Promise(() => {}) // never resolves
     );
-    render(<DailyView />);
-    expect(screen.getByText("Loading daily view...")).toBeInTheDocument();
+    const { container } = render(<DailyView />);
+    expect(container.querySelector(".animate-pulse")).toBeInTheDocument();
   });
 
   it("renders task section with tasks", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce({
+      ok: true,
       json: async () => mockDailyData,
     } as Response);
 
@@ -52,6 +53,7 @@ describe("DailyView", () => {
 
   it("renders routine section with routines", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce({
+      ok: true,
       json: async () => mockDailyData,
     } as Response);
 
@@ -66,6 +68,7 @@ describe("DailyView", () => {
 
   it("shows wellness check-in prompt when no check-in exists", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce({
+      ok: true,
       json: async () => mockDailyData,
     } as Response);
 
@@ -79,6 +82,7 @@ describe("DailyView", () => {
 
   it("handles empty state gracefully", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce({
+      ok: true,
       json: async () => ({
         tasks: [],
         routines: [],
@@ -90,7 +94,7 @@ describe("DailyView", () => {
     render(<DailyView />);
     await waitFor(() => {
       expect(
-        screen.getByText("All caught up! Nothing on your plate today.")
+        screen.getByText("A clean slate")
       ).toBeInTheDocument();
     });
     expect(screen.queryByText("Tasks")).not.toBeInTheDocument();
