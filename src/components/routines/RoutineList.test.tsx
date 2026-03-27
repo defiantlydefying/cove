@@ -57,6 +57,36 @@ describe("RoutineList", () => {
     });
 
     await userEvent.click(screen.getByText("+ New routine"));
-    expect(screen.getByPlaceholderText("Routine name")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Name your routine...")).toBeInTheDocument();
+  });
+
+  it("renders template cards", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValueOnce({
+      json: async () => [],
+    } as Response);
+
+    render(<RoutineList />);
+    await waitFor(() => {
+      expect(screen.queryByText("Loading routines...")).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Morning Routine")).toBeInTheDocument();
+    expect(screen.getByText("Wind-Down")).toBeInTheDocument();
+    expect(screen.getByText("Work Focus")).toBeInTheDocument();
+    expect(screen.getByText("Self-Care")).toBeInTheDocument();
+  });
+
+  it("shows AI prompt input", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValueOnce({
+      json: async () => [],
+    } as Response);
+
+    render(<RoutineList />);
+    await waitFor(() => {
+      expect(screen.queryByText("Loading routines...")).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByTestId("ai-prompt-input")).toBeInTheDocument();
+    expect(screen.getByTestId("ai-generate-btn")).toBeInTheDocument();
   });
 });
