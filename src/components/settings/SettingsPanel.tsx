@@ -18,20 +18,20 @@ interface ModuleSetting {
 }
 
 const ACCENT_COLORS = [
-  "#4F7CAC",
-  "#E63946",
-  "#2A9D8F",
-  "#E9C46A",
-  "#264653",
-  "#F4A261",
+  "#6B8F71",
+  "#7EAAA0",
+  "#C4A055",
+  "#A08BA0",
+  "#4A5D4E",
+  "#8FA89A",
 ];
 
 const ALL_MODULES = [
-  { id: "task-manager", name: "Task Manager" },
-  { id: "routine-builder", name: "Routine Builder" },
-  { id: "wellness-tracker", name: "Wellness Tracker" },
-  { id: "reminders", name: "Reminders" },
-  { id: "gamification", name: "Gamification" },
+  { id: "task-manager", name: "Task Manager", description: "Organize and track your tasks with priorities and deadlines" },
+  { id: "routine-builder", name: "Routine Builder", description: "Build consistent daily routines step by step" },
+  { id: "wellness-tracker", name: "Wellness Tracker", description: "Monitor your mood, energy, and wellbeing over time" },
+  { id: "reminders", name: "Reminders", description: "Gentle nudges to keep you on track throughout the day" },
+  { id: "gamification", name: "Gamification", description: "Earn points and streaks to stay motivated" },
 ];
 
 export default function SettingsPanel() {
@@ -87,29 +87,32 @@ export default function SettingsPanel() {
   if (!settings) return null;
 
   return (
-    <div className="max-w-2xl mx-auto p-8 space-y-8" data-testid="settings-panel">
-      <h1 className="text-2xl font-bold">Settings</h1>
+    <div className="max-w-2xl mx-auto p-8 space-y-10" data-testid="settings-panel">
+      <h1 className="text-2xl font-semibold tracking-tight text-cove-charcoal">Settings</h1>
 
       {/* Theme */}
-      <section>
-        <h2 className="font-medium mb-2">Theme</h2>
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-cove-charcoal">Theme</h2>
+          <p className="text-xs text-cove-muted mt-0.5">Choose how Cove looks</p>
+        </div>
         <div className="flex gap-3">
           <button
             onClick={() => updateSetting("theme", "light")}
-            className={`px-4 py-2 border rounded-lg ${
+            className={`px-4 py-2 text-sm border rounded-lg transition-colors ${
               settings.theme === "light"
-                ? "border-cove-accent bg-cove-accent-light"
-                : "border-cove-border"
+                ? "border-cove-accent bg-cove-accent-light text-cove-accent font-medium"
+                : "border-cove-border text-cove-muted hover:border-cove-accent/30"
             }`}
           >
             Light
           </button>
           <button
             onClick={() => updateSetting("theme", "dark")}
-            className={`px-4 py-2 border rounded-lg ${
+            className={`px-4 py-2 text-sm border rounded-lg transition-colors ${
               settings.theme === "dark"
-                ? "border-cove-accent bg-cove-accent-light"
-                : "border-cove-border"
+                ? "border-cove-accent bg-cove-accent-light text-cove-accent font-medium"
+                : "border-cove-border text-cove-muted hover:border-cove-accent/30"
             }`}
           >
             Dark
@@ -118,18 +121,21 @@ export default function SettingsPanel() {
       </section>
 
       {/* Accent Color */}
-      <section>
-        <h2 className="font-medium mb-2">Accent Color</h2>
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-cove-charcoal">Accent Color</h2>
+          <p className="text-xs text-cove-muted mt-0.5">Personalize your color scheme</p>
+        </div>
         <div className="flex gap-2">
           {ACCENT_COLORS.map((color) => (
             <button
               key={color}
               onClick={() => updateSetting("accentColor", color)}
               aria-label={`Select color ${color}`}
-              className={`w-8 h-8 rounded-full border-2 ${
+              className={`w-8 h-8 rounded-full border-2 transition-all ${
                 settings.accentColor === color
-                  ? "border-cove-charcoal"
-                  : "border-transparent"
+                  ? "border-cove-charcoal scale-110"
+                  : "border-transparent hover:scale-105"
               }`}
               style={{ backgroundColor: color }}
             />
@@ -138,126 +144,151 @@ export default function SettingsPanel() {
       </section>
 
       {/* Density */}
-      <section>
-        <h2 className="font-medium mb-2">Density</h2>
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-cove-charcoal">Density</h2>
+          <p className="text-xs text-cove-muted mt-0.5">How much space between elements</p>
+        </div>
         <div className="flex gap-3">
           {["compact", "comfortable", "spacious"].map((d) => (
-            <label key={d} className="flex items-center gap-1.5">
-              <input
-                type="radio"
-                name="density"
-                value={d}
-                checked={settings.density === d}
-                onChange={() => updateSetting("density", d)}
-              />
-              <span className="capitalize">{d}</span>
-            </label>
+            <button
+              key={d}
+              onClick={() => updateSetting("density", d)}
+              className={`px-4 py-2 text-sm border rounded-lg capitalize transition-colors ${
+                settings.density === d
+                  ? "border-cove-accent bg-cove-accent-light text-cove-accent font-medium"
+                  : "border-cove-border text-cove-muted hover:border-cove-accent/30"
+              }`}
+            >
+              {d}
+            </button>
           ))}
         </div>
       </section>
 
-      {/* Animations */}
-      <section className="flex items-center justify-between">
-        <h2 className="font-medium">Animations</h2>
-        <button
-          onClick={() => updateSetting("animationsOn", !settings.animationsOn)}
-          role="switch"
-          aria-checked={settings.animationsOn}
-          aria-label="Toggle animations"
-          className={`w-12 h-6 rounded-full relative transition-colors ${
-            settings.animationsOn ? "bg-cove-accent" : "bg-cove-border"
-          }`}
-        >
-          <span
-            className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
-              settings.animationsOn ? "translate-x-6" : "translate-x-0.5"
+      {/* Toggles */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-cove-charcoal">Animations</h2>
+            <p className="text-xs text-cove-muted mt-0.5">Enable smooth transitions and motion</p>
+          </div>
+          <button
+            onClick={() => updateSetting("animationsOn", !settings.animationsOn)}
+            role="switch"
+            aria-checked={settings.animationsOn}
+            aria-label="Toggle animations"
+            className={`w-12 h-6 rounded-full relative transition-colors ${
+              settings.animationsOn ? "bg-cove-accent" : "bg-cove-border"
             }`}
-          />
-        </button>
-      </section>
+          >
+            <span
+              className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-sm ${
+                settings.animationsOn ? "translate-x-6" : "translate-x-0.5"
+              }`}
+            />
+          </button>
+        </div>
 
-      {/* Sounds */}
-      <section className="flex items-center justify-between">
-        <h2 className="font-medium">Sounds</h2>
-        <button
-          onClick={() => updateSetting("soundsOn", !settings.soundsOn)}
-          role="switch"
-          aria-checked={settings.soundsOn}
-          aria-label="Toggle sounds"
-          className={`w-12 h-6 rounded-full relative transition-colors ${
-            settings.soundsOn ? "bg-cove-accent" : "bg-cove-border"
-          }`}
-        >
-          <span
-            className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
-              settings.soundsOn ? "translate-x-6" : "translate-x-0.5"
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-cove-charcoal">Sounds</h2>
+            <p className="text-xs text-cove-muted mt-0.5">Play audio feedback on actions</p>
+          </div>
+          <button
+            onClick={() => updateSetting("soundsOn", !settings.soundsOn)}
+            role="switch"
+            aria-checked={settings.soundsOn}
+            aria-label="Toggle sounds"
+            className={`w-12 h-6 rounded-full relative transition-colors ${
+              settings.soundsOn ? "bg-cove-accent" : "bg-cove-border"
             }`}
-          />
-        </button>
+          >
+            <span
+              className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-sm ${
+                settings.soundsOn ? "translate-x-6" : "translate-x-0.5"
+              }`}
+            />
+          </button>
+        </div>
       </section>
 
       {/* Font Size */}
-      <section>
-        <h2 className="font-medium mb-2">Font Size</h2>
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-cove-charcoal">Font Size</h2>
+          <p className="text-xs text-cove-muted mt-0.5">Adjust text size for comfort</p>
+        </div>
         <div className="flex gap-3">
           {["small", "medium", "large"].map((size) => (
-            <label key={size} className="flex items-center gap-1.5">
-              <input
-                type="radio"
-                name="fontSize"
-                value={size}
-                checked={settings.fontSize === size}
-                onChange={() => updateSetting("fontSize", size)}
-              />
-              <span className="capitalize">{size}</span>
-            </label>
+            <button
+              key={size}
+              onClick={() => updateSetting("fontSize", size)}
+              className={`px-4 py-2 text-sm border rounded-lg capitalize transition-colors ${
+                settings.fontSize === size
+                  ? "border-cove-accent bg-cove-accent-light text-cove-accent font-medium"
+                  : "border-cove-border text-cove-muted hover:border-cove-accent/30"
+              }`}
+            >
+              {size}
+            </button>
           ))}
         </div>
       </section>
 
       {/* Tone */}
-      <section>
-        <h2 className="font-medium mb-2">Tone</h2>
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-cove-charcoal">Tone</h2>
+          <p className="text-xs text-cove-muted mt-0.5">How Cove talks to you</p>
+        </div>
         <div className="flex gap-3">
           {["casual", "neutral", "encouraging"].map((t) => (
-            <label key={t} className="flex items-center gap-1.5">
-              <input
-                type="radio"
-                name="tone"
-                value={t}
-                checked={settings.tone === t}
-                onChange={() => updateSetting("tone", t)}
-              />
-              <span className="capitalize">{t}</span>
-            </label>
+            <button
+              key={t}
+              onClick={() => updateSetting("tone", t)}
+              className={`px-4 py-2 text-sm border rounded-lg capitalize transition-colors ${
+                settings.tone === t
+                  ? "border-cove-accent bg-cove-accent-light text-cove-accent font-medium"
+                  : "border-cove-border text-cove-muted hover:border-cove-accent/30"
+              }`}
+            >
+              {t}
+            </button>
           ))}
         </div>
       </section>
 
       {/* Module Toggles */}
-      <section>
-        <h2 className="font-medium mb-3">Modules</h2>
-        <div className="space-y-3">
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-cove-charcoal">Modules</h2>
+          <p className="text-xs text-cove-muted mt-0.5">Enable or disable features</p>
+        </div>
+        <div className="space-y-2">
           {ALL_MODULES.map((mod) => {
             const moduleSetting = modules.find((m) => m.moduleId === mod.id);
             const enabled = moduleSetting?.enabled ?? false;
             return (
               <div
                 key={mod.id}
-                className="flex items-center justify-between p-3 border rounded-lg"
+                className="flex items-center justify-between p-4 border border-cove-border-light rounded-xl bg-cove-card"
               >
-                <span>{mod.name}</span>
+                <div className="min-w-0">
+                  <span className="text-sm font-medium text-cove-charcoal">{mod.name}</span>
+                  <p className="text-xs text-cove-muted mt-0.5">{mod.description}</p>
+                </div>
                 <button
                   onClick={() => toggleModule(mod.id, !enabled)}
                   role="switch"
                   aria-checked={enabled}
                   aria-label={`Toggle ${mod.name}`}
-                  className={`w-12 h-6 rounded-full relative transition-colors ${
+                  className={`w-12 h-6 rounded-full relative transition-colors shrink-0 ml-4 ${
                     enabled ? "bg-cove-accent" : "bg-cove-border"
                   }`}
                 >
                   <span
-                    className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${
+                    className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-sm ${
                       enabled ? "translate-x-6" : "translate-x-0.5"
                     }`}
                   />
@@ -272,7 +303,7 @@ export default function SettingsPanel() {
       <section>
         <a
           href="/onboarding"
-          className="text-cove-accent hover:underline text-sm"
+          className="text-sm text-cove-accent hover:text-cove-accent-hover hover:underline"
         >
           Re-run onboarding wizard
         </a>
