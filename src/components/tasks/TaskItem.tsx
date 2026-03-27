@@ -32,11 +32,11 @@ export default function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemP
       />
       <div className="flex-1 min-w-0">
         <span
-          className={
+          className={`break-words ${
             task.completed
               ? "line-through text-white/40"
               : "text-white/90"
-          }
+          }`}
         >
           {task.title}
         </span>
@@ -53,7 +53,7 @@ export default function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemP
             <span
               className={`text-xs px-1.5 py-0.5 rounded-md ${
                 task.priority === "high"
-                  ? "bg-red-500/20 text-red-300"
+                  ? "bg-cove-amber/20 text-cove-amber"
                   : "bg-white/10 text-white/60"
               }`}
             >

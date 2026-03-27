@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@/test-utils";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import TaskList from "./TaskList";
@@ -17,12 +17,13 @@ describe("TaskList", () => {
     vi.spyOn(global, "fetch").mockImplementation(
       () => new Promise(() => {}) // never resolves
     );
-    render(<TaskList />);
-    expect(screen.getByText("Loading tasks...")).toBeInTheDocument();
+    const { container } = render(<TaskList />);
+    expect(container.querySelector(".animate-pulse")).toBeInTheDocument();
   });
 
   it("renders tasks after fetch", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce({
+      ok: true,
       json: async () => mockTasks,
     } as Response);
 
@@ -36,9 +37,11 @@ describe("TaskList", () => {
   it("adds a new task via TaskInput", async () => {
     vi.spyOn(global, "fetch")
       .mockResolvedValueOnce({
+        ok: true,
         json: async () => [],
       } as Response)
       .mockResolvedValueOnce({
+        ok: true,
         json: async () => ({ id: "3", title: "New task", completed: false }),
       } as Response);
 

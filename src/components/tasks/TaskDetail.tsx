@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/components/providers/ToastProvider";
 import { Task } from "./TaskItem";
 
 interface TaskDetailProps {
@@ -25,6 +26,7 @@ export default function TaskDetail({ task, onSave, onCancel }: TaskDetailProps) 
     task.recurrenceRule ?? ""
   );
   const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
 
   async function handleSave() {
     if (!title.trim()) return;
@@ -50,6 +52,7 @@ export default function TaskDetail({ task, onSave, onCancel }: TaskDetailProps) 
 
       if (!res.ok) {
         setSaving(false);
+        toast("Couldn\u2019t save task. Try again.", "error");
         return;
       }
 
@@ -70,6 +73,7 @@ export default function TaskDetail({ task, onSave, onCancel }: TaskDetailProps) 
       });
     } catch {
       setSaving(false);
+      toast("Couldn\u2019t save task. Try again.", "error");
     }
   }
 
@@ -89,6 +93,8 @@ export default function TaskDetail({ task, onSave, onCancel }: TaskDetailProps) 
           onChange={(e) => setTitle(e.target.value)}
           className={inputClass}
           placeholder="Task title"
+          maxLength={200}
+          required
         />
       </div>
 
