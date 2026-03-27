@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import TaskInput from "./TaskInput";
 import TaskItem, { Task } from "./TaskItem";
+import TaskDetail from "./TaskDetail";
 
 export default function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   useEffect(() => {
     fetch("/api/tasks")
@@ -58,12 +60,28 @@ export default function TaskList() {
   async function handleDelete(id: string) {
     const prev = tasks;
     setTasks((curr) => curr.filter((t) => t.id !== id));
+    if (selectedTask?.id === id) {
+      setSelectedTask(null);
+    }
 
     try {
       await fetch(`/api/tasks/${id}`, { method: "DELETE" });
     } catch {
       setTasks(prev);
     }
+  }
+
+  function handleEdit(task: Task) {
+    setSelectedTask(task);
+  }
+
+  function handleSave(updated: Task) {
+    setTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+    setSelectedTask(null);
+  }
+
+  function handleCancelEdit() {
+    setSelectedTask(null);
   }
 
   if (loading) {
@@ -81,11 +99,19 @@ export default function TaskList() {
             task={task}
             onToggle={handleToggle}
             onDelete={handleDelete}
+            onEdit={handleEdit}
           />
         ))}
       </div>
       {tasks.length === 0 && (
         <p className="text-xs text-white/40">No tasks yet.</p>
+      )}
+      {selectedTask && (
+        <TaskDetail
+          task={selectedTask}
+          onSave={handleSave}
+          onCancel={handleCancelEdit}
+        />
       )}
     </div>
   );
