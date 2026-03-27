@@ -8,6 +8,7 @@ interface DailyTask {
   title: string;
   completed: boolean;
   priority?: string;
+  deadline?: string;
 }
 
 interface RoutineStep {
@@ -47,6 +48,13 @@ interface DailyData {
   routines: DailyRoutine[];
   wellness: WellnessCheckin | null;
   reminders: DailyReminder[];
+}
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
 }
 
 export default function DailyView() {
@@ -183,159 +191,200 @@ export default function DailyView() {
 
   if (!hasAnything) {
     return (
-      <div className="text-center py-12">
-        <p className="text-cove-muted text-sm">All caught up! Nothing on your plate today.</p>
+      <div className="flex flex-col items-center max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold text-cove-charcoal mb-6">
+          {getGreeting()}
+        </h1>
+        <div className="w-full rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-10 text-center">
+          <p className="text-cove-muted text-lg font-medium">
+            All caught up! Nothing on your plate today.
+          </p>
+          <p className="text-cove-muted text-sm mt-2">
+            Enjoy your free time or add something new.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
-      {hasTasks && (
-        <section>
-          <h2 className="font-medium text-sm text-cove-charcoal mb-2">Tasks</h2>
-          <div className="flex flex-col divide-y">
-            {data.tasks.map((task) => (
-              <div
-                key={task.id}
-                className="flex items-center gap-2 py-2"
-                data-testid="daily-task"
-              >
-                <input
-                  type="checkbox"
-                  checked={task.completed}
-                  onChange={() => handleTaskToggle(task.id)}
-                  aria-label={`Toggle ${task.title}`}
-                  className="shrink-0"
-                />
-                <span
-                  className={
-                    task.completed
-                      ? "line-through text-cove-muted text-sm"
-                      : "text-cove-charcoal text-sm"
-                  }
-                >
-                  {task.title}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+    <div className="flex flex-col gap-6 max-w-4xl">
+      <h1 className="text-2xl font-bold text-cove-charcoal">
+        {getGreeting()}
+      </h1>
 
-      {hasRoutines && (
-        <section>
-          <h2 className="font-medium text-sm text-cove-charcoal mb-2">Routines</h2>
-          <div className="flex flex-col gap-3">
-            {data.routines.map((routine) => {
-              const completedSteps = routine.logs[0]?.completedSteps ?? [];
-              return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Tasks Card */}
+        {hasTasks && (
+          <section className="rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-5 border-l-4 border-l-cove-accent">
+            <h2 className="font-semibold text-cove-charcoal mb-3">Tasks</h2>
+            <div className="flex flex-col gap-2">
+              {data.tasks.map((task) => (
                 <div
-                  key={routine.id}
-                  className="border rounded p-3"
-                  data-testid="daily-routine"
+                  key={task.id}
+                  className="flex items-start gap-2"
+                  data-testid="daily-task"
                 >
-                  <h3 className="font-medium text-sm text-cove-charcoal mb-1">
-                    {routine.name}
-                  </h3>
-                  <div className="flex flex-col gap-1">
-                    {routine.steps.map((step) => {
-                      const checked = completedSteps.includes(step.id);
-                      return (
-                        <label
-                          key={step.id}
-                          className="flex items-center gap-2 text-sm"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={(e) =>
-                              handleStepToggle(
-                                routine.id,
-                                step.id,
-                                e.target.checked
-                              )
-                            }
-                            aria-label={`Toggle ${step.title}`}
-                          />
-                          <span
-                            className={
-                              checked
-                                ? "line-through text-cove-muted"
-                                : "text-cove-charcoal"
-                            }
-                          >
-                            {step.title}
-                          </span>
-                        </label>
-                      );
-                    })}
+                  <input
+                    type="checkbox"
+                    checked={task.completed}
+                    onChange={() => handleTaskToggle(task.id)}
+                    aria-label={`Toggle ${task.title}`}
+                    className="shrink-0 mt-0.5"
+                  />
+                  <div className="flex flex-col min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      {task.priority === "high" && (
+                        <span className="shrink-0 w-2 h-2 rounded-full bg-red-500" title="High priority" data-testid="priority-high" />
+                      )}
+                      {task.priority === "low" && (
+                        <span className="shrink-0 w-2 h-2 rounded-full bg-gray-400" title="Low priority" data-testid="priority-low" />
+                      )}
+                      <span
+                        className={
+                          task.completed
+                            ? "line-through text-cove-muted text-sm"
+                            : "text-cove-charcoal text-sm"
+                        }
+                      >
+                        {task.title}
+                      </span>
+                    </div>
+                    {task.deadline && (
+                      <span className="text-xs text-cove-muted mt-0.5" data-testid="task-deadline">
+                        {task.deadline}
+                      </span>
+                    )}
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {hasWellness && (
-        <section>
-          <h2 className="font-medium text-sm text-cove-charcoal mb-2">
-            How are you feeling?
-          </h2>
-          {data.wellness ? (
-            <div className="border rounded p-3 text-sm text-cove-charcoal" data-testid="wellness-summary">
-              <div className="flex gap-4">
-                {data.wellness.mood != null && (
-                  <span>Mood: {data.wellness.mood}/5</span>
-                )}
-                {data.wellness.energy != null && (
-                  <span>Energy: {data.wellness.energy}/5</span>
-                )}
-                {data.wellness.sleep != null && (
-                  <span>Sleep: {data.wellness.sleep}/5</span>
-                )}
-              </div>
-              {data.wellness.notes && (
-                <p className="mt-1 text-cove-muted">{data.wellness.notes}</p>
-              )}
+              ))}
             </div>
-          ) : (
-            <CheckinForm onSubmit={handleWellnessSubmit} />
-          )}
-        </section>
-      )}
+          </section>
+        )}
 
-      {hasReminders && (
-        <section>
-          <h2 className="font-medium text-sm text-cove-charcoal mb-2">Reminders</h2>
-          <div className="flex flex-col divide-y">
-            {data.reminders.map((reminder) => (
-              <div
-                key={reminder.id}
-                className="flex items-center justify-between py-2"
-                data-testid="daily-reminder"
-              >
-                <div>
-                  <span className="text-sm text-cove-charcoal">
-                    {reminder.title}
-                  </span>
-                  {reminder.message && (
-                    <p className="text-xs text-cove-muted">{reminder.message}</p>
+        {/* Routines Card */}
+        {hasRoutines && (
+          <section className="rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-5 border-l-4 border-l-cove-blue">
+            <h2 className="font-semibold text-cove-charcoal mb-3">Routines</h2>
+            <div className="flex flex-col gap-4">
+              {data.routines.map((routine) => {
+                const completedSteps = routine.logs[0]?.completedSteps ?? [];
+                const progress = routine.steps.length > 0
+                  ? Math.round((completedSteps.length / routine.steps.length) * 100)
+                  : 0;
+                return (
+                  <div key={routine.id} data-testid="daily-routine">
+                    <h3 className="font-medium text-sm text-cove-charcoal mb-1">
+                      {routine.name}
+                    </h3>
+                    {/* Progress bar */}
+                    <div className="w-full h-1.5 rounded-full bg-cove-border-light mb-2">
+                      <div
+                        className="h-1.5 rounded-full bg-cove-blue transition-all"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      {routine.steps.map((step) => {
+                        const checked = completedSteps.includes(step.id);
+                        return (
+                          <label
+                            key={step.id}
+                            className="flex items-center gap-2 text-sm"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) =>
+                                handleStepToggle(
+                                  routine.id,
+                                  step.id,
+                                  e.target.checked
+                                )
+                              }
+                              aria-label={`Toggle ${step.title}`}
+                            />
+                            <span
+                              className={
+                                checked
+                                  ? "line-through text-cove-muted"
+                                  : "text-cove-charcoal"
+                              }
+                            >
+                              {step.title}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Wellness Card */}
+        {hasWellness && (
+          <section className="rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-5 border-l-4 border-l-green-400">
+            <h2 className="font-semibold text-cove-charcoal mb-3">
+              How are you feeling?
+            </h2>
+            {data.wellness ? (
+              <div className="text-sm text-cove-charcoal" data-testid="wellness-summary">
+                <div className="flex gap-4">
+                  {data.wellness.mood != null && (
+                    <span>Mood: {data.wellness.mood}/5</span>
+                  )}
+                  {data.wellness.energy != null && (
+                    <span>Energy: {data.wellness.energy}/5</span>
+                  )}
+                  {data.wellness.sleep != null && (
+                    <span>Sleep: {data.wellness.sleep}/5</span>
                   )}
                 </div>
-                <button
-                  onClick={() => handleSnooze(reminder.id)}
-                  className="text-xs text-cove-muted hover:text-cove-charcoal"
-                  aria-label={`Snooze ${reminder.title}`}
-                >
-                  Snooze
-                </button>
+                {data.wellness.notes && (
+                  <p className="mt-1 text-cove-muted">{data.wellness.notes}</p>
+                )}
               </div>
-            ))}
-          </div>
-        </section>
-      )}
+            ) : (
+              <CheckinForm onSubmit={handleWellnessSubmit} />
+            )}
+          </section>
+        )}
+
+        {/* Reminders Card */}
+        {hasReminders && (
+          <section className="rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-5 border-l-4 border-l-amber-400">
+            <h2 className="font-semibold text-cove-charcoal mb-3">Reminders</h2>
+            <div className="flex flex-col gap-2">
+              {data.reminders.map((reminder) => (
+                <div
+                  key={reminder.id}
+                  className="flex items-center justify-between"
+                  data-testid="daily-reminder"
+                >
+                  <div>
+                    <span className="text-sm text-cove-charcoal">
+                      {reminder.title}
+                    </span>
+                    {reminder.message && (
+                      <p className="text-xs text-cove-muted">{reminder.message}</p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleSnooze(reminder.id)}
+                    className="text-xs text-cove-muted hover:text-cove-charcoal ml-3 shrink-0"
+                    aria-label={`Snooze ${reminder.title}`}
+                  >
+                    Snooze
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
