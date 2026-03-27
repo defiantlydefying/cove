@@ -35,11 +35,11 @@ export default function AppShell({
 
   return (
     <div className="flex flex-col h-full">
-      <header className="flex items-center justify-between px-5 py-3.5 bg-gradient-to-r from-cove-gradient-start to-cove-gradient-end text-white shadow-sm">
+      <header className="flex items-center justify-between px-5 py-3.5 bg-cove-sidebar text-cove-sidebar-text shadow-sm">
         <div className="flex items-center gap-3">
-          <span className="text-lg font-semibold tracking-tight">Cove</span>
-          <span className="text-white/30">|</span>
-          <span className="text-sm text-white/70">
+          <span className="text-lg font-semibold tracking-tight leading-none">Cove</span>
+          <span className="opacity-30">|</span>
+          <span className="text-sm opacity-70">
             {userName ? `Welcome, ${userName}` : "Your cove."}
           </span>
         </div>
@@ -47,7 +47,7 @@ export default function AppShell({
           <button
             onClick={() => setSidebarVisible(true)}
             aria-label="Open sidebar"
-            className="px-3 py-1.5 text-sm border border-white/30 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+            className="px-3 py-1.5 text-sm border border-cove-sidebar-text/30 rounded-lg opacity-80 hover:opacity-100 hover:bg-cove-sidebar-text/10 transition-colors"
           >
             Tasks
           </button>

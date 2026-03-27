@@ -65,7 +65,7 @@ export default function TabBar({
             onKeyDown={(e) => handleKeyDown(e, index)}
             className={`relative flex items-center gap-1.5 px-5 py-2.5 text-sm rounded-t-2xl transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
               isActive
-                ? "bg-cove-card font-medium shadow-[0_-2px_8px_rgba(123,111,212,0.08)] translate-y-0 scale-100"
+                ? "bg-cove-card font-medium shadow-[0_-2px_8px_rgba(107,143,113,0.08)] translate-y-0 scale-100"
                 : "bg-transparent hover:bg-cove-card/50 translate-y-0.5 scale-[0.98]"
             } ${
               isEnabled
@@ -83,11 +83,19 @@ export default function TabBar({
               <span
                 role="switch"
                 aria-checked={isEnabled}
-                aria-label={`Toggle ${tab.label}`}
+                aria-label={`Toggle ${tab.label} module`}
                 onClick={(e) => {
                   e.stopPropagation();
                   onToggleModule(tab.id, !isEnabled);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onToggleModule(tab.id, !isEnabled);
+                  }
+                }}
+                tabIndex={0}
                 className={`relative inline-flex items-center flex-shrink-0 rounded-full transition-all duration-200 cursor-pointer ${
                   isEnabled ? "bg-cove-accent" : "bg-gray-300"
                 }`}
@@ -106,7 +114,7 @@ export default function TabBar({
               </span>
             )}
             {isActive && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-cove-accent to-cove-blue rounded-full" />
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-cove-accent rounded-full" />
             )}
           </button>
         );

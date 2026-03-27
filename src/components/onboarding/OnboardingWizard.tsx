@@ -166,8 +166,8 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
                     onClick={() => toggleCondition(condition)}
                     className={`px-4 py-2 rounded-xl text-sm transition-all duration-200 ${
                       conditions.includes(condition)
-                        ? "bg-cove-accent text-white shadow-sm"
-                        : "bg-cove-card border border-cove-border text-cove-muted hover:border-cove-accent/40 hover:text-cove-charcoal"
+                        ? "bg-cove-heather text-white shadow-sm"
+                        : "bg-cove-card border border-cove-border text-cove-muted hover:border-cove-heather/40 hover:text-cove-charcoal"
                     }`}
                   >
                     {condition}
