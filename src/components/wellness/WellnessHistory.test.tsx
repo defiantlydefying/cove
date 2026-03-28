@@ -43,9 +43,10 @@ describe("WellnessHistory", () => {
   it("renders check-in history", () => {
     render(<WellnessHistory checkins={sampleCheckins} />);
     expect(screen.getByText("Recent Check-ins")).toBeInTheDocument();
-    expect(screen.getAllByText("Good")).toHaveLength(2); // mood 4 + energy 4
-    expect(screen.getByText("Low")).toBeInTheDocument(); // mood 2
-    expect(screen.getByText("Great")).toBeInTheDocument(); // sleep 5
+    // Both mobile card and desktop table layouts render in jsdom (CSS media queries don't apply)
+    expect(screen.getAllByText("Good").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("Low").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Great").length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows empty state when no check-ins", () => {

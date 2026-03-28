@@ -234,12 +234,12 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
                   role="switch"
                   aria-checked={modules[mod.id]}
                   aria-label={`Toggle ${mod.name}`}
-                  className={`w-12 h-6 rounded-full relative transition-colors ${
+                  className={`w-12 h-6 rounded-full relative transition-colors focus-visible:ring-2 focus-visible:ring-cove-accent focus-visible:ring-offset-1 ${
                     modules[mod.id] ? "bg-cove-accent" : "bg-cove-border"
                   }`}
                 >
                   <span
-                    className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-sm ${
+                    className={`block w-5 h-5 bg-cove-card rounded-full absolute top-0.5 transition-transform shadow-sm ${
                       modules[mod.id] ? "translate-x-6" : "translate-x-0.5"
                     }`}
                   />
@@ -304,12 +304,12 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
                 role="switch"
                 aria-checked={animationsOn}
                 aria-label="Toggle animations"
-                className={`w-12 h-6 rounded-full relative transition-colors ${
+                className={`w-12 h-6 rounded-full relative transition-colors focus-visible:ring-2 focus-visible:ring-cove-accent focus-visible:ring-offset-1 ${
                   animationsOn ? "bg-cove-accent" : "bg-cove-border"
                 }`}
               >
                 <span
-                  className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-sm ${
+                  className={`block w-5 h-5 bg-cove-card rounded-full absolute top-0.5 transition-transform shadow-sm ${
                     animationsOn ? "translate-x-6" : "translate-x-0.5"
                   }`}
                 />

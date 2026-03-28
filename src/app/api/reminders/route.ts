@@ -32,22 +32,30 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const reminder = await prisma.reminder.create({
-    data: {
-      userId: session.user.id,
-      title: body.title.trim(),
-      message: body.message ?? null,
-      type: body.type ?? "custom",
-      schedule: body.schedule ?? null,
-      enabled: body.enabled ?? true,
-      scheduledTime: body.scheduledTime ?? null,
-      intervalMinutes: body.intervalMinutes != null ? Number(body.intervalMinutes) : null,
-      activeDays: body.activeDays ?? "0,1,2,3,4,5,6",
-      presetKey: body.presetKey ?? null,
-      soundEnabled: body.soundEnabled ?? true,
-      notifyEnabled: body.notifyEnabled ?? true,
-    },
-  });
+  try {
+    const reminder = await prisma.reminder.create({
+      data: {
+        userId: session.user.id,
+        title: body.title.trim(),
+        message: body.message ?? null,
+        type: body.type ?? "custom",
+        schedule: body.schedule ?? null,
+        enabled: body.enabled ?? true,
+        scheduledTime: body.scheduledTime ?? null,
+        intervalMinutes: body.intervalMinutes != null ? Number(body.intervalMinutes) : null,
+        activeDays: body.activeDays ?? "0,1,2,3,4,5,6",
+        presetKey: body.presetKey ?? null,
+        soundEnabled: body.soundEnabled ?? true,
+        notifyEnabled: body.notifyEnabled ?? true,
+      },
+    });
 
-  return NextResponse.json(reminder, { status: 201 });
+    return NextResponse.json(reminder, { status: 201 });
+  } catch (error) {
+    console.error("Reminder creation failed:", error);
+    return NextResponse.json(
+      { error: "Failed to create reminder" },
+      { status: 500 }
+    );
+  }
 }

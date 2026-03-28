@@ -178,12 +178,12 @@ export default function SettingsPanel() {
             role="switch"
             aria-checked={settings.animationsOn}
             aria-label="Toggle animations"
-            className={`w-12 h-6 rounded-full relative transition-colors ${
+            className={`w-12 h-6 rounded-full relative transition-colors focus-visible:ring-2 focus-visible:ring-cove-accent focus-visible:ring-offset-1 ${
               settings.animationsOn ? "bg-cove-accent" : "bg-cove-border"
             }`}
           >
             <span
-              className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-sm ${
+              className={`block w-5 h-5 bg-cove-card rounded-full absolute top-0.5 transition-transform shadow-sm ${
                 settings.animationsOn ? "translate-x-6" : "translate-x-0.5"
               }`}
             />
@@ -200,12 +200,12 @@ export default function SettingsPanel() {
             role="switch"
             aria-checked={settings.soundsOn}
             aria-label="Toggle sounds"
-            className={`w-12 h-6 rounded-full relative transition-colors ${
+            className={`w-12 h-6 rounded-full relative transition-colors focus-visible:ring-2 focus-visible:ring-cove-accent focus-visible:ring-offset-1 ${
               settings.soundsOn ? "bg-cove-accent" : "bg-cove-border"
             }`}
           >
             <span
-              className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-sm ${
+              className={`block w-5 h-5 bg-cove-card rounded-full absolute top-0.5 transition-transform shadow-sm ${
                 settings.soundsOn ? "translate-x-6" : "translate-x-0.5"
               }`}
             />
@@ -283,12 +283,12 @@ export default function SettingsPanel() {
                   role="switch"
                   aria-checked={enabled}
                   aria-label={`Toggle ${mod.name}`}
-                  className={`w-12 h-6 rounded-full relative transition-colors shrink-0 ml-4 ${
+                  className={`w-12 h-6 rounded-full relative transition-colors focus-visible:ring-2 focus-visible:ring-cove-accent focus-visible:ring-offset-1 shrink-0 ml-4 ${
                     enabled ? "bg-cove-accent" : "bg-cove-border"
                   }`}
                 >
                   <span
-                    className={`block w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform shadow-sm ${
+                    className={`block w-5 h-5 bg-cove-card rounded-full absolute top-0.5 transition-transform shadow-sm ${
                       enabled ? "translate-x-6" : "translate-x-0.5"
                     }`}
                   />

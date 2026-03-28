@@ -14,4 +14,4 @@ function renderWithProviders(
 }
 
 export { renderWithProviders as render };
-export { screen, waitFor, within } from "@testing-library/react";
+export { screen, waitFor, within, act, fireEvent } from "@testing-library/react";

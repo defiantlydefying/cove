@@ -40,7 +40,17 @@ export default function ReminderList() {
       const res = await fetch("/api/reminders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          title: data.title,
+          message: data.message || null,
+          type: data.type,
+          scheduledTime: data.scheduledTime,
+          intervalMinutes: data.intervalMinutes,
+          activeDays: data.activeDays,
+          presetKey: data.presetKey || null,
+          soundEnabled: data.soundEnabled,
+          notifyEnabled: data.notifyEnabled,
+        }),
       });
       if (!res.ok) throw new Error();
       const created = await res.json();

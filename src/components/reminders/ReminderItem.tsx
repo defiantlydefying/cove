@@ -69,13 +69,13 @@ export default function ReminderItem({
           aria-checked={reminder.enabled}
           aria-label={`Toggle ${reminder.title}`}
           onClick={() => onToggle(reminder.id, !reminder.enabled)}
-          className={`mt-0.5 shrink-0 relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+          className={`mt-0.5 shrink-0 relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-cove-accent focus-visible:ring-offset-1 ${
             reminder.enabled ? "bg-cove-accent" : "bg-cove-border"
           }`}
         >
           <span
-            className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${
-              reminder.enabled ? "translate-x-4" : "translate-x-1"
+            className={`inline-block h-5 w-5 rounded-full bg-cove-card shadow-sm transition-transform ${
+              reminder.enabled ? "translate-x-5" : "translate-x-0.5"
             }`}
           />
         </button>

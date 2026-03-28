@@ -134,45 +134,73 @@ export default function WellnessHistory({
           </p>
         </div>
       ) : (
-        <div className="bg-cove-card border border-cove-border-light rounded-2xl shadow-sm overflow-x-auto">
-          <table className="w-full text-sm min-w-[480px]" aria-label="Check-in history">
-            <thead>
-              <tr className="bg-cove-offwhite">
-                <th className="py-3 px-4 text-left text-xs font-medium text-cove-muted uppercase tracking-wider">Date</th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-cove-muted uppercase tracking-wider">Mood</th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-cove-muted uppercase tracking-wider">Energy</th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-cove-muted uppercase tracking-wider">Sleep</th>
-                <th className="py-3 px-4 text-left text-xs font-medium text-cove-muted uppercase tracking-wider">Trend</th>
-              </tr>
-            </thead>
-            <tbody>
-              {checkins.map((c, index) => (
-                <tr
-                  key={c.id}
-                  className={`border-t border-cove-border-light transition-colors hover:bg-cove-accent-light/30 ${
-                    index % 2 === 0 ? "" : "bg-cove-offwhite/50"
-                  }`}
-                >
-                  <td className="py-3 px-4 text-cove-charcoal font-medium">
+        <>
+          {/* Mobile: card layout */}
+          <div className="flex flex-col gap-2 md:hidden">
+            {checkins.map((c) => (
+              <div
+                key={c.id}
+                className="bg-cove-card border border-cove-border-light rounded-xl p-3"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-cove-charcoal">
                     {formatDate(c.date)}
-                  </td>
-                  <td className="py-3 px-4">
-                    <LevelBadge value={c.mood} />
-                  </td>
-                  <td className="py-3 px-4">
-                    <LevelBadge value={c.energy} />
-                  </td>
-                  <td className="py-3 px-4">
-                    <LevelBadge value={c.sleep} />
-                  </td>
-                  <td className="py-3 px-4">
-                    <MiniBar value={c.mood} />
-                  </td>
+                  </span>
+                  <MiniBar value={c.mood} />
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <span className="text-xs text-cove-muted">Mood:</span>
+                  <LevelBadge value={c.mood} />
+                  <span className="text-xs text-cove-muted ml-1">Energy:</span>
+                  <LevelBadge value={c.energy} />
+                  <span className="text-xs text-cove-muted ml-1">Sleep:</span>
+                  <LevelBadge value={c.sleep} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop: table layout */}
+          <div className="hidden md:block bg-cove-card border border-cove-border-light rounded-2xl shadow-sm overflow-hidden">
+            <table className="w-full text-sm" aria-label="Check-in history">
+              <thead>
+                <tr className="bg-cove-offwhite">
+                  <th className="py-3 px-4 text-left text-xs font-medium text-cove-muted uppercase tracking-wider">Date</th>
+                  <th className="py-3 px-4 text-left text-xs font-medium text-cove-muted uppercase tracking-wider">Mood</th>
+                  <th className="py-3 px-4 text-left text-xs font-medium text-cove-muted uppercase tracking-wider">Energy</th>
+                  <th className="py-3 px-4 text-left text-xs font-medium text-cove-muted uppercase tracking-wider">Sleep</th>
+                  <th className="py-3 px-4 text-left text-xs font-medium text-cove-muted uppercase tracking-wider">Trend</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {checkins.map((c, index) => (
+                  <tr
+                    key={c.id}
+                    className={`border-t border-cove-border-light transition-colors hover:bg-cove-accent-light/30 ${
+                      index % 2 === 0 ? "" : "bg-cove-offwhite/50"
+                    }`}
+                  >
+                    <td className="py-3 px-4 text-cove-charcoal font-medium">
+                      {formatDate(c.date)}
+                    </td>
+                    <td className="py-3 px-4">
+                      <LevelBadge value={c.mood} />
+                    </td>
+                    <td className="py-3 px-4">
+                      <LevelBadge value={c.energy} />
+                    </td>
+                    <td className="py-3 px-4">
+                      <LevelBadge value={c.sleep} />
+                    </td>
+                    <td className="py-3 px-4">
+                      <MiniBar value={c.mood} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );

@@ -96,7 +96,7 @@ export default function ReminderScheduleFields({
                 aria-label={
                   ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][index]
                 }
-                className={`w-7 h-7 rounded-lg text-xs font-medium transition-colors ${
+                className={`w-9 h-9 rounded-lg text-xs font-medium transition-colors ${
                   active
                     ? "bg-cove-accent text-white"
                     : "bg-cove-offwhite text-cove-muted border border-cove-border hover:border-cove-accent/40"
