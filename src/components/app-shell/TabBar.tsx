@@ -96,18 +96,18 @@ export default function TabBar({
                   }
                 }}
                 tabIndex={0}
-                className={`relative inline-flex items-center flex-shrink-0 rounded-full transition-all duration-200 cursor-pointer ${
-                  isEnabled ? "bg-cove-accent" : "bg-gray-300"
+                className={`relative inline-flex items-center flex-shrink-0 rounded-full transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-cove-accent focus-visible:ring-offset-1 ${
+                  isEnabled ? "bg-cove-accent" : "bg-cove-border"
                 }`}
-                style={{ width: 28, height: 16 }}
+                style={{ width: 36, height: 20 }}
               >
                 <span
-                  className="inline-block rounded-full bg-white shadow transition-all duration-200"
+                  className="inline-block rounded-full bg-cove-card shadow transition-all duration-200"
                   style={{
-                    width: 12,
-                    height: 12,
+                    width: 16,
+                    height: 16,
                     transform: isEnabled
-                      ? "translateX(14px)"
+                      ? "translateX(18px)"
                       : "translateX(2px)",
                   }}
                 />
