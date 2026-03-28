@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const rawSteps: (string | { title: string })[] = body.steps ?? [];
+  const rawSteps: (string | { title: string; durationMinutes?: number })[] = body.steps ?? [];
 
   const routine = await prisma.$transaction(async (tx) => {
     const created = await tx.routine.create({
@@ -56,6 +56,9 @@ export async function POST(request: NextRequest) {
         userId: session.user!.id,
         name: body.name.trim(),
         schedule: body.schedule ?? null,
+        startTime: body.startTime ?? null,
+        showTimes: body.showTimes ?? false,
+        showDurations: body.showDurations ?? true,
       },
     });
 
@@ -65,6 +68,7 @@ export async function POST(request: NextRequest) {
           routineId: created.id,
           title: typeof step === "string" ? step : step.title,
           sortOrder: index,
+          durationMinutes: typeof step === "string" ? null : (step.durationMinutes ?? null),
         })),
       });
     }

@@ -13,7 +13,15 @@ const TEMPLATES = [
     bg: "bg-cove-amber-light border-cove-amber/30",
     textColor: "text-cove-charcoal",
     subtextColor: "text-cove-muted",
-    steps: ["Stretch for 5 minutes", "Drink a glass of water", "Review your goals", "Eat a healthy breakfast"],
+    startTime: "06:00",
+    showTimes: true,
+    showDurations: true,
+    steps: [
+      { title: "Stretch for 5 minutes", durationMinutes: 5 },
+      { title: "Drink a glass of water", durationMinutes: 5 },
+      { title: "Review your goals", durationMinutes: 10 },
+      { title: "Eat a healthy breakfast", durationMinutes: 15 },
+    ],
   },
   {
     id: "wind-down",
@@ -22,7 +30,15 @@ const TEMPLATES = [
     bg: "bg-cove-sage-light border-cove-sage/30",
     textColor: "text-cove-charcoal",
     subtextColor: "text-cove-muted",
-    steps: ["Put away screens", "Light stretching or yoga", "Read for 15 minutes", "Prepare for tomorrow"],
+    startTime: "22:00",
+    showTimes: true,
+    showDurations: true,
+    steps: [
+      { title: "Put away screens", durationMinutes: 5 },
+      { title: "Light stretching or yoga", durationMinutes: 10 },
+      { title: "Read for 15 minutes", durationMinutes: 15 },
+      { title: "Prepare for tomorrow", durationMinutes: 10 },
+    ],
   },
   {
     id: "work-focus",
@@ -31,7 +47,15 @@ const TEMPLATES = [
     bg: "bg-cove-blue-light border-cove-blue/30",
     textColor: "text-cove-charcoal",
     subtextColor: "text-cove-muted",
-    steps: ["Clear your desk", "Set today's top 3 priorities", "Close unnecessary tabs", "Start a focus timer"],
+    startTime: "09:00",
+    showTimes: true,
+    showDurations: true,
+    steps: [
+      { title: "Clear your desk", durationMinutes: 5 },
+      { title: "Set today's top 3 priorities", durationMinutes: 10 },
+      { title: "Close unnecessary tabs", durationMinutes: 5 },
+      { title: "Start a focus timer", durationMinutes: 25 },
+    ],
   },
   {
     id: "self-care",
@@ -40,7 +64,15 @@ const TEMPLATES = [
     bg: "bg-cove-terracotta-light border-cove-terracotta/30",
     textColor: "text-cove-charcoal",
     subtextColor: "text-cove-muted",
-    steps: ["Skincare routine", "Journal your thoughts", "Move your body", "Do something you enjoy"],
+    startTime: null,
+    showTimes: false,
+    showDurations: false,
+    steps: [
+      { title: "Skincare routine", durationMinutes: null },
+      { title: "Journal your thoughts", durationMinutes: null },
+      { title: "Move your body", durationMinutes: null },
+      { title: "Do something you enjoy", durationMinutes: null },
+    ],
   },
 ];
 
@@ -49,7 +81,7 @@ export default function RoutineList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [formInitialData, setFormInitialData] = useState<RoutineFormData | undefined>(undefined);
+  const [formInitialData, setFormInitialData] = useState<Partial<RoutineFormData> | undefined>(undefined);
   const [completedSteps, setCompletedSteps] = useState<Record<string, string[]>>({});
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
@@ -152,7 +184,13 @@ export default function RoutineList() {
   }
 
   function handleTemplateClick(template: (typeof TEMPLATES)[number]) {
-    setFormInitialData({ name: template.name, steps: template.steps });
+    setFormInitialData({
+      name: template.name,
+      steps: template.steps,
+      startTime: template.startTime,
+      showTimes: template.showTimes,
+      showDurations: template.showDurations,
+    });
     setShowForm(true);
   }
 
@@ -172,7 +210,13 @@ export default function RoutineList() {
         return;
       }
       if (data.name && data.steps) {
-        setFormInitialData({ name: data.name, steps: data.steps });
+        setFormInitialData({
+          name: data.name,
+          steps: (data.steps as string[]).map((s: string) => ({
+            title: s,
+            durationMinutes: null,
+          })),
+        });
         setShowForm(true);
         setAiPrompt("");
       }

@@ -61,6 +61,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   if (body.schedule !== undefined) data.schedule = body.schedule;
   if (body.isActive !== undefined) data.isActive = body.isActive;
   if (body.sortOrder !== undefined) data.sortOrder = body.sortOrder;
+  if (body.startTime !== undefined) data.startTime = body.startTime;
+  if (body.showTimes !== undefined) data.showTimes = body.showTimes;
+  if (body.showDurations !== undefined) data.showDurations = body.showDurations;
 
   const updated = await prisma.$transaction(async (tx) => {
     await tx.routine.update({ where: { id }, data });
@@ -68,13 +71,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (body.steps !== undefined) {
       await tx.routineStep.deleteMany({ where: { routineId: id } });
 
-      const steps: { title: string }[] = body.steps;
+      const steps: (string | { title: string; durationMinutes?: number })[] = body.steps;
       if (steps.length > 0) {
         await tx.routineStep.createMany({
           data: steps.map((step, index) => ({
             routineId: id,
-            title: step.title,
+            title: typeof step === "string" ? step : step.title,
             sortOrder: index,
+            durationMinutes: typeof step === "string" ? null : (step.durationMinutes ?? null),
           })),
         });
       }

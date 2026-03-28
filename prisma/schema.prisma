@@ -27,6 +27,11 @@ model User {
   moduleSettings   ModuleSetting[]
   userSettings     UserSettings?
   profile          UserProfile?
+  focusSessions    FocusSession[]
+  plannerItems     PlannerItem[]
+  habits           Habit[]
+  weeklyGoals      WeeklyGoal[]
+  timeEntries      TimeEntry[]
 }
 
 model Account {
@@ -82,20 +87,26 @@ model Task {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parent   Task?  @relation("SubTasks", fields: [parentId], references: [id])
-  subtasks Task[] @relation("SubTasks")
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent        Task?          @relation("SubTasks", fields: [parentId], references: [id])
+  subtasks      Task[]         @relation("SubTasks")
+  focusSessions FocusSession[]
+  plannerItems  PlannerItem[]
+  timeEntries   TimeEntry[]
 }
 
 model Routine {
-  id        String        @id @default(cuid())
-  userId    String
-  name      String
-  schedule  String?
-  isActive  Boolean       @default(true)
-  sortOrder Int           @default(0)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  userId        String
+  name          String
+  schedule      String?
+  isActive      Boolean       @default(true)
+  sortOrder     Int           @default(0)
+  startTime     String?
+  showTimes     Boolean       @default(false)
+  showDurations Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   steps RoutineStep[]
@@ -103,10 +114,11 @@ model Routine {
 }
 
 model RoutineStep {
-  id        String  @id @default(cuid())
-  routineId String
-  title     String
-  sortOrder Int     @default(0)
+  id              String  @id @default(cuid())
+  routineId       String
+  title           String
+  sortOrder       Int     @default(0)
+  durationMinutes Int?
 
   routine Routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
 }
@@ -234,4 +246,99 @@ model UserSettings {
   sidebarVisible Boolean @default(true)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model FocusSession {
+  id          String   @id @default(cuid())
+  userId      String
+  label       String?
+  taskId      String?
+  durationMin Int
+  sessionType String   @default("focus")
+  completedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task Task? @relation(fields: [taskId], references: [id])
+
+  @@index([userId, completedAt])
+}
+
+model PlannerItem {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  date      DateTime @db.Date
+  zone      String   @default("must")
+  sortOrder Int      @default(0)
+  startTime String?
+  endTime   String?
+  completed Boolean  @default(false)
+  taskId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task Task? @relation(fields: [taskId], references: [id])
+
+  @@index([userId, date])
+}
+
+model Habit {
+  id            String        @id @default(cuid())
+  userId        String
+  title         String
+  currentStreak Int           @default(0)
+  longestStreak Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checks      HabitCheck[]
+  linkedGoals WeeklyGoal[]
+
+  @@index([userId])
+}
+
+model HabitCheck {
+  id        String   @id @default(cuid())
+  habitId   String
+  date      DateTime @db.Date
+  createdAt DateTime @default(now())
+
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+}
+
+model WeeklyGoal {
+  id            String   @id @default(cuid())
+  userId        String
+  title         String
+  targetCount   Int
+  currentCount  Int      @default(0)
+  weekStart     DateTime @db.Date
+  linkedHabitId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  linkedHabit Habit? @relation(fields: [linkedHabitId], references: [id])
+
+  @@index([userId, weekStart])
+}
+
+model TimeEntry {
+  id          String   @id @default(cuid())
+  userId      String
+  label       String
+  durationMin Int
+  date        DateTime @db.Date
+  taskId      String?
+  createdAt   DateTime @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task Task? @relation(fields: [taskId], references: [id])
+
+  @@index([userId, date])
 }

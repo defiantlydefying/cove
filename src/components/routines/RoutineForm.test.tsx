@@ -16,7 +16,7 @@ describe("RoutineForm", () => {
     expect(screen.getByPlaceholderText("Step 2")).toBeInTheDocument();
   });
 
-  it("calls onSubmit with routine data", async () => {
+  it("calls onSubmit with routine data including timing fields", async () => {
     const onSubmit = vi.fn();
     render(<RoutineForm onSubmit={onSubmit} />);
 
@@ -26,17 +26,30 @@ describe("RoutineForm", () => {
     await userEvent.type(screen.getByPlaceholderText("Step 2"), "Brush teeth");
     await userEvent.click(screen.getByText("Create routine"));
 
-    expect(onSubmit).toHaveBeenCalledWith({
-      name: "Evening wind-down",
-      steps: ["Read a book", "Brush teeth"],
-    });
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "Evening wind-down",
+        steps: [
+          { title: "Read a book", durationMinutes: null },
+          { title: "Brush teeth", durationMinutes: null },
+        ],
+        showTimes: false,
+        showDurations: true,
+      })
+    );
   });
 
   it("shows Save changes button when editing", () => {
     render(
       <RoutineForm
         onSubmit={vi.fn()}
-        initialData={{ name: "Existing", steps: ["Step A"] }}
+        initialData={{
+          name: "Existing",
+          steps: [{ title: "Step A", durationMinutes: null }],
+          startTime: null,
+          showTimes: false,
+          showDurations: true,
+        }}
       />
     );
     expect(screen.getByText("Save changes")).toBeInTheDocument();

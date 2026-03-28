@@ -3,21 +3,32 @@
 import { useState } from "react";
 import { useToast } from "@/components/providers/ToastProvider";
 
+interface StepData {
+  title: string;
+  durationMinutes: number | null;
+}
+
 export interface RoutineFormData {
   name: string;
-  steps: string[];
+  steps: StepData[];
+  startTime: string | null;
+  showTimes: boolean;
+  showDurations: boolean;
 }
 
 interface RoutineFormProps {
   onSubmit: (data: RoutineFormData) => void;
-  initialData?: RoutineFormData;
+  initialData?: Partial<RoutineFormData>;
 }
 
 export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps) {
   const [name, setName] = useState(initialData?.name ?? "");
-  const [steps, setSteps] = useState<string[]>(
-    initialData?.steps ?? [""]
+  const [steps, setSteps] = useState<StepData[]>(
+    initialData?.steps ?? [{ title: "", durationMinutes: null }]
   );
+  const [startTime, setStartTime] = useState(initialData?.startTime ?? "09:00");
+  const [showTimes, setShowTimes] = useState(initialData?.showTimes ?? false);
+  const [showDurations, setShowDurations] = useState(initialData?.showDurations ?? true);
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [modifyPrompt, setModifyPrompt] = useState("");
@@ -26,26 +37,47 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
   const { toast } = useToast();
 
   function handleAddStep() {
-    setSteps((prev) => [...prev, ""]);
+    setSteps((prev) => [...prev, { title: "", durationMinutes: null }]);
   }
 
-  function handleStepChange(index: number, value: string) {
-    setSteps((prev) => prev.map((s, i) => (i === index ? value : s)));
+  function handleStepTitleChange(index: number, value: string) {
+    setSteps((prev) => prev.map((s, i) => (i === index ? { ...s, title: value } : s)));
+  }
+
+  function handleStepDurationChange(index: number, value: string) {
+    const num = value === "" ? null : Math.max(1, parseInt(value) || 1);
+    setSteps((prev) => prev.map((s, i) => (i === index ? { ...s, durationMinutes: num } : s)));
   }
 
   function handleRemoveStep(index: number) {
     setSteps((prev) => prev.filter((_, i) => i !== index));
   }
 
+  function handleToggleTimes(on: boolean) {
+    setShowTimes(on);
+    if (on) setShowDurations(true);
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmedName = name.trim();
-    const trimmedSteps = steps.map((s) => s.trim()).filter(Boolean);
-    if (!trimmedName || trimmedSteps.length === 0) return;
-    onSubmit({ name: trimmedName, steps: trimmedSteps });
+    const validSteps = steps
+      .filter((s) => s.title.trim())
+      .map((s) => ({ title: s.title.trim(), durationMinutes: s.durationMinutes }));
+    if (!trimmedName || validSteps.length === 0) return;
+    onSubmit({
+      name: trimmedName,
+      steps: validSteps,
+      startTime: showTimes ? startTime : null,
+      showTimes,
+      showDurations,
+    });
     if (!initialData) {
       setName("");
-      setSteps([""]);
+      setSteps([{ title: "", durationMinutes: null }]);
+      setStartTime("09:00");
+      setShowTimes(false);
+      setShowDurations(true);
       setAiSuggestions([]);
     }
   }
@@ -59,7 +91,7 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
-          steps: steps.filter((s) => s.trim()),
+          steps: steps.filter((s) => s.title.trim()).map((s) => s.title),
         }),
       });
       const data = await res.json();
@@ -73,17 +105,16 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
 
   function handleAddSuggestion(suggestion: string) {
     setSteps((prev) => {
-      // If the last step is empty, replace it
-      if (prev.length > 0 && prev[prev.length - 1].trim() === "") {
-        return [...prev.slice(0, -1), suggestion];
+      if (prev.length > 0 && prev[prev.length - 1].title.trim() === "") {
+        return [...prev.slice(0, -1), { title: suggestion, durationMinutes: null }];
       }
-      return [...prev, suggestion];
+      return [...prev, { title: suggestion, durationMinutes: null }];
     });
     setAiSuggestions((prev) => prev.filter((s) => s !== suggestion));
   }
 
   async function handleModify() {
-    if (!modifyPrompt.trim() || steps.filter(s => s.trim()).length === 0) return;
+    if (!modifyPrompt.trim() || steps.filter((s) => s.title.trim()).length === 0) return;
     setModifyLoading(true);
     setModifyError("");
     try {
@@ -91,7 +122,7 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: `Modify this existing routine called "${name}".\n\nCurrent steps:\n${steps.filter(s => s.trim()).map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\nModification requested: ${modifyPrompt.trim()}`,
+          prompt: `Modify this existing routine called "${name}".\n\nCurrent steps:\n${steps.filter((s) => s.title.trim()).map((s, i) => `${i + 1}. ${s.title}`).join("\n")}\n\nModification requested: ${modifyPrompt.trim()}`,
         }),
       });
       const data = await res.json();
@@ -101,7 +132,9 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
       }
       if (data.name && data.steps) {
         setName(data.name);
-        setSteps(data.steps);
+        setSteps(
+          (data.steps as string[]).map((s: string) => ({ title: s, durationMinutes: null }))
+        );
         setModifyPrompt("");
       }
     } catch {
@@ -112,6 +145,10 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
   }
 
   const isEditing = !!initialData;
+  const totalMinutes = steps.reduce((sum, s) => sum + (s.durationMinutes ?? 0), 0);
+
+  const inputClass =
+    "px-4 py-2.5 text-sm bg-cove-offwhite border border-cove-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-cove-accent/40 text-cove-charcoal placeholder:text-cove-muted";
 
   return (
     <form
@@ -126,45 +163,83 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
         placeholder="Name your routine..."
         maxLength={100}
         required
-        className="w-full px-4 py-3 text-base font-medium bg-cove-offwhite border border-cove-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-cove-accent/40 text-cove-charcoal placeholder:text-cove-muted"
+        className={`w-full text-base font-medium ${inputClass}`}
       />
+
+      {/* Mode toggles */}
+      <div className="flex flex-wrap gap-4 items-center">
+        <label className="flex items-center gap-2 text-sm text-cove-charcoal cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showDurations}
+            onChange={(e) => {
+              setShowDurations(e.target.checked);
+              if (!e.target.checked) setShowTimes(false);
+            }}
+            className="accent-cove-accent"
+          />
+          Show durations
+        </label>
+        <label className="flex items-center gap-2 text-sm text-cove-charcoal cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showTimes}
+            onChange={(e) => handleToggleTimes(e.target.checked)}
+            disabled={!showDurations}
+            className="accent-cove-accent"
+          />
+          Show times
+        </label>
+        {showTimes && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-cove-muted">Starts at</span>
+            <input
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className="px-2 py-1.5 text-sm border border-cove-border rounded-xl bg-cove-offwhite text-cove-charcoal focus:outline-none focus:ring-2 focus:ring-cove-accent/30"
+            />
+          </div>
+        )}
+        {showDurations && totalMinutes > 0 && (
+          <span className="text-xs text-cove-muted ml-auto">{totalMinutes} min total</span>
+        )}
+      </div>
 
       {/* Steps list */}
       <div className="flex flex-col gap-2">
         {steps.map((step, index) => (
-          <div
-            key={index}
-            className="flex items-center gap-2 animate-fade-in-up"
-          >
-            {/* Drag handle (visual only) */}
-            <div className="flex-shrink-0 text-cove-muted cursor-grab" aria-label="Drag handle">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
+          <div key={index} className="flex items-center gap-2 animate-fade-in-up">
+            <div className="flex-shrink-0 text-cove-muted" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
               </svg>
             </div>
 
-            {/* Step input */}
             <input
               type="text"
-              value={step}
-              onChange={(e) => handleStepChange(index, e.target.value)}
+              value={step.title}
+              onChange={(e) => handleStepTitleChange(index, e.target.value)}
               placeholder={`Step ${index + 1}`}
-              className="flex-1 px-4 py-2.5 text-sm bg-cove-offwhite border border-cove-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-cove-accent/40 text-cove-charcoal placeholder:text-cove-muted"
+              className={`flex-1 ${inputClass}`}
             />
 
-            {/* Remove button */}
+            {showDurations && (
+              <div className="flex items-center gap-1 shrink-0">
+                <input
+                  type="number"
+                  min={1}
+                  max={480}
+                  value={step.durationMinutes ?? ""}
+                  onChange={(e) => handleStepDurationChange(index, e.target.value)}
+                  placeholder="--"
+                  className="w-14 px-2 py-2.5 text-sm text-center bg-cove-offwhite border border-cove-border-light rounded-xl focus:outline-none focus:ring-2 focus:ring-cove-accent/40 text-cove-charcoal placeholder:text-cove-muted"
+                  aria-label={`Duration for step ${index + 1} in minutes`}
+                />
+                <span className="text-xs text-cove-muted">min</span>
+              </div>
+            )}
+
             {steps.length > 1 && (
               <button
                 type="button"
@@ -172,19 +247,8 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
                 aria-label={`Remove step ${index + 1}`}
                 className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-cove-muted hover:text-red-500 hover:bg-red-50 transition-colors"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
             )}
@@ -192,39 +256,20 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
         ))}
       </div>
 
-      {/* Add step button */}
-      <button
-        type="button"
-        onClick={handleAddStep}
-        className="w-full py-2.5 text-sm text-cove-muted hover:text-cove-charcoal border border-dashed border-cove-border-light rounded-xl hover:border-cove-border transition-colors"
-      >
+      <button type="button" onClick={handleAddStep} className="w-full py-2.5 text-sm text-cove-muted hover:text-cove-charcoal border border-dashed border-cove-border-light rounded-xl hover:border-cove-border transition-colors">
         + Add a step
       </button>
 
-      {/* AI suggestions button */}
-      <button
-        type="button"
-        onClick={handleAskAiSuggestions}
-        disabled={loadingSuggestions || !name.trim()}
-        className="w-full py-2.5 text-sm font-medium text-cove-accent bg-cove-accent-light border border-cove-accent/20 rounded-xl hover:bg-cove-accent-light/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      >
+      <button type="button" onClick={handleAskAiSuggestions} disabled={loadingSuggestions || !name.trim()} className="w-full py-2.5 text-sm font-medium text-cove-accent bg-cove-accent-light border border-cove-accent/20 rounded-xl hover:bg-cove-accent-light/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
         {loadingSuggestions ? "Getting suggestions..." : "Ask AI for suggestions"}
       </button>
 
-      {/* AI suggestions display */}
       {aiSuggestions.length > 0 && (
         <div className="flex flex-col gap-2 p-4 bg-cove-accent-light rounded-xl border border-cove-accent/20">
-          <p className="text-xs font-medium text-cove-accent">
-            AI Suggestions -- click to add:
-          </p>
+          <p className="text-xs font-medium text-cove-accent">AI Suggestions -- click to add:</p>
           <div className="flex flex-wrap gap-2">
             {aiSuggestions.map((suggestion, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => handleAddSuggestion(suggestion)}
-                className="px-3 py-1.5 text-sm bg-cove-card text-cove-charcoal rounded-lg border border-cove-accent/20 hover:bg-cove-accent-light hover:border-cove-accent/30 transition-colors"
-              >
+              <button key={i} type="button" onClick={() => handleAddSuggestion(suggestion)} className="px-3 py-1.5 text-sm bg-cove-card text-cove-charcoal rounded-lg border border-cove-accent/20 hover:bg-cove-accent-light hover:border-cove-accent/30 transition-colors">
                 + {suggestion}
               </button>
             ))}
@@ -232,41 +277,20 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
         </div>
       )}
 
-      {/* AI Modify section -- only show when there are steps */}
-      {steps.filter(s => s.trim()).length > 0 && (
+      {steps.filter((s) => s.title.trim()).length > 0 && (
         <div className="flex flex-col gap-2 p-4 bg-cove-offwhite rounded-xl border border-cove-border-light">
-          <p className="text-xs font-medium text-cove-muted">
-            Ask AI to modify this routine
-          </p>
+          <p className="text-xs font-medium text-cove-muted">Ask AI to modify this routine</p>
           <div className="flex gap-2">
-            <input
-              type="text"
-              value={modifyPrompt}
-              onChange={(e) => setModifyPrompt(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleModify(); } }}
-              placeholder="e.g. Make it shorter, add a meditation step, shift everything 30 min later..."
-              className="flex-1 px-3 py-2 text-sm bg-cove-card border border-cove-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-cove-accent/40 text-cove-charcoal placeholder:text-cove-muted"
-            />
-            <button
-              type="button"
-              onClick={handleModify}
-              disabled={modifyLoading || !modifyPrompt.trim()}
-              className="px-4 py-2 text-sm font-medium text-white bg-cove-accent rounded-lg hover:bg-cove-accent-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-            >
+            <input type="text" value={modifyPrompt} onChange={(e) => setModifyPrompt(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleModify(); } }} placeholder="e.g. Make it shorter, add a meditation step..." className={`flex-1 px-3 py-2 text-sm bg-cove-card border border-cove-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-cove-accent/40 text-cove-charcoal placeholder:text-cove-muted`} />
+            <button type="button" onClick={handleModify} disabled={modifyLoading || !modifyPrompt.trim()} className="px-4 py-2 text-sm font-medium text-white bg-cove-accent rounded-lg hover:bg-cove-accent-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
               {modifyLoading ? "Modifying..." : "Modify"}
             </button>
           </div>
-          {modifyError && (
-            <p className="text-xs text-red-400">{modifyError}</p>
-          )}
+          {modifyError && <p className="text-xs text-red-400">{modifyError}</p>}
         </div>
       )}
 
-      {/* Submit button */}
-      <button
-        type="submit"
-        className="w-full py-3 text-sm font-semibold text-white bg-cove-accent rounded-xl hover:bg-cove-accent-hover transition-all shadow-sm"
-      >
+      <button type="submit" className="w-full py-3 text-sm font-semibold text-white bg-cove-accent rounded-xl hover:bg-cove-accent-hover transition-all shadow-sm">
         {isEditing ? "Save changes" : "Create routine"}
       </button>
     </form>
