@@ -7,11 +7,13 @@ import WellnessTracker from "@/components/wellness/WellnessTracker";
 import ReminderList from "@/components/reminders/ReminderList";
 import DailyView from "@/components/daily/DailyView";
 import GamificationPanel from "@/components/gamification/GamificationPanel";
+import ProductivityPanel from "@/components/productivity/ProductivityPanel";
 import ReminderScheduler from "@/components/reminders/ReminderScheduler";
 import { useState, useEffect, useCallback } from "react";
 
 const defaultTabs = [
   { id: "daily-view", label: "Daily View" },
+  { id: "productivity", label: "Productivity" },
   { id: "routines", label: "Routines" },
   { id: "wellness", label: "Wellness" },
   { id: "reminders", label: "Reminders" },
@@ -23,6 +25,7 @@ const defaultModuleStates: Record<string, boolean> = {
   wellness: true,
   reminders: true,
   gamification: true,
+  productivity: true,
 };
 
 export default function DashboardPage() {
@@ -97,6 +100,9 @@ export default function DashboardPage() {
         )}
         {activeTab === "gamification" && isModuleEnabled("gamification") && (
           <GamificationPanel />
+        )}
+        {activeTab === "productivity" && isModuleEnabled("productivity") && (
+          <ProductivityPanel />
         )}
       </div>
     </AppShell>
