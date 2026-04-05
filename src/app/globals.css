@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+/* Scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--cove-muted) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cove-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cove-charcoal);
+}
+
 :root {
   --background: #F7F5F0;
   --foreground: #3D3832;
@@ -29,6 +53,8 @@
   --cove-amber-light: #F5EFE0;
   --cove-heather: #A08BA0;
   --cove-heather-light: #F0EBF0;
+  --cove-error: #B85450;
+  --cove-error-light: #F5E6E5;
 }
 
 @theme inline {
@@ -59,6 +85,8 @@
   --color-cove-amber-light: var(--cove-amber-light);
   --color-cove-heather: var(--cove-heather);
   --color-cove-heather-light: var(--cove-heather-light);
+  --color-cove-error: var(--cove-error);
+  --color-cove-error-light: var(--cove-error-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -92,6 +120,8 @@
   --cove-amber-light: #3A3220;
   --cove-heather: #B89DB8;
   --cove-heather-light: #302830;
+  --cove-error: #D46A66;
+  --cove-error-light: #3A2220;
 }
 
 body {
@@ -107,26 +137,25 @@ body {
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(6px) scale(0.99);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
-@keyframes softBounce {
-  0% { transform: scale(0.97); opacity: 0.8; }
-  50% { transform: scale(1.01); }
-  100% { transform: scale(1); opacity: 1; }
+@keyframes softEnter {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: fadeInUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
 .animate-soft-bounce {
-  animation: softBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: softEnter 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
 button, input, select, textarea {
@@ -146,6 +175,72 @@ button, input, select, textarea {
 
 .animate-toast-in {
   animation: toastIn 0.25s ease-out both;
+}
+
+/* Capacitor iOS safe areas */
+.capacitor-ios {
+  padding-top: env(safe-area-inset-top);
+}
+
+.capacitor-ios .tab-bar-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Homepage animations */
+@keyframes auroraDrift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes moteFloat {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
+}
+
+@keyframes meshMove1 { 0% { transform: translate(0,0); } 100% { transform: translate(30px, 20px); } }
+@keyframes meshMove2 { 0% { transform: translate(0,0); } 100% { transform: translate(-25px, 15px); } }
+@keyframes meshMove3 { 0% { transform: translate(0,0); } 100% { transform: translate(15px, -20px); } }
+
+@keyframes blobMorph {
+  0%   { border-radius: 42% 58% 62% 38% / 46% 52% 48% 54%; }
+  25%  { border-radius: 56% 44% 36% 64% / 62% 38% 58% 42%; }
+  50%  { border-radius: 38% 62% 54% 46% / 44% 56% 42% 58%; }
+  75%  { border-radius: 64% 36% 48% 52% / 58% 42% 62% 38%; }
+  100% { border-radius: 42% 58% 62% 38% / 46% 52% 48% 54%; }
+}
+
+@keyframes tickerScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes waveShift1 {
+  0% { d: path("M0,30 C200,60 400,0 600,30 C800,60 1000,0 1200,30 L1200,60 L0,60 Z"); }
+  100% { d: path("M0,30 C200,0 400,60 600,30 C800,0 1000,60 1200,30 L1200,60 L0,60 Z"); }
+}
+
+@keyframes waveShift2 {
+  0% { d: path("M0,35 C200,10 400,55 600,30 C800,5 1000,50 1200,25 L1200,60 L0,60 Z"); }
+  100% { d: path("M0,25 C200,50 400,5 600,30 C800,55 1000,10 1200,35 L1200,60 L0,60 Z"); }
+}
+
+@keyframes logo-stroke {
+  0% { stroke-dasharray: 200; stroke-dashoffset: 200; }
+  100% { stroke-dasharray: 200; stroke-dashoffset: 0; }
+}
+
+.animate-logo-stroke {
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: logo-stroke 2s ease-out forwards;
+}
+
+.animate-logo-stroke-delayed {
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: logo-stroke 1.5s ease-out 1.5s forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
