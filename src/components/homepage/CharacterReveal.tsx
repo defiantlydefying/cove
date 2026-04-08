@@ -24,27 +24,46 @@ export default function CharacterReveal({
     return <Tag className={className}>{text}</Tag>;
   }
 
-  const chars = text.split("");
+  // Split into words to preserve natural word wrapping
+  const words = text.split(" ");
+  let charIndex = 0;
 
   return (
     <Tag className={className} aria-label={text}>
-      {chars.map((char, i) => (
-        <motion.span
-          key={i}
-          initial={{ opacity: 0, filter: "blur(6px)", y: 8 }}
-          whileInView={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-          viewport={{ once: true, margin: "-10%" }}
-          transition={{
-            duration: 0.6,
-            ease: "easeOut",
-            delay: delay + i * stagger,
-          }}
-          style={{ display: "inline-block" }}
-          aria-hidden="true"
-        >
-          {char === " " ? "\u00A0" : char}
-        </motion.span>
-      ))}
+      {words.map((word, wi) => {
+        const chars = word.split("");
+        const wordElement = (
+          <span key={wi} style={{ display: "inline-block", whiteSpace: "nowrap" }}>
+            {chars.map((char) => {
+              const ci = charIndex++;
+              return (
+                <motion.span
+                  key={ci}
+                  initial={{ opacity: 0, y: 6 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "20%" }}
+                  transition={{
+                    duration: 0.4,
+                    ease: "easeOut",
+                    delay: delay + ci * stagger,
+                  }}
+                  style={{ display: "inline-block" }}
+                  aria-hidden="true"
+                >
+                  {char}
+                </motion.span>
+              );
+            })}
+          </span>
+        );
+        charIndex++; // count the space
+        return (
+          <span key={`w${wi}`}>
+            {wordElement}
+            {wi < words.length - 1 && " "}
+          </span>
+        );
+      })}
     </Tag>
   );
 }

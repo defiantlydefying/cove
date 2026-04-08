@@ -1,44 +1,101 @@
 "use client";
 
-import { useReducedMotion } from "@/lib/useReducedMotion";
+import { motion } from "framer-motion";
 
-const MODULES = [
-  { name: "Tasks", icon: "✓", color: "#6B8F71", bg: "rgba(107,143,113,0.06)", border: "rgba(107,143,113,0.12)" },
-  { name: "Routines", icon: "↻", color: "#7EAAA0", bg: "rgba(126,170,160,0.06)", border: "rgba(126,170,160,0.12)" },
-  { name: "Wellness", icon: "♡", color: "#A08BA0", bg: "rgba(160,139,160,0.06)", border: "rgba(160,139,160,0.12)" },
-  { name: "Streaks", icon: "★", color: "#C4A055", bg: "rgba(196,160,85,0.06)", border: "rgba(196,160,85,0.12)" },
-  { name: "Reminders", icon: "⏰", color: "#C4795B", bg: "rgba(196,121,91,0.06)", border: "rgba(196,121,91,0.12)" },
+const FEATURES = [
+  {
+    title: "Tasks",
+    description: "Break things down. Check them off. Feel the relief.",
+    color: "text-cove-accent",
+    line: "bg-cove-accent/20",
+  },
+  {
+    title: "Routines",
+    description: "Small steps, repeated. Structure that works with your brain.",
+    color: "text-cove-blue",
+    line: "bg-cove-blue/20",
+  },
+  {
+    title: "Wellness",
+    description: "Track your mood, energy, and sleep. Patterns become insights.",
+    color: "text-cove-heather",
+    line: "bg-cove-heather/20",
+  },
+  {
+    title: "Reminders",
+    description: "Gentle nudges for water, meds, breaks. Not nagging \u2014 caring.",
+    color: "text-cove-amber",
+    line: "bg-cove-amber/20",
+  },
+  {
+    title: "Streaks",
+    description: "Showing up matters more than being perfect. Every day counts.",
+    color: "text-cove-sage",
+    line: "bg-cove-sage/20",
+  },
 ];
 
-const ITEMS = [...MODULES, ...MODULES];
+const container = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.12,
+    },
+  },
+};
+
+const item = {
+  hidden: { opacity: 0, x: -16 },
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] as const },
+  },
+};
 
 export default function FeatureTicker() {
-  const reduced = useReducedMotion();
-
   return (
-    <section className="relative w-full py-8 overflow-hidden bg-cove-offwhite" aria-label="Feature modules">
-      <div
-        className="flex gap-4 px-4"
-        style={{
-          animation: reduced ? "none" : "tickerScroll 20s linear infinite",
-          width: "max-content",
-        }}
-      >
-        {ITEMS.map((mod, i) => (
-          <div
-            key={`${mod.name}-${i}`}
-            className="flex-shrink-0 w-[100px] h-[120px] rounded-xl flex flex-col items-center justify-center gap-2 text-xs font-medium backdrop-blur-md"
-            style={{ background: mod.bg, border: `1px solid ${mod.border}`, color: mod.color }}
-          >
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
-              style={{ background: mod.bg.replace("0.06", "0.12") }}
+    <section className="w-full py-20 md:py-28 bg-cove-offwhite" aria-label="Features">
+      <div className="max-w-3xl mx-auto px-6">
+        <motion.div
+          className="flex flex-col"
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+        >
+          {FEATURES.map((feature, i) => (
+            <motion.div
+              key={feature.title}
+              variants={item}
+              className="group py-6 md:py-8"
             >
-              {mod.icon}
-            </div>
-            {mod.name}
-          </div>
-        ))}
+              <div className="flex items-baseline gap-4 md:gap-6">
+                <span className={`text-xs font-medium tabular-nums text-cove-muted/50 w-5 shrink-0`}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <h3 className={`text-lg md:text-xl font-semibold tracking-tight ${feature.color} mb-1.5`}>
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm md:text-base text-cove-muted leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              </div>
+              {i < FEATURES.length - 1 && (
+                <motion.div
+                  className={`mt-6 md:mt-8 h-px ${feature.line}`}
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.15 * (i + 1) }}
+                  style={{ transformOrigin: "left" }}
+                />
+              )}
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );

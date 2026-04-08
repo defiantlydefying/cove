@@ -1,75 +1,92 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
 export default function SplitReveal() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const reduced = useReducedMotion();
 
-  const splitAmount = useTransform(scrollYProgress, [0.2, 0.6], [0, 6]);
-  const revealOpacity = useTransform(scrollYProgress, [0.35, 0.55], [0, 1]);
-  const seamGlow = useTransform(scrollYProgress, [0.2, 0.5], [0.3, 1]);
-
   return (
-    <section ref={ref} className="relative w-full h-screen overflow-hidden">
+    <section className="w-full py-24 bg-cove-offwhite overflow-hidden">
+      {/* Heading */}
       <motion.div
-        className="absolute top-0 left-0 w-1/2 h-full flex items-center justify-end pr-12"
-        style={{
-          background: "linear-gradient(135deg, #E6F0ED, #EAF0EB)",
-          clipPath: reduced ? undefined : useTransform(splitAmount, (v) => `inset(0 ${v}% 0 0)`),
-          filter: "saturate(0.4)",
-        }}
+        className="text-center mb-16 px-6"
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
       >
-        <div className="text-right">
-          <h3 className="text-lg font-semibold text-cove-accent mb-2">Before Cove</h3>
-          <p className="text-sm text-cove-muted">Scattered. Overwhelmed.</p>
-          <div className="mt-4 flex flex-col gap-2 items-end opacity-50">
-            {["📋", "⏰", "📝", "🔔"].map((e, i) => (
-              <span key={i} className="text-lg" style={{ transform: `rotate(${(i - 2) * 8}deg) translate(${i * 3}px, ${(i - 1) * -4}px)` }}>{e}</span>
+        <p className="text-2xl md:text-3xl font-medium text-cove-charcoal tracking-tight">
+          The difference is <span className="text-cove-accent">calm</span>.
+        </p>
+      </motion.div>
+
+      {/* Side by side cards */}
+      <div className="max-w-4xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Before card */}
+        <motion.div
+          className="rounded-2xl p-8 md:p-10"
+          style={{
+            background: "linear-gradient(135deg, #E8E4DE, #DDD8D0)",
+          }}
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7 }}
+        >
+          <div className="relative w-full h-20 mb-8">
+            <div className="absolute top-0 left-2 w-8 h-8 rounded-lg border-2 border-cove-charcoal/25 rotate-12" />
+            <div className="absolute top-1 right-6 w-6 h-6 rounded-full border-2 border-cove-charcoal/20 -rotate-6" />
+            <div className="absolute bottom-0 left-10 w-10 h-6 rounded-lg border-2 border-cove-charcoal/25 -rotate-[8deg]" />
+            <div className="absolute bottom-2 right-2 w-7 h-7 rounded-lg border-2 border-cove-charcoal/18 rotate-[18deg]" />
+            <div className="absolute top-6 left-1/3 w-5 h-5 rounded border-2 border-cove-charcoal/20 rotate-45" />
+          </div>
+          <h3 className="text-lg font-semibold text-cove-charcoal/70 mb-3">Before</h3>
+          <p className="text-sm text-cove-charcoal/55 leading-relaxed">
+            Scattered thoughts.<br />
+            Missed reminders.<br />
+            That sinking feeling.
+          </p>
+        </motion.div>
+
+        {/* After card */}
+        <motion.div
+          className="rounded-2xl p-8 md:p-10"
+          style={{
+            background: "linear-gradient(135deg, #EEF2EC, #F2EDE5)",
+          }}
+          initial={{ opacity: 0, x: 20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: 0.15 }}
+        >
+          <div className="flex flex-col gap-2 mb-8">
+            {["Morning routine", "Deep focus", "Wellness check-in"].map((item, i) => (
+              <motion.div
+                key={i}
+                className="flex items-center gap-2.5"
+                initial={{ opacity: 0, x: 10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
+              >
+                <div className="w-5 h-5 rounded-md bg-cove-accent/25 flex items-center justify-center flex-shrink-0">
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6.5L4.5 9L10 3" stroke="#6B8F71" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <div className="h-2.5 rounded-full bg-cove-accent/10" style={{ width: `${85 - i * 12}%` }} />
+              </motion.div>
             ))}
           </div>
-        </div>
-      </motion.div>
-
-      <motion.div
-        className="absolute top-0 right-0 w-1/2 h-full flex items-center justify-start pl-12"
-        style={{
-          background: "linear-gradient(135deg, #EAF0EB, #F5EFE0)",
-          clipPath: reduced ? undefined : useTransform(splitAmount, (v) => `inset(0 0 0 ${v}%)`),
-        }}
-      >
-        <div>
-          <h3 className="text-lg font-semibold text-cove-blue mb-2">After Cove</h3>
-          <p className="text-sm text-cove-muted">Calm. Organized. Yours.</p>
-          <div className="mt-4 flex flex-col gap-2 opacity-80">
-            {["✓ Morning routine", "✓ Focus time", "✓ Check in"].map((t, i) => (
-              <span key={i} className="text-sm text-cove-accent">{t}</span>
-            ))}
-          </div>
-        </div>
-      </motion.div>
-
-      <motion.div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[2px] h-full z-10"
-        style={{
-          background: "linear-gradient(180deg, transparent, rgba(107,143,113,0.3), rgba(196,160,85,0.3), transparent)",
-          opacity: seamGlow,
-          boxShadow: useTransform(seamGlow, (v) => `0 0 ${v * 20}px rgba(107,143,113,${v * 0.3})`),
-        }}
-        aria-hidden="true"
-      />
-
-      <motion.div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
-        style={{ opacity: revealOpacity }}
-      >
-        <span className="text-xl font-medium text-cove-charcoal bg-cove-offwhite/90 px-5 py-2 rounded-lg">
-          The difference is calm.
-        </span>
-      </motion.div>
+          <h3 className="text-lg font-semibold text-cove-charcoal mb-3">After</h3>
+          <p className="text-sm text-cove-muted leading-relaxed">
+            Clear plan.<br />
+            Gentle reminders.<br />
+            Quiet confidence.
+          </p>
+        </motion.div>
+      </div>
     </section>
   );
 }

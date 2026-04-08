@@ -32,11 +32,11 @@ export default function TestimonialConstellation() {
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: t.delay }}
           >
-            <span className="text-xl text-cove-accent leading-none">&ldquo;</span>
-            <p className="text-sm text-cove-charcoal italic leading-relaxed mt-1">{t.text}</p>
+            <span className="text-xl leading-none" style={{ color: "#6B8F71" }}>&ldquo;</span>
+            <p className="text-sm italic leading-relaxed mt-1" style={{ color: "#3D3832" }}>{t.text}</p>
             <div className="flex items-center gap-2 mt-3">
               <div className="w-4 h-4 rounded-full" style={{ background: t.color }} />
-              <span className="text-xs text-cove-muted">{t.author}</span>
+              <span className="text-xs" style={{ color: "#6B6058" }}>{t.author}</span>
             </div>
           </motion.div>
         ))}

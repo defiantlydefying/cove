@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import ParticleCanvas from "./ParticleCanvas";
 import CharacterReveal from "./CharacterReveal";
@@ -10,6 +10,14 @@ import { useReducedMotion } from "@/lib/useReducedMotion";
 export default function HeroParticles() {
   const [formed, setFormed] = useState(false);
   const reduced = useReducedMotion();
+  const handleFormationComplete = useCallback(() => setFormed(true), []);
+
+  // Fallback: ensure text shows even if particle animation doesn't complete
+  useEffect(() => {
+    if (formed) return;
+    const timer = setTimeout(() => setFormed(true), 5000);
+    return () => clearTimeout(timer);
+  }, [formed]);
 
   return (
     <section className="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden bg-[#1C1B18]">
@@ -26,7 +34,7 @@ export default function HeroParticles() {
           <CoveLogo size={56} />
         </div>
       ) : (
-        <ParticleCanvas onFormationComplete={() => setFormed(true)} />
+        <ParticleCanvas onFormationComplete={handleFormationComplete} />
       )}
 
       {/* Text content */}
