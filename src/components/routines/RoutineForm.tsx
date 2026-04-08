@@ -153,7 +153,7 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-cove-card rounded-xl border border-cove-border-light p-6 flex flex-col gap-4 shadow-sm"
+      className="bg-cove-card rounded-xl border border-cove-border-light p-6 flex flex-col gap-4"
     >
       {/* Name input */}
       <input
@@ -190,17 +190,59 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
           />
           Show times
         </label>
-        {showTimes && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-cove-muted">Starts at</span>
-            <input
-              type="time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-              className="px-2 py-1.5 text-sm border border-cove-border rounded-xl bg-cove-offwhite text-cove-charcoal focus:outline-none focus:ring-2 focus:ring-cove-accent/30"
-            />
-          </div>
-        )}
+        {showTimes && (() => {
+          const [h24, min] = startTime.split(":").map(Number);
+          const isPM = h24 >= 12;
+          const h12 = h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24;
+          const selClass = "px-2 py-1.5 text-sm border border-cove-border rounded-xl bg-cove-offwhite text-cove-charcoal focus:outline-none focus:ring-2 focus:ring-cove-accent/30 appearance-none cursor-pointer";
+          return (
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-cove-muted">Starts at</span>
+              <select
+                value={h12}
+                onChange={(e) => {
+                  const newH12 = Number(e.target.value);
+                  const newH24 = isPM ? (newH12 === 12 ? 12 : newH12 + 12) : (newH12 === 12 ? 0 : newH12);
+                  setStartTime(`${String(newH24).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
+                }}
+                className={selClass}
+                aria-label="Hour"
+              >
+                {[12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((h) => (
+                  <option key={h} value={h}>{h}</option>
+                ))}
+              </select>
+              <span className="text-cove-muted">:</span>
+              <select
+                value={min}
+                onChange={(e) => {
+                  setStartTime(`${String(h24).padStart(2, "0")}:${String(Number(e.target.value)).padStart(2, "0")}`);
+                }}
+                className={selClass}
+                aria-label="Minute"
+              >
+                {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
+                  <option key={m} value={m}>{String(m).padStart(2, "0")}</option>
+                ))}
+              </select>
+              <select
+                value={isPM ? "PM" : "AM"}
+                onChange={(e) => {
+                  const newPM = e.target.value === "PM";
+                  let newH24 = h24;
+                  if (newPM && h24 < 12) newH24 = h24 + 12;
+                  if (!newPM && h24 >= 12) newH24 = h24 - 12;
+                  setStartTime(`${String(newH24).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
+                }}
+                className={selClass}
+                aria-label="AM or PM"
+              >
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          );
+        })()}
         {showDurations && totalMinutes > 0 && (
           <span className="text-xs text-cove-muted ml-auto">{totalMinutes} min total</span>
         )}
@@ -245,7 +287,7 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
                 type="button"
                 onClick={() => handleRemoveStep(index)}
                 aria-label={`Remove step ${index + 1}`}
-                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-cove-muted hover:text-red-500 hover:bg-red-50 transition-colors"
+                className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-cove-muted hover:text-cove-error hover:bg-cove-error-light transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -286,7 +328,7 @@ export default function RoutineForm({ onSubmit, initialData }: RoutineFormProps)
               {modifyLoading ? "Modifying..." : "Modify"}
             </button>
           </div>
-          {modifyError && <p className="text-xs text-red-400">{modifyError}</p>}
+          {modifyError && <p className="text-xs text-cove-error">{modifyError}</p>}
         </div>
       )}
 

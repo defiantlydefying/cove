@@ -258,11 +258,11 @@ export default function ReminderList() {
 
       {/* Delete confirmation */}
       {confirmDeleteId && (
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 border border-red-200">
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-cove-error-light border border-cove-error/20">
           <p className="text-sm text-cove-charcoal flex-1">Delete this reminder?</p>
           <button
             onClick={handleDeleteConfirm}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-cove-error text-white hover:bg-cove-error/90 transition-colors"
           >
             Delete
           </button>

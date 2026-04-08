@@ -68,7 +68,7 @@ export default function HabitItem({ habit, onToggle, onDelete }: HabitItemProps)
 
       <button
         onClick={() => onDelete(habit.id)}
-        className="opacity-0 group-hover:opacity-100 text-cove-muted hover:text-red-500 text-xs transition-opacity shrink-0"
+        className="opacity-0 group-hover:opacity-100 text-cove-muted hover:text-cove-error text-xs transition-opacity shrink-0"
         aria-label="Delete habit"
       >
         &#x2715;

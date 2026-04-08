@@ -96,7 +96,7 @@ export default function PlannerItem({
 
       <button
         onClick={() => onDelete(item.id)}
-        className="opacity-0 group-hover:opacity-100 text-cove-muted hover:text-red-500 text-xs transition-opacity shrink-0"
+        className="opacity-0 group-hover:opacity-100 text-cove-muted hover:text-cove-error text-xs transition-opacity shrink-0"
         aria-label="Delete item"
       >
         &#x2715;

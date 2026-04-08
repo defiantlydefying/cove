@@ -54,13 +54,58 @@ export default function ReminderScheduleFields({
     <div className={`flex flex-col ${compact ? "gap-3" : "gap-4"}`}>
       <div className={compact ? "flex items-center gap-2" : ""}>
         <label className={labelClass}>Time</label>
-        <input
-          type="time"
-          value={scheduledTime}
-          onChange={(e) => onTimeChange(e.target.value)}
-          className={inputClass}
-          aria-label="Reminder time"
-        />
+        {(() => {
+          const [h24, min] = scheduledTime.split(":").map(Number);
+          const isPM = h24 >= 12;
+          const h12 = h24 === 0 ? 12 : h24 > 12 ? h24 - 12 : h24;
+          const selClass = "px-2 py-2 text-sm border border-cove-border rounded-xl bg-cove-offwhite text-cove-charcoal focus:outline-none focus:ring-2 focus:ring-cove-accent/30 cursor-pointer";
+          return (
+            <div className="flex items-center gap-1">
+              <select
+                value={h12}
+                onChange={(e) => {
+                  const newH12 = Number(e.target.value);
+                  const newH24 = isPM ? (newH12 === 12 ? 12 : newH12 + 12) : (newH12 === 12 ? 0 : newH12);
+                  onTimeChange(`${String(newH24).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
+                }}
+                className={selClass}
+                aria-label="Hour"
+              >
+                {[12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((h) => (
+                  <option key={h} value={h}>{h}</option>
+                ))}
+              </select>
+              <span className="text-cove-muted text-sm">:</span>
+              <select
+                value={min}
+                onChange={(e) => {
+                  onTimeChange(`${String(h24).padStart(2, "0")}:${String(Number(e.target.value)).padStart(2, "0")}`);
+                }}
+                className={selClass}
+                aria-label="Minute"
+              >
+                {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((m) => (
+                  <option key={m} value={m}>{String(m).padStart(2, "0")}</option>
+                ))}
+              </select>
+              <select
+                value={isPM ? "PM" : "AM"}
+                onChange={(e) => {
+                  const newPM = e.target.value === "PM";
+                  let newH24 = h24;
+                  if (newPM && h24 < 12) newH24 = h24 + 12;
+                  if (!newPM && h24 >= 12) newH24 = h24 - 12;
+                  onTimeChange(`${String(newH24).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
+                }}
+                className={selClass}
+                aria-label="AM or PM"
+              >
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          );
+        })()}
       </div>
 
       <div className={compact ? "flex items-center gap-2" : ""}>

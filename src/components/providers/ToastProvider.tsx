@@ -80,9 +80,9 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
             role="status"
             className={`pointer-events-auto px-4 py-3 rounded-xl shadow-lg text-sm font-medium animate-toast-in ${
               t.type === "success"
-                ? "bg-emerald-600 text-white max-w-sm"
+                ? "bg-cove-accent text-white max-w-sm"
                 : t.type === "error"
-                ? "bg-red-600 text-white max-w-sm"
+                ? "bg-cove-error text-white max-w-sm"
                 : t.type === "reminder"
                 ? "bg-cove-sidebar text-cove-sidebar-text max-w-md"
                 : "bg-cove-charcoal text-white max-w-sm"

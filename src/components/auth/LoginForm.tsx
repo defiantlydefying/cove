@@ -24,7 +24,7 @@ export default function LoginForm() {
     if (result?.error) {
       setError("Invalid email or password");
     } else {
-      window.location.href = "/";
+      window.location.href = "/dashboard?welcome=1";
     }
 
     setLoading(false);
@@ -33,7 +33,7 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5">
       {error && (
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="text-sm text-cove-error" role="alert">{error}</p>
       )}
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-cove-charcoal mb-1.5">
@@ -45,6 +45,7 @@ export default function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          aria-invalid={!!error}
           className="mt-1 block w-full rounded-lg border border-cove-border px-3 py-2.5 text-sm bg-cove-offwhite text-cove-charcoal placeholder:text-cove-muted focus:border-cove-accent focus:outline-none focus:ring-2 focus:ring-cove-accent/20 transition-colors"
         />
       </div>
@@ -58,6 +59,7 @@ export default function LoginForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          aria-invalid={!!error}
           className="mt-1 block w-full rounded-lg border border-cove-border px-3 py-2.5 text-sm bg-cove-offwhite text-cove-charcoal placeholder:text-cove-muted focus:border-cove-accent focus:outline-none focus:ring-2 focus:ring-cove-accent/20 transition-colors"
         />
       </div>

@@ -171,7 +171,7 @@ export default function ReminderForm({ onSubmit, initialData }: ReminderFormProp
             {aiLoading ? "Parsing..." : "Apply"}
           </button>
         </div>
-        {aiError && <p className="text-xs text-red-500 mt-1" role="alert">{aiError}</p>}
+        {aiError && <p className="text-xs text-cove-error mt-1" role="alert">{aiError}</p>}
       </div>
 
       <button

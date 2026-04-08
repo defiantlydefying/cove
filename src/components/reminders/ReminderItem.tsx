@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import { formatScheduleSummary } from "@/lib/reminder-presets";
 import ReminderScheduleFields from "./ReminderScheduleFields";
 
@@ -36,7 +36,7 @@ const badgeColors: Record<string, string> = {
   custom: "bg-cove-sand-light text-cove-muted",
 };
 
-export default function ReminderItem({
+export default memo(function ReminderItem({
   reminder,
   onToggle,
   onDelete,
@@ -172,4 +172,4 @@ export default function ReminderItem({
       )}
     </div>
   );
-}
+});

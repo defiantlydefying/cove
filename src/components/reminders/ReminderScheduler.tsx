@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef } from "react";
 import { useToast } from "@/components/providers/ToastProvider";
+import { isNative } from "@/lib/capacitor";
+import { requestPermission, scheduleReminder } from "@/lib/capacitor/notifications";
 
 interface ScheduledReminder {
   id: string;
@@ -40,7 +42,6 @@ function shouldFire(
   firedSet: Set<string>
 ): boolean {
   if (!reminder.enabled || !reminder.scheduledTime) return false;
-
   if (reminder.snoozedUntil && new Date(reminder.snoozedUntil) > now) return false;
 
   const dayIndex = now.getDay();
@@ -69,56 +70,63 @@ function shouldFire(
 
 export default function ReminderScheduler() {
   const { toast } = useToast();
+  const toastRef = useRef(toast);
   const firedRef = useRef<Set<string>>(new Set());
   const remindersRef = useRef<ScheduledReminder[]>([]);
 
-  const fetchReminders = useCallback(async () => {
-    try {
-      const res = await fetch("/api/reminders");
-      if (!res.ok) return;
-      const data = await res.json();
-      remindersRef.current = data;
-    } catch {
-      // Will retry next interval
-    }
-  }, []);
+  // Keep toast ref current without causing effect re-runs
+  useEffect(() => {
+    toastRef.current = toast;
+  }, [toast]);
 
-  const disableReminder = useCallback(async (id: string) => {
-    try {
-      await fetch(`/api/reminders/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ enabled: false }),
-      });
-      remindersRef.current = remindersRef.current.map((r) =>
-        r.id === id ? { ...r, enabled: false } : r
-      );
-    } catch {
-      // Best effort
+  // Single stable effect — runs once on mount, cleans up on unmount
+  useEffect(() => {
+    async function fetchReminders() {
+      try {
+        const res = await fetch("/api/reminders");
+        if (!res.ok) return;
+        const data = await res.json();
+        remindersRef.current = data;
+      } catch {
+        // Will retry next interval
+      }
     }
-  }, []);
 
-  const snoozeReminder = useCallback(async (id: string) => {
-    const snoozedUntil = new Date(Date.now() + 30 * 60 * 1000).toISOString();
-    try {
-      await fetch(`/api/reminders/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ snoozedUntil }),
-      });
-      remindersRef.current = remindersRef.current.map((r) =>
-        r.id === id ? { ...r, snoozedUntil } : r
-      );
-    } catch {
-      // Best effort
+    async function disableReminder(id: string) {
+      try {
+        await fetch(`/api/reminders/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ enabled: false }),
+        });
+        remindersRef.current = remindersRef.current.map((r) =>
+          r.id === id ? { ...r, enabled: false } : r
+        );
+      } catch {
+        // Best effort
+      }
     }
-  }, []);
 
-  const fireReminder = useCallback(
-    (reminder: ScheduledReminder) => {
+    async function snoozeReminder(id: string) {
+      const snoozedUntil = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+      try {
+        await fetch(`/api/reminders/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ snoozedUntil }),
+        });
+        remindersRef.current = remindersRef.current.map((r) =>
+          r.id === id ? { ...r, snoozedUntil } : r
+        );
+      } catch {
+        // Best effort
+      }
+    }
+
+    function fireReminder(reminder: ScheduledReminder) {
       const msg = reminder.title + (reminder.message ? ` \u2014 ${reminder.message}` : "");
 
-      toast(msg, "reminder", 30000, [
+      toastRef.current(msg, "reminder", 30000, [
         { label: "Snooze", onClick: () => snoozeReminder(reminder.id) },
         { label: "Turn off", onClick: () => disableReminder(reminder.id) },
       ]);
@@ -127,7 +135,13 @@ export default function ReminderScheduler() {
         playChime();
       }
 
-      if (
+      if (isNative()) {
+        scheduleReminder({
+          id: reminder.id,
+          title: reminder.title,
+          body: reminder.message ?? undefined,
+        });
+      } else if (
         reminder.notifyEnabled !== false &&
         typeof Notification !== "undefined" &&
         Notification.permission === "granted"
@@ -138,18 +152,19 @@ export default function ReminderScheduler() {
             tag: reminder.id,
           });
         } catch {
-          // Notifications not supported in this context
+          // Notifications not supported
         }
       }
-    },
-    [toast, snoozeReminder, disableReminder]
-  );
+    }
 
-  useEffect(() => {
+    // Initial fetch
     fetchReminders();
+    requestPermission();
 
+    // Refresh reminder data every 5 minutes
     const refreshInterval = setInterval(fetchReminders, 5 * 60 * 1000);
 
+    // Check every 60 seconds
     const checkInterval = setInterval(() => {
       const now = new Date();
       for (const reminder of remindersRef.current) {
@@ -159,6 +174,7 @@ export default function ReminderScheduler() {
       }
     }, 60 * 1000);
 
+    // Clean up old fired keys every hour
     const cleanupInterval = setInterval(() => {
       firedRef.current.clear();
     }, 60 * 60 * 1000);
@@ -168,7 +184,7 @@ export default function ReminderScheduler() {
       clearInterval(checkInterval);
       clearInterval(cleanupInterval);
     };
-  }, [fetchReminders, fireReminder]);
+  }, []); // Empty deps — runs once, stable intervals
 
   return null;
 }
