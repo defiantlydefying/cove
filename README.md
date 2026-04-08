@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/branding/cove-logo-with-text.png" alt="Cove" width="280" />
+  <img src="public/branding/cove-icon-no-text.png" alt="Cove" width="120" />
 </p>
 
 <p align="center">
