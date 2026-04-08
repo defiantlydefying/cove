@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/providers/ToastProvider";
+import { tapLight } from "@/lib/capacitor/haptics";
 import RoutineCard, { Routine } from "./RoutineCard";
 import RoutineForm, { RoutineFormData } from "./RoutineForm";
+import PublishRoutineForm from "@/components/community/PublishRoutineForm";
 
 const TEMPLATES = [
   {
@@ -87,6 +89,7 @@ export default function RoutineList() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [sharingRoutine, setSharingRoutine] = useState<Routine | null>(null);
   const { toast } = useToast();
 
   async function fetchRoutines() {
@@ -152,6 +155,7 @@ export default function RoutineList() {
     stepId: string,
     checked: boolean
   ) {
+    if (checked) tapLight();
     setCompletedSteps((prev) => {
       const current = prev[routineId] ?? [];
       const next = checked
@@ -179,8 +183,8 @@ export default function RoutineList() {
     }
   }
 
-  function handleEdit(routineId: string) {
-    console.log("Edit routine", routineId);
+  function handleEdit(_routineId: string) {
+    // Edit functionality not yet implemented
   }
 
   function handleTemplateClick(template: (typeof TEMPLATES)[number]) {
@@ -328,7 +332,7 @@ export default function RoutineList() {
                   data-testid="ai-prompt-input"
                 />
                 {aiError && (
-                  <p className="text-sm text-red-500" role="alert">{aiError}</p>
+                  <p className="text-sm text-cove-error" role="alert">{aiError}</p>
                 )}
                 <button
                   onClick={handleAiGenerate}
@@ -364,6 +368,7 @@ export default function RoutineList() {
             onStepToggle={handleStepToggle}
             onDelete={handleDeleteRequest}
             onEdit={handleEdit}
+            onShare={setSharingRoutine}
           />
         ))}
       </div>
@@ -377,13 +382,31 @@ export default function RoutineList() {
         </div>
       )}
 
+      {/* Publish form */}
+      {sharingRoutine && (
+        <div className="animate-fade-in-up">
+          <PublishRoutineForm
+            routineName={sharingRoutine.name}
+            steps={sharingRoutine.steps.map((s) => ({
+              title: s.title,
+              durationMinutes: s.durationMinutes ?? null,
+            }))}
+            startTime={sharingRoutine.startTime}
+            showTimes={sharingRoutine.showTimes}
+            showDurations={sharingRoutine.showDurations}
+            onPublished={() => setSharingRoutine(null)}
+            onCancel={() => setSharingRoutine(null)}
+          />
+        </div>
+      )}
+
       {/* Delete confirmation */}
       {confirmDeleteId && (
-        <div className="flex items-center gap-2 p-4 rounded-xl bg-red-50 border border-red-200">
+        <div className="flex items-center gap-2 p-4 rounded-xl bg-cove-error-light border border-cove-error/20">
           <p className="text-sm text-cove-charcoal flex-1">Delete this routine? This can&apos;t be undone.</p>
           <button
             onClick={handleDeleteConfirm}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-cove-error text-white hover:bg-cove-error/90 transition-colors"
           >
             Delete
           </button>

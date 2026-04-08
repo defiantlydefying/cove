@@ -18,12 +18,12 @@ interface ModuleSetting {
 }
 
 const ACCENT_COLORS = [
-  "#6B8F71",
-  "#7EAAA0",
-  "#C4A055",
-  "#A08BA0",
-  "#4A5D4E",
-  "#8FA89A",
+  { hex: "#6B8F71", name: "Sage" },
+  { hex: "#7EAAA0", name: "Teal" },
+  { hex: "#C4A055", name: "Amber" },
+  { hex: "#A08BA0", name: "Heather" },
+  { hex: "#4A5D4E", name: "Forest" },
+  { hex: "#8FA89A", name: "Mint" },
 ];
 
 const ALL_MODULES = [
@@ -32,6 +32,7 @@ const ALL_MODULES = [
   { id: "wellness-tracker", name: "Wellness Tracker", description: "Monitor your mood, energy, and wellbeing over time" },
   { id: "reminders", name: "Reminders", description: "Gentle nudges to keep you on track throughout the day" },
   { id: "gamification", name: "Gamification", description: "Earn points and streaks to stay motivated" },
+  { id: "community", name: "Community", description: "Browse and share routines with other users" },
 ];
 
 export default function SettingsPanel() {
@@ -129,15 +130,16 @@ export default function SettingsPanel() {
         <div className="flex gap-2">
           {ACCENT_COLORS.map((color) => (
             <button
-              key={color}
-              onClick={() => updateSetting("accentColor", color)}
-              aria-label={`Select color ${color}`}
+              key={color.hex}
+              onClick={() => updateSetting("accentColor", color.hex)}
+              aria-label={`Select ${color.name}`}
+              title={color.name}
               className={`w-8 h-8 rounded-full border-2 transition-all ${
-                settings.accentColor === color
+                settings.accentColor === color.hex
                   ? "border-cove-charcoal scale-110"
                   : "border-transparent hover:scale-105"
               }`}
-              style={{ backgroundColor: color }}
+              style={{ backgroundColor: color.hex }}
             />
           ))}
         </div>

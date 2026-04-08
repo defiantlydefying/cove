@@ -8,7 +8,9 @@ import ReminderList from "@/components/reminders/ReminderList";
 import DailyView from "@/components/daily/DailyView";
 import GamificationPanel from "@/components/gamification/GamificationPanel";
 import ProductivityPanel from "@/components/productivity/ProductivityPanel";
+import CommunityBrowser from "@/components/community/CommunityBrowser";
 import ReminderScheduler from "@/components/reminders/ReminderScheduler";
+import WelcomeModal from "@/components/WelcomeModal";
 import { useState, useEffect, useCallback } from "react";
 
 const defaultTabs = [
@@ -18,6 +20,7 @@ const defaultTabs = [
   { id: "wellness", label: "Wellness" },
   { id: "reminders", label: "Reminders" },
   { id: "gamification", label: "Progress" },
+  { id: "community", label: "Community" },
 ];
 
 const defaultModuleStates: Record<string, boolean> = {
@@ -26,6 +29,7 @@ const defaultModuleStates: Record<string, boolean> = {
   reminders: true,
   gamification: true,
   productivity: true,
+  community: false,
 };
 
 export default function DashboardPage() {
@@ -87,6 +91,7 @@ export default function DashboardPage() {
       onToggleModule={handleToggleModule}
     >
       <ReminderScheduler />
+      <WelcomeModal />
       <div key={activeTab} className="animate-soft-bounce">
         {activeTab === "daily-view" && <DailyView />}
         {activeTab === "routines" && isModuleEnabled("routines") && (
@@ -103,6 +108,9 @@ export default function DashboardPage() {
         )}
         {activeTab === "productivity" && isModuleEnabled("productivity") && (
           <ProductivityPanel />
+        )}
+        {activeTab === "community" && isModuleEnabled("community") && (
+          <CommunityBrowser />
         )}
       </div>
     </AppShell>

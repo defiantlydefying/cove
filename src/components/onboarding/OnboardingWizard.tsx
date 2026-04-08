@@ -38,6 +38,13 @@ const AVAILABLE_MODULES = [
     defaultEnabled: false,
     recommended: false,
   },
+  {
+    id: "community",
+    name: "Community",
+    description: "Browse and share routines with other users. Completely optional.",
+    defaultEnabled: false,
+    recommended: false,
+  },
 ];
 
 interface OnboardingWizardProps {

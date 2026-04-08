@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 
 export interface RoutineStep {
   id: string;
@@ -24,6 +24,7 @@ interface RoutineCardProps {
   onStepToggle: (routineId: string, stepId: string, checked: boolean) => void;
   onDelete: (routineId: string) => void;
   onEdit: (routineId: string) => void;
+  onShare?: (routine: Routine) => void;
 }
 
 function formatTime12h(time24: string): string {
@@ -41,12 +42,13 @@ function addMinutes(time24: string, minutes: number): string {
   return `${newH.toString().padStart(2, "0")}:${newM.toString().padStart(2, "0")}`;
 }
 
-export default function RoutineCard({
+export default memo(function RoutineCard({
   routine,
   completedSteps,
   onStepToggle,
   onDelete,
   onEdit,
+  onShare,
 }: RoutineCardProps) {
   const [expanded, setExpanded] = useState(true);
 
@@ -75,7 +77,7 @@ export default function RoutineCard({
 
   return (
     <div
-      className={`bg-cove-card rounded-xl shadow-sm border border-cove-border-light p-5 flex flex-col gap-3 transition-opacity ${
+      className={`bg-cove-card rounded-xl border border-cove-border-light p-5 flex flex-col gap-3 transition-opacity ${
         routine.active ? "" : "opacity-50"
       }`}
       data-testid="routine-card"
@@ -109,12 +111,19 @@ export default function RoutineCard({
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
+          {onShare && (
+            <button onClick={() => onShare(routine)} aria-label={`Share ${routine.name}`} className="text-cove-muted hover:text-cove-accent transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+              </svg>
+            </button>
+          )}
           <button onClick={() => onEdit(routine.id)} aria-label={`Edit ${routine.name}`} className="text-cove-muted hover:text-cove-charcoal transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
             </svg>
           </button>
-          <button onClick={() => onDelete(routine.id)} aria-label={`Delete ${routine.name}`} className="text-cove-muted hover:text-red-500 transition-colors">
+          <button onClick={() => onDelete(routine.id)} aria-label={`Delete ${routine.name}`} className="text-cove-muted hover:text-cove-error transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
             </svg>
@@ -195,4 +204,4 @@ export default function RoutineCard({
       )}
     </div>
   );
-}
+});

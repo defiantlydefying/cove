@@ -13,25 +13,29 @@ model User {
   name           String?
   hashedPassword String?
   image          String?
+  displayName    String?   @unique
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  accounts         Account[]
-  sessions         Session[]
-  tasks            Task[]
-  routines         Routine[]
-  wellnessCheckins WellnessCheckin[]
-  reminders        Reminder[]
-  achievements     UserAchievement[]
-  streaks          UserStreak[]
-  moduleSettings   ModuleSetting[]
-  userSettings     UserSettings?
-  profile          UserProfile?
-  focusSessions    FocusSession[]
-  plannerItems     PlannerItem[]
-  habits           Habit[]
-  weeklyGoals      WeeklyGoal[]
-  timeEntries      TimeEntry[]
+  accounts            Account[]
+  sessions            Session[]
+  tasks               Task[]
+  routines            Routine[]
+  wellnessCheckins    WellnessCheckin[]
+  reminders           Reminder[]
+  achievements        UserAchievement[]
+  streaks             UserStreak[]
+  moduleSettings      ModuleSetting[]
+  userSettings        UserSettings?
+  profile             UserProfile?
+  focusSessions       FocusSession[]
+  plannerItems        PlannerItem[]
+  habits              Habit[]
+  weeklyGoals         WeeklyGoal[]
+  timeEntries         TimeEntry[]
+  communityRoutines   CommunityRoutine[]
+  communityHelpfuls   CommunityHelpful[]
+  communityReports    CommunityReport[]
 }
 
 model Account {
@@ -341,4 +345,61 @@ model TimeEntry {
   task Task? @relation(fields: [taskId], references: [id])
 
   @@index([userId, date])
+}
+
+model CommunityRoutine {
+  id            String   @id @default(cuid())
+  authorId      String
+  displayName   String
+  authorNote    String?
+  name          String
+  description   String?
+  startTime     String?
+  showTimes     Boolean  @default(false)
+  showDurations Boolean  @default(true)
+  tags          String[]
+  helpfulCount  Int      @default(0)
+  hidden        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  author   User                   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  steps    CommunityRoutineStep[]
+  helpfuls CommunityHelpful[]
+  reports  CommunityReport[]
+
+  @@index([authorId])
+}
+
+model CommunityRoutineStep {
+  id                 String @id @default(cuid())
+  communityRoutineId String
+  title              String
+  durationMinutes    Int?
+  sortOrder          Int    @default(0)
+
+  communityRoutine CommunityRoutine @relation(fields: [communityRoutineId], references: [id], onDelete: Cascade)
+}
+
+model CommunityHelpful {
+  id                 String   @id @default(cuid())
+  userId             String
+  communityRoutineId String
+  createdAt          DateTime @default(now())
+
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  communityRoutine CommunityRoutine @relation(fields: [communityRoutineId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, communityRoutineId])
+}
+
+model CommunityReport {
+  id                 String   @id @default(cuid())
+  userId             String
+  communityRoutineId String
+  reason             String
+  createdAt          DateTime @default(now())
+
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  communityRoutine CommunityRoutine @relation(fields: [communityRoutineId], references: [id], onDelete: Cascade)
 }
