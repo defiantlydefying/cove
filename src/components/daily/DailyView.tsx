@@ -206,7 +206,7 @@ export default function DailyView() {
         <div className="h-8 w-48 rounded-lg bg-cove-border-light animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="rounded-2xl bg-cove-card border border-cove-border-light p-5 h-32 animate-pulse" />
+            <div key={i} className="rounded-xl bg-cove-card border border-cove-border-light p-5 h-32 animate-pulse" />
           ))}
         </div>
       </div>
@@ -219,7 +219,7 @@ export default function DailyView() {
         <h1 className="text-2xl font-semibold tracking-tight text-cove-charcoal">
           {getGreeting()}
         </h1>
-        <div className="w-full rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-10 text-center">
+        <div className="w-full rounded-xl bg-cove-card border border-cove-border-light p-10 text-center">
           <p className="text-cove-muted text-lg font-medium">
             Couldn&apos;t load your daily view.
           </p>
@@ -251,7 +251,7 @@ export default function DailyView() {
         <h1 className="text-2xl font-semibold tracking-tight text-cove-charcoal mb-6">
           {getGreeting()}
         </h1>
-        <div className="w-full rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-10 text-center">
+        <div className="w-full rounded-xl bg-cove-card border border-cove-border-light p-10 text-center">
           <p className="text-cove-charcoal text-lg font-medium mb-2">
             A clean slate
           </p>
@@ -264,15 +264,15 @@ export default function DailyView() {
   }
 
   return (
-    <div className="flex flex-col gap-6 max-w-4xl">
+    <div className="flex flex-col gap-8 max-w-4xl">
       <h1 className="text-2xl font-semibold tracking-tight text-cove-charcoal">
         {getGreeting()}
       </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Tasks Card */}
         {hasTasks && (
-          <section className="rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-5 border-l-4 border-l-cove-sage">
+          <section className="rounded-xl bg-cove-card border border-cove-border-light p-5">
             <h2 className="font-semibold text-cove-charcoal mb-3">Tasks</h2>
             <div className="flex flex-col gap-2">
               {data.tasks.map((task) => (
@@ -326,7 +326,7 @@ export default function DailyView() {
 
         {/* Routines Card */}
         {hasRoutines && (
-          <section className="rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-5 border-l-4 border-l-cove-blue">
+          <section className="rounded-xl bg-cove-card border border-cove-border-light p-5">
             <h2 className="font-semibold text-cove-charcoal mb-3">Routines</h2>
             <div className="flex flex-col gap-4">
               {data.routines.map((routine) => {
@@ -388,7 +388,7 @@ export default function DailyView() {
 
         {/* Wellness Card */}
         {hasWellness && (
-          <section className="rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-5 border-l-4 border-l-cove-accent">
+          <section className={`rounded-xl bg-cove-card border border-cove-border-light p-5 ${!data.wellness ? "md:col-span-2" : ""}`}>
             <h2 className="font-semibold text-cove-charcoal mb-3">
               How are you feeling?
             </h2>
@@ -417,7 +417,7 @@ export default function DailyView() {
 
         {/* Reminders Card */}
         {hasReminders && (
-          <section className="rounded-2xl bg-cove-card border border-cove-border-light shadow-sm p-5 border-l-4 border-l-cove-amber">
+          <section className="rounded-xl bg-cove-card border border-cove-border-light p-5">
             <h2 className="font-semibold text-cove-charcoal mb-3">Reminders</h2>
             <div className="flex flex-col gap-2">
               {data.reminders.map((reminder) => (

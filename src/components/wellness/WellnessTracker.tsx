@@ -19,7 +19,7 @@ export default function WellnessTracker() {
     setError(false);
     try {
       const [checkinsRes, patternsRes] = await Promise.all([
-        fetch("/api/wellness?days=7"),
+        fetch("/api/wellness?days=30"),
         fetch("/api/wellness/patterns"),
       ]);
 
@@ -67,10 +67,10 @@ export default function WellnessTracker() {
     return (
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-[380px] shrink-0">
-          <div className="h-64 rounded-2xl bg-cove-card border border-cove-border animate-pulse" />
+          <div className="h-64 rounded-xl bg-cove-card border border-cove-border animate-pulse" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="h-48 rounded-2xl bg-cove-card border border-cove-border animate-pulse" />
+          <div className="h-48 rounded-xl bg-cove-card border border-cove-border animate-pulse" />
         </div>
       </div>
     );
@@ -78,7 +78,7 @@ export default function WellnessTracker() {
 
   if (error) {
     return (
-      <div className="rounded-2xl bg-cove-card border border-cove-border-light p-8 text-center">
+      <div className="rounded-xl bg-cove-card border border-cove-border-light p-8 text-center">
         <p className="text-cove-muted">Couldn&apos;t load wellness data.</p>
         <button
           onClick={fetchData}

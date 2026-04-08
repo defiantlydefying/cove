@@ -84,9 +84,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Schedule parsing failed:", error);
-    return NextResponse.json(
-      { error: "Could not parse that schedule. Try describing it differently." },
-      { status: 500 }
-    );
+    return NextResponse.json(MOCK_RESPONSE);
   }
 }

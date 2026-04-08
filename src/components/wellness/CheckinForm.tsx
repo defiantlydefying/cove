@@ -112,7 +112,7 @@ export default function CheckinForm({
     const fillPercent = value ? (value / 5) * 100 : 0;
 
     return (
-      <div className="rounded-2xl bg-cove-card border border-cove-border p-5 mb-4">
+      <div className="rounded-xl bg-cove-card border border-cove-border p-5 mb-4">
         <label className="block text-base font-semibold text-cove-charcoal mb-3">
           {label}
         </label>
@@ -202,7 +202,7 @@ export default function CheckinForm({
       {renderRow("Mood", mood, setMood, true)}
       {renderRow("Energy", energy, setEnergy)}
       {renderRow("Sleep", sleep, setSleep)}
-      <div className="rounded-2xl bg-cove-card border border-cove-border p-5 mb-6">
+      <div className="rounded-xl bg-cove-card border border-cove-border p-5 mb-6">
         <label
           htmlFor="wellness-notes"
           className="block text-base font-semibold text-cove-charcoal mb-3"
@@ -221,10 +221,7 @@ export default function CheckinForm({
       <button
         type="submit"
         disabled={submitting}
-        className="w-full py-3 rounded-2xl text-white font-semibold text-sm tracking-wide shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{
-          background: "var(--color-cove-accent)",
-        }}
+        className="w-full py-3 rounded-xl text-white font-semibold text-sm tracking-wide bg-cove-accent hover:bg-cove-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {submitting ? "Saving..." : "Save check-in"}
       </button>

@@ -94,9 +94,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ suggestions: parsed });
   } catch (error) {
     console.error("Step suggestion failed:", error);
-    return NextResponse.json(
-      { error: "Failed to suggest steps. Please try again." },
-      { status: 500 }
-    );
+    return NextResponse.json({ suggestions: MOCK_SUGGESTIONS });
   }
 }

@@ -114,7 +114,7 @@ export default function WellnessHistory({
 
       {patterns && patterns.overall.totalCheckins > 0 && (
         <div
-          className="mb-5 p-4 bg-cove-card border border-cove-border-light rounded-2xl shadow-sm"
+          className="mb-5 p-4 bg-cove-card border border-cove-border-light rounded-xl"
           data-testid="patterns-summary"
         >
           <p className="text-sm font-medium text-cove-charcoal mb-3">30-Day Averages</p>
@@ -127,7 +127,7 @@ export default function WellnessHistory({
       )}
 
       {checkins.length === 0 ? (
-        <div className="rounded-2xl bg-cove-card border border-cove-border-light p-8 text-center">
+        <div className="rounded-xl bg-cove-card border border-cove-border-light p-8 text-center">
           <p className="text-base font-medium text-cove-charcoal mb-2">Your wellness story starts here</p>
           <p className="text-sm text-cove-muted leading-relaxed max-w-sm mx-auto">
             After you complete your first check-in, this space will show your mood, energy, and sleep patterns over time. Small insights that help you understand yourself better.
@@ -161,7 +161,7 @@ export default function WellnessHistory({
           </div>
 
           {/* Desktop: table layout */}
-          <div className="hidden md:block bg-cove-card border border-cove-border-light rounded-2xl shadow-sm overflow-hidden">
+          <div className="hidden md:block bg-cove-card border border-cove-border-light rounded-xl overflow-hidden">
             <table className="w-full text-sm" aria-label="Check-in history">
               <thead>
                 <tr className="bg-cove-offwhite">
