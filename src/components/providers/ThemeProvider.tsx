@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useSession } from "next-auth/react";
+import { syncStatusBar } from "@/lib/capacitor/status-bar";
 
 interface ThemeContextValue {
   theme: string;
@@ -30,6 +31,7 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
         if (data.theme) {
           setThemeState(data.theme);
           document.documentElement.setAttribute("data-theme", data.theme);
+          syncStatusBar(data.theme);
         }
       })
       .catch(() => {});
@@ -38,6 +40,7 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
   const setTheme = (newTheme: string) => {
     setThemeState(newTheme);
     document.documentElement.setAttribute("data-theme", newTheme);
+    syncStatusBar(newTheme);
 
     fetch("/api/settings", {
       method: "PATCH",

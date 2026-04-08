@@ -4,6 +4,7 @@ import SessionProvider from "@/components/providers/SessionProvider";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 import ToastProvider from "@/components/providers/ToastProvider";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
+import CapacitorInit from "@/components/CapacitorInit";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -20,6 +21,15 @@ export const metadata: Metadata = {
   title: "Cove",
   description: "Your executive function companion",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/branding/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/branding/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
+    apple: [
+      { url: "/branding/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   other: {
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
@@ -43,6 +53,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="h-full flex flex-col">
+        <CapacitorInit />
         <ServiceWorkerRegistrar />
         <SessionProvider>
           <ThemeProvider>

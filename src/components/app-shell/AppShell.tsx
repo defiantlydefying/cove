@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Sidebar from "./Sidebar";
 import TabBar from "./TabBar";
+import OfflineBanner from "@/components/OfflineBanner";
 
 interface Tab {
   id: string;
@@ -41,6 +42,7 @@ export default function AppShell({
 
   return (
     <div className="flex flex-col h-screen">
+      <OfflineBanner />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-cove-accent focus:text-white focus:rounded-lg focus:text-sm focus:font-medium"

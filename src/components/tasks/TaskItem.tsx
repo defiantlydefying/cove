@@ -1,5 +1,8 @@
 "use client";
 
+import { memo } from "react";
+import { tapLight } from "@/lib/capacitor/haptics";
+
 export interface Task {
   id: string;
   title: string;
@@ -20,13 +23,16 @@ interface TaskItemProps {
   onEdit?: (task: Task) => void;
 }
 
-export default function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
+export default memo(function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
   return (
     <div className="flex items-start gap-3 py-3 px-2 group rounded-lg hover:bg-white/5 transition-colors" data-testid="task-item">
       <input
         type="checkbox"
         checked={task.completed}
-        onChange={() => onToggle(task.id)}
+        onChange={() => {
+          if (!task.completed) tapLight();
+          onToggle(task.id);
+        }}
         aria-label={`Toggle ${task.title}`}
         className="mt-1 shrink-0 h-4 w-4 rounded border-white/30 accent-cove-accent focus:ring-white/20"
       />
@@ -106,4 +112,4 @@ export default function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemP
       </button>
     </div>
   );
-}
+});
