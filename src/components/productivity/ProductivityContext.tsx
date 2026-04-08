@@ -73,7 +73,7 @@ interface ProductivityState {
   selectedDate: string;
   fetchAll: () => Promise<void>;
   setSelectedDate: (date: string) => void;
-  addFocusSession: (session: Omit<FocusSession, "id" | "completedAt">) => Promise<void>;
+  addFocusSession: (session: Omit<FocusSession, "id" | "completedAt">) => Promise<Record<string, unknown> | null>;
   addPlannerItem: (item: { title: string; date?: string; zone?: string; startTime?: string; endTime?: string; taskId?: string }) => Promise<void>;
   updatePlannerItem: (item: { id: string } & Partial<PlannerItem>) => Promise<void>;
   deletePlannerItem: (id: string) => Promise<void>;
@@ -159,8 +159,10 @@ export function ProductivityProvider({ children }: { children: ReactNode }) {
       const created = await res.json();
       setFocusSessions((prev) => [created, ...prev]);
       setWeekSessions((prev) => [created, ...prev]);
+      return created;
     } catch {
       toast("Failed to save session", "error");
+      return null;
     }
   }, [toast]);
 
