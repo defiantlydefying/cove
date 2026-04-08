@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { recordActivity } from "@/lib/gamification";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -43,5 +44,12 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return NextResponse.json(created, { status: 201 });
+  let gamification = null;
+  if (sessionType === "focus" || !sessionType) {
+    try {
+      gamification = await recordActivity(user.id, "focus");
+    } catch { /* non-blocking */ }
+  }
+
+  return NextResponse.json({ ...created, gamification }, { status: 201 });
 }

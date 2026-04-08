@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { recordActivity } from "@/lib/gamification";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -60,6 +61,8 @@ export async function POST(request: NextRequest) {
       notes: body.notes ?? null,
     },
   });
+
+  recordActivity(session.user.id, "wellness").catch(() => {});
 
   return NextResponse.json(checkin, { status: 200 });
 }

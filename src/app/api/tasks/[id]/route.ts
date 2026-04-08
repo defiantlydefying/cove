@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { recordActivity } from "@/lib/gamification";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -75,7 +76,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     data,
   });
 
-  return NextResponse.json(updated);
+  // Record gamification activity when a task is completed
+  let gamification = null;
+  if (body.completed && !existing.completed) {
+    try {
+      gamification = await recordActivity(session.user.id, "tasks");
+    } catch { /* non-blocking */ }
+  }
+
+  return NextResponse.json({ ...updated, gamification });
 }
 
 export async function DELETE(request: NextRequest, context: RouteContext) {

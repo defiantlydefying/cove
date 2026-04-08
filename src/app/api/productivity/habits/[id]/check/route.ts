@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { recordActivity } from "@/lib/gamification";
 
 export async function POST(
   req: NextRequest,
@@ -34,6 +35,7 @@ export async function POST(
   } else {
     // Check
     await prisma.habitCheck.create({ data: { habitId, date } });
+    recordActivity(user.id, "habits").catch(() => {});
   }
 
   // Recalculate streak

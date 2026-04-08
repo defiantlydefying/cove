@@ -60,12 +60,25 @@ export default function TaskList() {
 
     try {
       const task = tasks.find((t) => t.id === id);
+      const willComplete = !task?.completed;
       const res = await fetch(`/api/tasks/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completed: !task?.completed }),
+        body: JSON.stringify({ completed: willComplete }),
       });
       if (!res.ok) throw new Error();
+      if (willComplete) {
+        const data = await res.json();
+        const gam = data?.gamification;
+        if (gam?.xpEarned) {
+          toast(`Task complete  +${gam.xpEarned} XP`, "success");
+        }
+        if (gam?.newAchievements?.length) {
+          for (const a of gam.newAchievements) {
+            setTimeout(() => toast(`Achievement unlocked: ${a.name}`, "success"), 500);
+          }
+        }
+      }
     } catch {
       setTasks((prev) =>
         prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
@@ -174,11 +187,11 @@ export default function TaskList() {
 
       {/* Delete confirmation */}
       {confirmDeleteId && (
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-cove-error-light border border-cove-error/20">
           <p className="text-sm text-white/80 flex-1">Delete this task?</p>
           <button
             onClick={handleDeleteConfirm}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-cove-error text-white hover:bg-cove-error/90 transition-colors"
           >
             Delete
           </button>

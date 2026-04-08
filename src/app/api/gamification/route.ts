@@ -11,28 +11,49 @@ export async function GET() {
 
   const userId = session.user.id;
 
-  const streaks = await prisma.userStreak.findMany({
-    where: { userId },
-  });
+  const [streaks, userAchievements, allAchievements, taskCount, focusCount, habitCheckCount, checkinCount] =
+    await Promise.all([
+      prisma.userStreak.findMany({ where: { userId } }),
+      prisma.userAchievement.findMany({
+        where: { userId },
+        include: { achievement: true },
+        orderBy: { unlockedAt: "desc" },
+      }),
+      prisma.achievement.findMany({ orderBy: { xpReward: "asc" } }),
+      prisma.task.count({ where: { userId, completed: true } }),
+      prisma.focusSession.count({ where: { userId, sessionType: "focus" } }),
+      prisma.habitCheck.count({ where: { habit: { userId } } }),
+      prisma.wellnessCheckin.count({ where: { userId } }),
+    ]);
 
   const totalXp = streaks.reduce((sum, s) => sum + s.totalXp, 0);
+  const unlockedIds = new Set(userAchievements.map((ua) => ua.achievementId));
 
-  const achievements = await prisma.userAchievement.findMany({
-    where: { userId },
-    include: { achievement: true },
-    orderBy: { unlockedAt: "desc" },
-  });
+  // Calculate level: every 100 XP = 1 level
+  const level = Math.floor(totalXp / 100) + 1;
+  const xpInLevel = totalXp % 100;
+  const xpToNextLevel = 100;
 
   return NextResponse.json({
     streaks,
     totalXp,
-    achievements: achievements.map((ua) => ({
-      id: ua.achievement.id,
-      key: ua.achievement.key,
-      name: ua.achievement.name,
-      description: ua.achievement.description,
-      xpReward: ua.achievement.xpReward,
-      unlockedAt: ua.unlockedAt,
+    level,
+    xpInLevel,
+    xpToNextLevel,
+    stats: {
+      tasksCompleted: taskCount,
+      focusSessions: focusCount,
+      habitChecks: habitCheckCount,
+      wellnessCheckins: checkinCount,
+    },
+    achievements: allAchievements.map((a) => ({
+      id: a.id,
+      key: a.key,
+      name: a.name,
+      description: a.description,
+      xpReward: a.xpReward,
+      unlocked: unlockedIds.has(a.id),
+      unlockedAt: userAchievements.find((ua) => ua.achievementId === a.id)?.unlockedAt || null,
     })),
   });
 }

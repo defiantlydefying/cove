@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { recordActivity } from "@/lib/gamification";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -49,6 +50,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       completedSteps: body.completedSteps,
     },
   });
+
+  recordActivity(session.user.id, "routines").catch(() => {});
 
   return NextResponse.json(log);
 }

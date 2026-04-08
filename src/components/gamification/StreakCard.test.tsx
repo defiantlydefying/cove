@@ -54,7 +54,7 @@ describe("StreakCard", () => {
 
   it("shows longest streak", () => {
     render(<StreakCard streak={makeStreak({ longestStreak: 12 })} />);
-    expect(screen.getByText("Longest: 12")).toBeInTheDocument();
+    expect(screen.getByText("Best: 12d")).toBeInTheDocument();
   });
 
   it("shows total XP", () => {

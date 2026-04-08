@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useProductivity } from "./ProductivityContext";
 import { useToast } from "@/components/providers/ToastProvider";
+import { success as hapticSuccess } from "@/lib/capacitor/haptics";
 
 const DURATIONS = {
   focus: 25 * 60,
@@ -62,18 +63,31 @@ export default function FocusTimer() {
     clearTimer();
     setIsRunning(false);
     playChime();
+    hapticSuccess();
 
     if (sessionType === "focus" || sessionType === "custom") {
-      await addFocusSession({
+      const result = (await addFocusSession({
         label: label || null,
         taskId: null,
         durationMin: Math.round(sessionDuration / 60),
         sessionType: "focus",
-      });
+      })) as Record<string, unknown> | null;
 
       const newCount = focusCount + 1;
       setFocusCount(newCount);
-      toast("Focus session complete", "success");
+
+      // Show XP earned toast
+      const gam = result?.gamification as { xpEarned?: number; newAchievements?: Array<{ name: string }> } | undefined;
+      if (gam?.xpEarned) {
+        toast(`Focus session complete  +${gam.xpEarned} XP`, "success");
+      } else {
+        toast("Focus session complete", "success");
+      }
+      if (gam?.newAchievements?.length) {
+        for (const a of gam.newAchievements) {
+          setTimeout(() => toast(`Achievement unlocked: ${a.name}`, "success"), 500);
+        }
+      }
 
       // Auto-advance to break
       const nextType = newCount % 4 === 0 ? "long-break" : "short-break";

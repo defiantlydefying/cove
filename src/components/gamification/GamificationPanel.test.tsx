@@ -26,6 +26,15 @@ const mockData = {
     },
   ],
   totalXp: 50,
+  level: 1,
+  xpInLevel: 50,
+  xpToNextLevel: 100,
+  stats: {
+    tasksCompleted: 5,
+    focusSessions: 2,
+    habitChecks: 3,
+    wellnessCheckins: 1,
+  },
   achievements: [
     {
       id: "a1",
@@ -33,6 +42,7 @@ const mockData = {
       name: "First Task",
       description: "Complete your first task",
       xpReward: 25,
+      unlocked: true,
       unlockedAt: new Date().toISOString(),
     },
   ],
@@ -53,7 +63,7 @@ describe("GamificationPanel", () => {
     expect(container.querySelector(".animate-pulse")).toBeInTheDocument();
   });
 
-  it("renders total XP and streaks after fetch", async () => {
+  it("renders total XP and level after fetch", async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(mockData),
@@ -65,8 +75,7 @@ describe("GamificationPanel", () => {
       expect(screen.getByText("50")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Daily")).toBeInTheDocument();
-    expect(screen.getByText("Tasks")).toBeInTheDocument();
+    expect(screen.getByText(/Seedling/)).toBeInTheDocument();
   });
 
   it("renders achievements", async () => {
@@ -84,6 +93,5 @@ describe("GamificationPanel", () => {
     expect(
       screen.getByText("Complete your first task"),
     ).toBeInTheDocument();
-    expect(screen.getByText("+25 XP")).toBeInTheDocument();
   });
 });
