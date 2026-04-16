@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import CompanionPicker from "@/components/companion/CompanionPicker";
+import type { CompanionType } from "@/lib/companions";
 
 interface UserSettings {
   theme: string;
@@ -10,6 +13,7 @@ interface UserSettings {
   soundsOn: boolean;
   fontSize: string;
   tone: string;
+  companionType: string;
 }
 
 interface ModuleSetting {
@@ -18,16 +22,31 @@ interface ModuleSetting {
 }
 
 const ACCENT_COLORS = [
-  { hex: "#6B8F71", name: "Sage" },
-  { hex: "#7EAAA0", name: "Teal" },
-  { hex: "#C4A055", name: "Amber" },
-  { hex: "#A08BA0", name: "Heather" },
-  { hex: "#4A5D4E", name: "Forest" },
-  { hex: "#8FA89A", name: "Mint" },
+  { hex: "#6B8F71", name: "Sage", hover: "#5A7D60", light: "#EAF0EB", sidebar: "#4A5D4E" },
+  { hex: "#7EAAA0", name: "Teal", hover: "#6B9A90", light: "#E6F0ED", sidebar: "#4A5D5E" },
+  { hex: "#C4A055", name: "Amber", hover: "#B08E45", light: "#F5EFE0", sidebar: "#5D5440" },
+  { hex: "#A08BA0", name: "Heather", hover: "#8E788E", light: "#F0EBF0", sidebar: "#5A4D5A" },
+  { hex: "#4A5D4E", name: "Forest", hover: "#3D4F40", light: "#E8EDE9", sidebar: "#3D4F40" },
+  { hex: "#8FA89A", name: "Mint", hover: "#7D968A", light: "#ECF2EE", sidebar: "#4A5D50" },
 ];
+
+function applyAccentColor(hex: string) {
+  const color = ACCENT_COLORS.find((c) => c.hex === hex);
+  if (!color) return;
+  const root = document.documentElement;
+  root.style.setProperty("--cove-accent", color.hex);
+  root.style.setProperty("--cove-accent-hover", color.hover);
+  root.style.setProperty("--cove-accent-light", color.light);
+  root.style.setProperty("--cove-sidebar", color.sidebar);
+  root.style.setProperty("--cove-gradient-start", color.sidebar);
+  root.style.setProperty("--cove-gradient-end", color.hex);
+  root.style.setProperty("--cove-selection", color.hex + "33");
+}
 
 const ALL_MODULES = [
   { id: "task-manager", name: "Task Manager", description: "Organize and track your tasks with priorities and deadlines" },
+  { id: "productivity", name: "Planner", description: "Week calendar with time blocking and priority zones" },
+  { id: "focus-habits", name: "Focus & Habits", description: "Pomodoro timer, daily habits, and weekly goals" },
   { id: "routine-builder", name: "Routine Builder", description: "Build consistent daily routines step by step" },
   { id: "wellness-tracker", name: "Wellness Tracker", description: "Monitor your mood, energy, and wellbeing over time" },
   { id: "reminders", name: "Reminders", description: "Gentle nudges to keep you on track throughout the day" },
@@ -36,6 +55,7 @@ const ALL_MODULES = [
 ];
 
 export default function SettingsPanel() {
+  const { setTheme } = useTheme();
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [modules, setModules] = useState<ModuleSetting[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,6 +69,7 @@ export default function SettingsPanel() {
       const settingsData = await settingsRes.json();
       const modulesData = await modulesRes.json();
       setSettings(settingsData);
+      if (settingsData.accentColor) applyAccentColor(settingsData.accentColor);
       setModules(modulesData);
       setLoading(false);
     }
@@ -91,6 +112,18 @@ export default function SettingsPanel() {
     <div className="max-w-2xl mx-auto p-8 space-y-10" data-testid="settings-panel">
       <h1 className="text-2xl font-semibold tracking-tight text-cove-charcoal">Settings</h1>
 
+      {/* Companion */}
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-sm font-semibold text-cove-charcoal">Companion</h2>
+          <p className="text-xs text-cove-muted mt-0.5">Your guide through cove. Switch anytime.</p>
+        </div>
+        <CompanionPicker
+          selected={(settings.companionType ?? "fox") as CompanionType}
+          onSelect={(type) => updateSetting("companionType", type)}
+        />
+      </section>
+
       {/* Theme */}
       <section className="space-y-3">
         <div>
@@ -99,7 +132,7 @@ export default function SettingsPanel() {
         </div>
         <div className="flex gap-3">
           <button
-            onClick={() => updateSetting("theme", "light")}
+            onClick={() => { updateSetting("theme", "light"); setTheme("light"); document.documentElement.setAttribute("data-theme", "light"); }}
             className={`px-4 py-2 text-sm border rounded-lg transition-colors ${
               settings.theme === "light"
                 ? "border-cove-accent bg-cove-accent-light text-cove-accent font-medium"
@@ -109,7 +142,7 @@ export default function SettingsPanel() {
             Light
           </button>
           <button
-            onClick={() => updateSetting("theme", "dark")}
+            onClick={() => { updateSetting("theme", "dark"); setTheme("dark"); document.documentElement.setAttribute("data-theme", "dark"); }}
             className={`px-4 py-2 text-sm border rounded-lg transition-colors ${
               settings.theme === "dark"
                 ? "border-cove-accent bg-cove-accent-light text-cove-accent font-medium"
@@ -131,7 +164,7 @@ export default function SettingsPanel() {
           {ACCENT_COLORS.map((color) => (
             <button
               key={color.hex}
-              onClick={() => updateSetting("accentColor", color.hex)}
+              onClick={() => { updateSetting("accentColor", color.hex); applyAccentColor(color.hex); }}
               aria-label={`Select ${color.name}`}
               title={color.name}
               className={`w-8 h-8 rounded-full border-2 transition-all ${
@@ -155,7 +188,7 @@ export default function SettingsPanel() {
           {["compact", "comfortable", "spacious"].map((d) => (
             <button
               key={d}
-              onClick={() => updateSetting("density", d)}
+              onClick={() => { updateSetting("density", d); document.documentElement.setAttribute("data-density", d); }}
               className={`px-4 py-2 text-sm border rounded-lg capitalize transition-colors ${
                 settings.density === d
                   ? "border-cove-accent bg-cove-accent-light text-cove-accent font-medium"
@@ -225,7 +258,7 @@ export default function SettingsPanel() {
           {["small", "medium", "large"].map((size) => (
             <button
               key={size}
-              onClick={() => updateSetting("fontSize", size)}
+              onClick={() => { updateSetting("fontSize", size); document.documentElement.setAttribute("data-font-size", size); }}
               className={`px-4 py-2 text-sm border rounded-lg capitalize transition-colors ${
                 settings.fontSize === size
                   ? "border-cove-accent bg-cove-accent-light text-cove-accent font-medium"

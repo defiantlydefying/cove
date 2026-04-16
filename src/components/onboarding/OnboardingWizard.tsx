@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import CompanionPicker from "@/components/companion/CompanionPicker";
+import type { CompanionType } from "@/lib/companions";
 
 const AVAILABLE_MODULES = [
   {
@@ -67,6 +69,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
   const [conditions, setConditions] = useState<string[]>([]);
   const [medications, setMedications] = useState("");
   const [profileNotes, setProfileNotes] = useState("");
+  const [companionType, setCompanionType] = useState<CompanionType>("fox");
 
   const toggleModule = (id: string) => {
     setModules((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -92,7 +95,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
     const settingsPromise = fetch("/api/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ theme, density, animationsOn }),
+      body: JSON.stringify({ theme, density, animationsOn, companionType }),
     });
 
     const profilePromise = fetch("/api/profile", {
@@ -213,6 +216,16 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
       )}
 
       {step === 2 && (
+        <div data-testid="companion-step">
+          <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-3">Choose your companion</h2>
+          <p className="text-cove-muted mb-8 leading-relaxed">
+            Your companion will be your guide through cove. Pick the personality that feels right for you \u2014 you can switch anytime.
+          </p>
+          <CompanionPicker selected={companionType} onSelect={setCompanionType} />
+        </div>
+      )}
+
+      {step === 3 && (
         <div data-testid="modules-step">
           <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-3">Choose your modules</h2>
           <p className="text-cove-muted mb-8 leading-relaxed">
@@ -257,7 +270,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
         </div>
       )}
 
-      {step === 3 && (
+      {step === 4 && (
         <div data-testid="theme-step">
           <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-6">Customize your experience</h2>
           <div className="space-y-8">
@@ -326,7 +339,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
         </div>
       )}
 
-      {step === 4 && (
+      {step === 5 && (
         <div data-testid="done-step">
           <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-4">Your cove is ready</h2>
           <p className="text-cove-muted mb-10 leading-relaxed">
@@ -342,7 +355,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
       )}
 
       <div className="flex justify-between mt-10">
-        {step > 0 && step < 4 && (
+        {step > 0 && step < 5 && (
           <button
             onClick={() => setStep((s) => s - 1)}
             className="px-5 py-2.5 border border-cove-border rounded-lg text-cove-muted hover:text-cove-charcoal hover:border-cove-accent/30 transition-colors"
@@ -351,7 +364,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
           </button>
         )}
         {step === 0 && <div />}
-        {step < 4 && (
+        {step < 5 && (
           <button
             onClick={() => setStep((s) => s + 1)}
             className="px-5 py-2.5 bg-cove-accent text-white rounded-lg ml-auto shadow-sm hover:bg-cove-accent-hover transition-colors focus:outline-none focus:ring-2 focus:ring-cove-accent/40"

@@ -48,6 +48,13 @@ export async function PATCH(request: NextRequest) {
     }
   }
 
+  if (
+    body.companionType &&
+    ["otter", "turtle", "seal", "owl", "fox", "deer", "frog"].includes(body.companionType)
+  ) {
+    data.companionType = body.companionType;
+  }
+
   const settings = await prisma.userSettings.upsert({
     where: { userId: session.user.id },
     update: data,
