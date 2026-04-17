@@ -2,46 +2,56 @@
 
 import { ReactNode, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import LeftNav from "./LeftNav";
 import Sidebar from "./Sidebar";
-import TabBar from "./TabBar";
 import OfflineBanner from "@/components/OfflineBanner";
 
-interface Tab {
+interface NavItem {
   id: string;
   label: string;
+  icon: React.ReactNode;
 }
 
 interface AppShellProps {
-  tabs: Tab[];
-  activeTab: string;
-  onTabChange: (id: string) => void;
+  navItems: NavItem[];
+  activeItem: string;
+  onItemChange: (id: string) => void;
   sidebarContent: ReactNode;
   children: ReactNode;
   moduleStates?: Record<string, boolean>;
   onToggleModule?: (tabId: string, enabled: boolean) => void;
+  sidebarControlRef?: React.MutableRefObject<((visible: boolean) => void) | null>;
 }
 
 export default function AppShell({
-  tabs,
-  activeTab,
-  onTabChange,
+  navItems,
+  activeItem,
+  onItemChange,
   sidebarContent,
   children,
   moduleStates,
   onToggleModule,
+  sidebarControlRef,
 }: AppShellProps) {
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const { data: session } = useSession();
   const userName = session?.user?.name;
 
-  // Show sidebar by default on desktop, hidden on mobile
+  // Expose sidebar control to parent (for guided tour)
+  useEffect(() => {
+    if (sidebarControlRef) {
+      sidebarControlRef.current = setSidebarVisible;
+    }
+  }, [sidebarControlRef]);
+
+  // Show sidebar by default on desktop
   useEffect(() => {
     const isDesktop = window.matchMedia("(min-width: 768px)").matches;
     setSidebarVisible(isDesktop);
   }, []);
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex h-screen overflow-hidden">
       <OfflineBanner />
       <a
         href="#main-content"
@@ -49,48 +59,57 @@ export default function AppShell({
       >
         Skip to main content
       </a>
-      <header className="flex items-center justify-between px-5 py-3.5 bg-cove-sidebar text-cove-sidebar-text shadow-sm">
-        <div className="flex items-center gap-3">
-          <span className="text-lg font-semibold tracking-tight leading-none">Cove</span>
-          <span className="opacity-30">|</span>
-          <span className="text-sm opacity-70" suppressHydrationWarning>
-            {userName ? `Welcome, ${userName}` : "Your cove."}
-          </span>
-        </div>
-        <button
-          onClick={() => setSidebarVisible(true)}
-          aria-label="Open sidebar"
-          className={`px-3 py-2 text-sm border border-cove-sidebar-text/30 rounded-lg opacity-80 hover:opacity-100 hover:bg-cove-sidebar-text/10 transition-colors ${
-            sidebarVisible ? "hidden" : ""
-          }`}
-        >
-          Tasks
-        </button>
-      </header>
-      <div className="flex flex-1 min-h-0 overflow-hidden">
-        <div className="flex flex-col flex-1 min-w-0 min-h-0 bg-cove-offwhite">
-          <TabBar
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={onTabChange}
-            moduleStates={moduleStates}
-            onToggleModule={onToggleModule}
-          />
+
+      {/* Left navigation */}
+      <LeftNav
+        items={navItems}
+        activeItem={activeItem}
+        onItemChange={onItemChange}
+        moduleStates={moduleStates}
+        onToggleModule={onToggleModule}
+        userName={userName}
+      />
+
+      {/* Main content area */}
+      <div className="flex flex-col flex-1 min-w-0 min-h-0">
+        {/* Top bar */}
+        <header className="flex items-center justify-between px-5 py-3 border-b border-cove-border-light bg-cove-card shrink-0">
+          <div className="flex items-center gap-2">
+            {/* Spacer for mobile hamburger */}
+            <div className="w-8 md:hidden" />
+            <h1 className="text-lg font-semibold text-cove-charcoal tracking-tight">
+              {navItems.find((i) => i.id === activeItem)?.label ?? "Cove"}
+            </h1>
+          </div>
+          <button
+            id="sidebar-toggle"
+            onClick={() => setSidebarVisible(!sidebarVisible)}
+            aria-label={sidebarVisible ? "Close tasks" : "Open tasks"}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-cove-muted hover:text-cove-charcoal border border-cove-border rounded-lg hover:bg-cove-offwhite transition-colors"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="3" x2="9" y2="21" />
+            </svg>
+            Tasks
+          </button>
+        </header>
+
+        {/* Content + sidebar row */}
+        <div className="flex flex-1 min-h-0 overflow-hidden">
           <main
             id="main-content"
-            role="tabpanel"
-            aria-labelledby={`tab-${activeTab}`}
-            className="flex-1 overflow-auto p-5 bg-cove-card rounded-tl-3xl"
+            className="flex-1 overflow-auto p-6 bg-cove-offwhite"
           >
             {children}
           </main>
+
+          <Sidebar
+            visible={sidebarVisible}
+            onClose={() => setSidebarVisible(false)}
+          >
+            {sidebarContent}
+          </Sidebar>
         </div>
-        <Sidebar
-          visible={sidebarVisible}
-          onClose={() => setSidebarVisible(false)}
-        >
-          {sidebarContent}
-        </Sidebar>
       </div>
     </div>
   );
