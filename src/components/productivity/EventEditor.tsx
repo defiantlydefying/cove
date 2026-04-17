@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 interface EventData {
   id?: string;
   title: string;
+  date?: string;
   startTime: string;
   endTime: string;
   zone: string;
@@ -13,6 +14,7 @@ interface EventData {
 interface EventEditorProps {
   initial: EventData;
   position: { top: number; left: number };
+  weekDays?: { date: string; label: string }[];
   onSave: (data: EventData) => void;
   onDelete?: () => void;
   onCancel: () => void;
@@ -53,12 +55,14 @@ function timeDiffMin(start: string, end: string) {
 export default function EventEditor({
   initial,
   position,
+  weekDays,
   onSave,
   onDelete,
   onCancel,
   isEditing,
 }: EventEditorProps) {
   const [title, setTitle] = useState(initial.title);
+  const [date, setDate] = useState(initial.date || "");
   const [startTime, setStartTime] = useState(initial.startTime);
   const [endTime, setEndTime] = useState(initial.endTime);
   const [zone, setZone] = useState(initial.zone);
@@ -82,7 +86,7 @@ export default function EventEditor({
 
   const handleSave = () => {
     if (!title.trim()) return;
-    onSave({ id: initial.id, title: title.trim(), startTime, endTime, zone });
+    onSave({ id: initial.id, title: title.trim(), date, startTime, endTime, zone });
   };
 
   const duration = timeDiffMin(startTime, endTime);
@@ -111,6 +115,28 @@ export default function EventEditor({
       </div>
 
       <div className="px-4 pb-3 flex flex-col gap-3">
+        {/* Date selector (when week view provides days) */}
+        {weekDays && weekDays.length > 0 && (
+          <div>
+            <label className="text-[10px] text-cove-muted block mb-1">Day</label>
+            <div className="flex gap-1">
+              {weekDays.map((d) => (
+                <button
+                  key={d.date}
+                  onClick={() => setDate(d.date)}
+                  className={`flex-1 px-1 py-1.5 text-[10px] font-medium rounded-lg border transition-colors ${
+                    date === d.date
+                      ? "bg-cove-accent/10 border-cove-accent/30 text-cove-accent"
+                      : "border-cove-border/30 text-cove-muted hover:border-cove-border"
+                  }`}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Time selectors */}
         <div className="flex items-center gap-2">
           <div className="flex-1">

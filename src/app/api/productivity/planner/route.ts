@@ -11,12 +11,22 @@ export async function GET(req: NextRequest) {
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-  const dateParam = req.nextUrl.searchParams.get("date") || new Date().toISOString().split("T")[0];
-  const date = new Date(dateParam);
+  const startDate = req.nextUrl.searchParams.get("startDate");
+  const endDate = req.nextUrl.searchParams.get("endDate");
+  const dateParam = req.nextUrl.searchParams.get("date");
+
+  let where: { userId: string; date?: Date | { gte: Date; lte: Date } } = { userId: user.id };
+
+  if (startDate && endDate) {
+    where.date = { gte: new Date(startDate), lte: new Date(endDate) };
+  } else {
+    const d = dateParam || new Date().toISOString().split("T")[0];
+    where.date = new Date(d);
+  }
 
   const items = await prisma.plannerItem.findMany({
-    where: { userId: user.id, date },
-    orderBy: [{ zone: "asc" }, { sortOrder: "asc" }],
+    where,
+    orderBy: [{ date: "asc" }, { zone: "asc" }, { sortOrder: "asc" }],
   });
 
   return NextResponse.json(items);

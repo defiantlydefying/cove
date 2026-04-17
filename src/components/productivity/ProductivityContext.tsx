@@ -71,8 +71,11 @@ interface ProductivityState {
   loading: boolean;
   error: boolean;
   selectedDate: string;
+  weekStartDate: string;
   fetchAll: () => Promise<void>;
   setSelectedDate: (date: string) => void;
+  setWeekStartDate: (date: string) => void;
+  fetchPlannerForWeek: (startDate: string) => Promise<void>;
   addFocusSession: (session: Omit<FocusSession, "id" | "completedAt">) => Promise<Record<string, unknown> | null>;
   addPlannerItem: (item: { title: string; date?: string; zone?: string; startTime?: string; endTime?: string; taskId?: string }) => Promise<void>;
   updatePlannerItem: (item: { id: string } & Partial<PlannerItem>) => Promise<void>;
@@ -99,6 +102,20 @@ function todayStr() {
   return new Date().toISOString().split("T")[0];
 }
 
+function getMondayStr(dateStr?: string) {
+  const d = dateStr ? new Date(dateStr + "T00:00:00") : new Date();
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().split("T")[0];
+}
+
+function addDays(dateStr: string, n: number) {
+  const d = new Date(dateStr + "T00:00:00");
+  d.setDate(d.getDate() + n);
+  return d.toISOString().split("T")[0];
+}
+
 export function ProductivityProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const [focusSessions, setFocusSessions] = useState<FocusSession[]>([]);
@@ -110,6 +127,7 @@ export function ProductivityProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selectedDate, setSelectedDateState] = useState(todayStr());
+  const [weekStartDate, setWeekStartDateState] = useState(getMondayStr());
 
   const fetchAll = useCallback(async () => {
     setError(false);
@@ -146,7 +164,27 @@ export function ProductivityProvider({ children }: { children: ReactNode }) {
     fetchPlannerForDate(date);
   }, [fetchPlannerForDate]);
 
+  const fetchPlannerForWeek = useCallback(async (startDate: string) => {
+    try {
+      const endDate = addDays(startDate, 6);
+      const res = await fetch(`/api/productivity/planner?startDate=${startDate}&endDate=${endDate}`);
+      if (!res.ok) throw new Error();
+      const items = await res.json();
+      setPlannerItems(items);
+    } catch {
+      toast("Failed to load planner items", "error");
+    }
+  }, [toast]);
+
+  const setWeekStartDate = useCallback((date: string) => {
+    setWeekStartDateState(date);
+    fetchPlannerForWeek(date);
+  }, [fetchPlannerForWeek]);
+
   useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  // Also fetch week planner items on initial load
+  useEffect(() => { fetchPlannerForWeek(weekStartDate); }, [fetchPlannerForWeek, weekStartDate]);
 
   const addFocusSession = useCallback(async (session: Omit<FocusSession, "id" | "completedAt">) => {
     try {
@@ -358,8 +396,11 @@ export function ProductivityProvider({ children }: { children: ReactNode }) {
         loading,
         error,
         selectedDate,
+        weekStartDate,
         fetchAll,
         setSelectedDate,
+        setWeekStartDate,
+        fetchPlannerForWeek,
         addFocusSession,
         addPlannerItem,
         updatePlannerItem,
