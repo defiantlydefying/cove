@@ -27,7 +27,7 @@ export default function SplitReveal() {
         <motion.div
           className="rounded-2xl p-8 md:p-10"
           style={{
-            background: "linear-gradient(135deg, #E8E4DE, #DDD8D0)",
+            background: "linear-gradient(135deg, #A89F93, #9B9185)",
           }}
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -35,14 +35,14 @@ export default function SplitReveal() {
           transition={{ duration: 0.7 }}
         >
           <div className="relative w-full h-20 mb-8">
-            <div className="absolute top-0 left-2 w-8 h-8 rounded-lg border-2 border-cove-charcoal/25 rotate-12" />
-            <div className="absolute top-1 right-6 w-6 h-6 rounded-full border-2 border-cove-charcoal/20 -rotate-6" />
-            <div className="absolute bottom-0 left-10 w-10 h-6 rounded-lg border-2 border-cove-charcoal/25 -rotate-[8deg]" />
-            <div className="absolute bottom-2 right-2 w-7 h-7 rounded-lg border-2 border-cove-charcoal/18 rotate-[18deg]" />
-            <div className="absolute top-6 left-1/3 w-5 h-5 rounded border-2 border-cove-charcoal/20 rotate-45" />
+            <div className="absolute top-0 left-2 w-8 h-8 rounded-lg border-2 border-white/50 rotate-12" />
+            <div className="absolute top-1 right-6 w-6 h-6 rounded-full border-2 border-white/40 -rotate-6" />
+            <div className="absolute bottom-0 left-10 w-10 h-6 rounded-lg border-2 border-white/50 -rotate-[8deg]" />
+            <div className="absolute bottom-2 right-2 w-7 h-7 rounded-lg border-2 border-white/40 rotate-[18deg]" />
+            <div className="absolute top-6 left-1/3 w-5 h-5 rounded border-2 border-white/45 rotate-45" />
           </div>
-          <h3 className="text-lg font-semibold text-cove-charcoal/70 mb-3">Before</h3>
-          <p className="text-sm text-cove-charcoal/55 leading-relaxed">
+          <h3 className="text-lg font-semibold text-white mb-3">Before</h3>
+          <p className="text-sm text-white/85 leading-relaxed">
             Scattered thoughts.<br />
             Missed reminders.<br />
             That sinking feeling.
@@ -79,8 +79,8 @@ export default function SplitReveal() {
               </motion.div>
             ))}
           </div>
-          <h3 className="text-lg font-semibold text-cove-charcoal mb-3">After</h3>
-          <p className="text-sm text-cove-muted leading-relaxed">
+          <h3 className="text-lg font-semibold text-cove-accent mb-3">After</h3>
+          <p className="text-sm text-cove-charcoal leading-relaxed">
             Clear plan.<br />
             Gentle reminders.<br />
             Quiet confidence.
