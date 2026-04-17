@@ -9,9 +9,9 @@ interface CompanionAvatarProps {
 }
 
 const sizes = {
-  sm: "w-8 h-8 text-lg",
-  md: "w-12 h-12 text-2xl",
-  lg: "w-20 h-20 text-4xl",
+  sm: "w-8 h-8",
+  md: "w-12 h-12",
+  lg: "w-20 h-20",
 };
 
 export default function CompanionAvatar({ type, size = "md", className = "" }: CompanionAvatarProps) {
@@ -19,11 +19,16 @@ export default function CompanionAvatar({ type, size = "md", className = "" }: C
 
   return (
     <div
-      className={`${sizes[size]} rounded-full bg-cove-accent/10 flex items-center justify-center select-none ${className}`}
+      className={`${sizes[size]} rounded-full flex items-center justify-center select-none overflow-hidden ${className}`}
       role="img"
       aria-label={`${companion.name} companion`}
     >
-      {companion.emoji}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`/companions/${type}.png`}
+        alt={companion.name}
+        className="w-full h-full object-contain"
+      />
     </div>
   );
 }

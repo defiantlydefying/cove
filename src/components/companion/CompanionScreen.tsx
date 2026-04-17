@@ -3,10 +3,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import CompanionAvatar from "./CompanionAvatar";
 import CompanionMessage from "./CompanionMessage";
+import CompanionPicker from "./CompanionPicker";
 import VoiceInput from "./VoiceInput";
 import InboxList from "./InboxList";
 import InboxSorter from "./InboxSorter";
 import type { CompanionType } from "@/lib/companions";
+import { getCompanion } from "@/lib/companions";
 import { getCompanionCopy } from "@/lib/companionCopy";
 
 interface ChatMessage {
@@ -33,6 +35,7 @@ export default function CompanionScreen() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,9 +47,18 @@ export default function CompanionScreen() {
           fetch("/api/settings"),
         ]);
 
+        let companionChosen = false;
+
         if (settingsRes.ok) {
           const settings = await settingsRes.json();
           if (settings.companionType) setCompanionType(settings.companionType);
+          companionChosen = settings.companionChosen === true;
+        }
+
+        if (!companionChosen) {
+          setShowPicker(true);
+          setLoaded(true);
+          return;
         }
 
         if (greetingRes.ok) {
@@ -72,6 +84,31 @@ export default function CompanionScreen() {
     load();
   }, []);
 
+  const handlePickCompanion = async (type: CompanionType) => {
+    setCompanionType(type);
+    setShowPicker(false);
+
+    await fetch("/api/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ companionType: type, companionChosen: true }),
+    });
+
+    const companion = getCompanion(type);
+    const intro = getCompanionCopy(type, "intro");
+    setMessages([
+      {
+        id: "intro",
+        content: intro,
+        sender: "companion",
+        timestamp: new Date(),
+      },
+    ]);
+
+    const inboxRes = await fetch("/api/inbox?status=unprocessed");
+    if (inboxRes.ok) setInboxItems(await inboxRes.json());
+  };
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -92,16 +129,44 @@ export default function CompanionScreen() {
       setSending(true);
 
       try {
-        const res = await fetch("/api/inbox", {
+        // Save to inbox
+        const inboxRes = await fetch("/api/inbox", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ content: content.trim(), source }),
         });
 
-        if (res.ok) {
-          const item = await res.json();
+        if (inboxRes.ok) {
+          const item = await inboxRes.json();
           setInboxItems((prev) => [item, ...prev]);
+        }
 
+        // Get AI response
+        const history = [...messages, userMsg].map((m) => ({
+          sender: m.sender,
+          content: m.content,
+        }));
+
+        const chatRes = await fetch("/api/companion/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: content.trim(), history }),
+        });
+
+        if (chatRes.ok) {
+          const { reply } = await chatRes.json();
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `companion-${Date.now()}`,
+              content: reply,
+              sender: "companion",
+              timestamp: new Date(),
+            },
+          ]);
+        } else {
+          // Fallback to static copy if AI fails
+          console.error("Companion chat failed:", chatRes.status, await chatRes.text().catch(() => ""));
           const ack = getCompanionCopy(companionType, "capture_ack");
           setMessages((prev) => [
             ...prev,
@@ -117,7 +182,7 @@ export default function CompanionScreen() {
         setSending(false);
       }
     },
-    [sending, companionType]
+    [sending, companionType, messages]
   );
 
   const handleConvert = async (id: string, to: "task" | "reminder") => {
@@ -183,6 +248,23 @@ export default function CompanionScreen() {
     return (
       <div className="flex items-center justify-center h-64">
         <CompanionAvatar type={companionType} size="lg" className="animate-pulse" />
+      </div>
+    );
+  }
+
+  if (showPicker) {
+    return (
+      <div className="max-w-2xl mx-auto p-8">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-3">Choose your companion</h2>
+          <p className="text-cove-muted leading-relaxed">
+            Your companion will be your guide through cove. Pick the personality that feels right for you.
+          </p>
+        </div>
+        <CompanionPicker
+          selected={companionType}
+          onSelect={handlePickCompanion}
+        />
       </div>
     );
   }

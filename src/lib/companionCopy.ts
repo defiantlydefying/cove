@@ -1,6 +1,7 @@
 import { CompanionType } from "./companions";
 
 export type CopyContext =
+  | "intro"
   | "greeting_morning"
   | "greeting_afternoon"
   | "greeting_evening"
@@ -20,6 +21,9 @@ export type CopyContext =
 
 const copy: Record<CompanionType, Record<CopyContext, string[]>> = {
   otter: {
+    intro: [
+      "Hey! I'm Otter. So glad you picked me!\n\nHere's the deal: I'm going to celebrate every little win with you. Big wins, tiny wins, 'I got out of bed' wins \u2014 all of them count. I'll help you keep things light. Ready to make some waves together?",
+    ],
     greeting_morning: [
       "Good morning! Ready to make some waves today?",
       "Rise and shine! What are we tackling first?",
@@ -66,6 +70,9 @@ const copy: Record<CompanionType, Record<CopyContext, string[]>> = {
     error_generic: ["Oops, something hiccuped. Try again?"],
   },
   turtle: {
+    intro: [
+      "Hello. I'm Turtle.\n\nI move slowly. So will we, when we need to. There's wisdom in pace \u2014 the rush isn't always the way. I'll be here when you need perspective, and quiet when you don't. Take your time settling in.",
+    ],
     greeting_morning: [
       "Good morning. Take a breath. What matters today?",
       "A new day. No rush \u2014 let it unfold.",
@@ -112,6 +119,9 @@ const copy: Record<CompanionType, Record<CopyContext, string[]>> = {
     error_generic: ["Something didn't work. Let's try again, gently."],
   },
   seal: {
+    intro: [
+      "Hi, I'm Seal. I'm really glad you're here.\n\nI want you to know: you don't have to earn my company. You don't have to explain bad days. You don't have to be productive to deserve a break. I'm just happy you showed up. Whatever you need, I'm here.",
+    ],
     greeting_morning: [
       "Morning! Just showing up is a win. How are you?",
       "Hey, good morning. You're doing great just being here.",
@@ -156,6 +166,9 @@ const copy: Record<CompanionType, Record<CopyContext, string[]>> = {
     error_generic: ["Hmm, that didn't quite work. No worries, let's try again."],
   },
   owl: {
+    intro: [
+      "I'm Owl.\n\nI don't talk much. I'll be here when it matters. When you need structure, I'll help. When you need quiet, I'll stay quiet. Begin whenever you're ready.",
+    ],
     greeting_morning: ["Morning.", "A new day. Begin when ready."],
     greeting_afternoon: ["Afternoon.", "Midday. How goes it?"],
     greeting_evening: ["Evening. Rest approaches.", "Day's end. Review or rest."],
@@ -177,6 +190,9 @@ const copy: Record<CompanionType, Record<CopyContext, string[]>> = {
     error_generic: ["Error occurred. Retry."],
   },
   fox: {
+    intro: [
+      "Hey, I'm Fox! Nice to meet you.\n\nThink of me as your camp counselor through all this. I'm curious, I ask questions, and I'm always down to help you figure things out. Whenever you've got something rattling around in your head, just tell me about it \u2014 I'll help you sort through it. What do you want to start with?",
+    ],
     greeting_morning: [
       "Good morning! What's on your mind today? Let's figure it out together.",
       "Hey, morning! I've got a good feeling about today.",
@@ -227,6 +243,9 @@ const copy: Record<CompanionType, Record<CopyContext, string[]>> = {
     error_generic: ["Oops, something went sideways. Let's try that again."],
   },
   deer: {
+    intro: [
+      "Hello. I'm Deer.\n\nI notice things \u2014 the small moments, the quiet wins, the efforts that might otherwise go unseen. I'll point them out when you need to be reminded. You don't have to do big things to be doing enough. I see you already.",
+    ],
     greeting_morning: [
       "Good morning. I hope you slept well.",
       "Morning. Take it easy as you start the day.",
@@ -271,6 +290,9 @@ const copy: Record<CompanionType, Record<CopyContext, string[]>> = {
     error_generic: ["Something didn't quite work. It's okay \u2014 let's try again."],
   },
   frog: {
+    intro: [
+      "RIBBIT! Hi, I'm Frog!\n\nOkay so here's the thing \u2014 I don't take any of this too seriously, and that includes you. Life is hard, brains are weird, and sometimes you just gotta hop around aimlessly. I'm here for the goofy moments and the real ones. Mostly the goofy ones. Let's be friends!",
+    ],
     greeting_morning: [
       "Ribbit! Good morning! Let's hop to it... or not. Your call!",
       "Morning! *splash* Sorry, just woke up. What's the plan?",
