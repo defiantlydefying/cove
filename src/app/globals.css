@@ -130,6 +130,23 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
+/* Font size settings */
+[data-font-size="small"] { font-size: 14px; }
+[data-font-size="medium"] { font-size: 16px; }
+[data-font-size="large"] { font-size: 18px; }
+
+/* Density settings */
+[data-density="compact"] { --cove-spacing: 0.75; }
+[data-density="comfortable"] { --cove-spacing: 1; }
+[data-density="spacious"] { --cove-spacing: 1.25; }
+
+[data-density="compact"] .density-pad { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+[data-density="spacious"] .density-pad { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+
+[data-density="compact"] .density-gap { gap: 0.25rem; }
+[data-density="comfortable"] .density-gap { gap: 0.5rem; }
+[data-density="spacious"] .density-gap { gap: 0.75rem; }
+
 ::selection {
   background: var(--cove-selection);
 }

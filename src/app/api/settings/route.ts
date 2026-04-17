@@ -54,6 +54,9 @@ export async function PATCH(request: NextRequest) {
   ) {
     data.companionType = body.companionType;
   }
+  if (typeof body.companionChosen === "boolean") {
+    data.companionChosen = body.companionChosen;
+  }
 
   const settings = await prisma.userSettings.upsert({
     where: { userId: session.user.id },
