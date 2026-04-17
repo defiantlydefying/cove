@@ -2,29 +2,32 @@ import { render, screen, waitFor } from "@/test-utils";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import GamificationPanel from "./GamificationPanel";
 
+const emptyWeek = [false, false, false, false, false, false, false];
+
 const mockData = {
-  streaks: [
-    {
-      id: "s1",
-      userId: "u1",
-      type: "daily",
-      currentStreak: 3,
-      longestStreak: 10,
-      lastActiveAt: new Date().toISOString(),
-      pausedAt: null,
-      totalXp: 30,
-    },
-    {
-      id: "s2",
-      userId: "u1",
-      type: "tasks",
-      currentStreak: 2,
-      longestStreak: 7,
-      lastActiveAt: new Date().toISOString(),
-      pausedAt: null,
-      totalXp: 20,
-    },
+  dailyStreak: {
+    current: 3,
+    longest: 10,
+    lastActiveDate: "2026-04-10",
+  },
+  weekActivity: [
+    { date: "2026-04-06", hit: true },
+    { date: "2026-04-07", hit: true },
+    { date: "2026-04-08", hit: true },
+    { date: "2026-04-09", hit: false },
+    { date: "2026-04-10", hit: true },
+    { date: "2026-04-11", hit: false },
+    { date: "2026-04-12", hit: false },
   ],
+  weekStartDate: "2026-04-06",
+  modules: {
+    tasks: { current: 2, longest: 7, week: [...emptyWeek], totalXp: 20 },
+    routines: { current: 0, longest: 5, week: [...emptyWeek], totalXp: 10 },
+    wellness: { current: 1, longest: 3, week: [...emptyWeek], totalXp: 10 },
+    focus: { current: 0, longest: 2, week: [...emptyWeek], totalXp: 5 },
+    habits: { current: 0, longest: 0, week: [...emptyWeek], totalXp: 0 },
+  },
+  streaks: [],
   totalXp: 50,
   level: 1,
   xpInLevel: 50,
@@ -63,7 +66,7 @@ describe("GamificationPanel", () => {
     expect(container.querySelector(".animate-pulse")).toBeInTheDocument();
   });
 
-  it("renders total XP and level after fetch", async () => {
+  it("renders daily streak section and level after fetch", async () => {
     (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(mockData),
@@ -72,10 +75,29 @@ describe("GamificationPanel", () => {
     render(<GamificationPanel />);
 
     await waitFor(() => {
-      expect(screen.getByText("50")).toBeInTheDocument();
+      expect(screen.getByText(/Seedling/)).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/Seedling/)).toBeInTheDocument();
+    // Daily streak section header present
+    expect(screen.getByText("Daily Streak")).toBeInTheDocument();
+    // Total XP appears somewhere
+    expect(screen.getAllByText("50").length).toBeGreaterThan(0);
+  });
+
+  it("renders the weekly activity count", async () => {
+    (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockData),
+    });
+
+    render(<GamificationPanel />);
+
+    await waitFor(() => {
+      expect(screen.getByText("This week")).toBeInTheDocument();
+    });
+
+    // 4 active days out of 7
+    expect(screen.getByText("4")).toBeInTheDocument();
   });
 
   it("renders achievements", async () => {
@@ -90,8 +112,6 @@ describe("GamificationPanel", () => {
       expect(screen.getByText("First Task")).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByText("Complete your first task"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Complete your first task")).toBeInTheDocument();
   });
 });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import StreakCard, { Streak } from "./StreakCard";
+import StreakCard, { ModuleStreak } from "./StreakCard";
 
 interface Achievement {
   id: string;
@@ -20,8 +20,22 @@ interface Stats {
   wellnessCheckins: number;
 }
 
+interface DailyStreak {
+  current: number;
+  longest: number;
+  lastActiveDate: string | null;
+}
+
+interface WeekDay {
+  date: string;
+  hit: boolean;
+}
+
 interface GamificationData {
-  streaks: Streak[];
+  dailyStreak: DailyStreak;
+  weekActivity: WeekDay[];
+  weekStartDate: string;
+  modules: Record<string, { current: number; longest: number; week: boolean[]; totalXp: number }>;
   totalXp: number;
   level: number;
   xpInLevel: number;
@@ -47,6 +61,16 @@ function getLevelTitle(level: number): string {
   if (level >= 10) return LEVEL_TITLES[10];
   return LEVEL_TITLES[level] || `Level ${level}`;
 }
+
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+function getTodayWeekdayIndex(): number {
+  // Monday = 0, Sunday = 6
+  const d = new Date().getDay();
+  return d === 0 ? 6 : d - 1;
+}
+
+const MODULE_ORDER = ["tasks", "routines", "wellness", "focus", "habits"];
 
 export default function GamificationPanel() {
   const [data, setData] = useState<GamificationData | null>(null);
@@ -76,6 +100,7 @@ export default function GamificationPanel() {
   if (loading) {
     return (
       <div className="space-y-6">
+        <div className="h-40 rounded-xl bg-cove-border-light animate-pulse" />
         <div className="h-32 rounded-xl bg-cove-border-light animate-pulse" />
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((i) => (
@@ -105,11 +130,95 @@ export default function GamificationPanel() {
   const unlockedCount = data.achievements.filter((a) => a.unlocked).length;
   const totalCount = data.achievements.length;
   const levelProgress = (data.xpInLevel / data.xpToNextLevel) * 100;
+  const todayIdx = getTodayWeekdayIndex();
+  const weekHits = data.weekActivity.filter((d) => d.hit).length;
+
+  // Finch-inspired encouraging copy
+  const streakMessage = getStreakMessage(data.dailyStreak.current, data.weekActivity, todayIdx);
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Daily Streak hero */}
+      <div className="rounded-2xl border border-cove-accent/30 bg-gradient-to-br from-cove-accent/10 to-cove-accent/5 p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <p className="text-xs font-medium text-cove-accent uppercase tracking-wider mb-1">
+              Daily Streak
+            </p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-bold text-cove-accent tabular-nums">
+                {data.dailyStreak.current}
+              </span>
+              <span className="text-lg text-cove-muted">
+                day{data.dailyStreak.current !== 1 ? "s" : ""}
+              </span>
+            </div>
+            {data.dailyStreak.longest > 0 && (
+              <p className="text-xs text-cove-muted mt-1">
+                Best: {data.dailyStreak.longest} day{data.dailyStreak.longest !== 1 ? "s" : ""}
+              </p>
+            )}
+          </div>
+          <div className="text-right">
+            <p className="text-[11px] text-cove-muted mb-1">This week</p>
+            <p className="text-2xl font-bold text-cove-charcoal tabular-nums">
+              {weekHits}<span className="text-sm text-cove-muted">/7</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Week view (Mon-Sun) */}
+        <div className="flex gap-2 mb-3" aria-label="This week's activity">
+          {data.weekActivity.map((day, i) => {
+            const isToday = i === todayIdx;
+            const isFuture = i > todayIdx;
+            return (
+              <div key={day.date} className="flex flex-col items-center gap-1.5 flex-1">
+                <div
+                  className={`w-full h-10 rounded-xl flex items-center justify-center transition-all ${
+                    day.hit
+                      ? "bg-cove-accent text-white shadow-sm"
+                      : isFuture
+                      ? "bg-cove-border/20"
+                      : "bg-cove-offwhite border border-cove-border/40"
+                  } ${isToday ? "ring-2 ring-cove-accent ring-offset-2 ring-offset-transparent" : ""}`}
+                  aria-label={`${DAY_LABELS[i]}${day.hit ? " — active" : ""}`}
+                >
+                  {day.hit && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </div>
+                <span
+                  className={`text-[10px] font-medium ${
+                    isToday ? "text-cove-accent" : "text-cove-muted"
+                  }`}
+                >
+                  {DAY_LABELS[i].slice(0, 1)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="text-xs text-cove-muted text-center leading-relaxed">
+          {streakMessage}
+        </p>
+      </div>
+
       {/* Level card */}
-      <div className="rounded-xl border border-cove-accent/20 bg-cove-accent/5 p-5">
+      <div className="rounded-xl border border-cove-border bg-cove-card p-5">
         <div className="flex items-center justify-between mb-3">
           <div>
             <p className="text-xs text-cove-muted mb-0.5">Level {data.level}</p>
@@ -155,23 +264,23 @@ export default function GamificationPanel() {
         </div>
       </div>
 
-      {/* Streaks */}
+      {/* Per-module streaks */}
       <div>
-        <h2 className="text-sm font-semibold text-cove-charcoal mb-3">Streaks</h2>
-        {data.streaks.length > 0 ? (
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {data.streaks.map((streak) => (
-              <StreakCard key={streak.id} streak={streak} />
-            ))}
-          </div>
-        ) : (
-          <div className="py-6 px-4 rounded-xl bg-cove-offwhite border border-cove-border-light text-center">
-            <p className="text-sm font-medium text-cove-charcoal mb-1">Build your momentum</p>
-            <p className="text-xs text-cove-muted leading-relaxed max-w-md mx-auto">
-              Streaks grow when you show up consistently. Complete a task, log a focus session, or check in on your wellness to start your first streak.
-            </p>
-          </div>
-        )}
+        <h2 className="text-sm font-semibold text-cove-charcoal mb-3">Module Streaks</h2>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {MODULE_ORDER.map((type) => {
+            const m = data.modules[type];
+            if (!m) return null;
+            const streak: ModuleStreak = {
+              type,
+              current: m.current,
+              longest: m.longest,
+              week: m.week,
+              totalXp: m.totalXp,
+            };
+            return <StreakCard key={type} streak={streak} />;
+          })}
+        </div>
       </div>
 
       {/* Achievements */}
@@ -254,4 +363,19 @@ function StatCard({ label, value, color }: { label: string; value: number; color
       <p className="text-[11px] text-cove-muted mt-0.5">{label}</p>
     </div>
   );
+}
+
+function getStreakMessage(current: number, weekActivity: WeekDay[], todayIdx: number): string {
+  const activeToday = weekActivity[todayIdx]?.hit;
+
+  if (current === 0) {
+    return "Show up today to start a new streak. Every day counts.";
+  }
+  if (activeToday) {
+    if (current === 1) return "Nice start. Come back tomorrow to keep it going.";
+    if (current < 7) return `${current} days in a row. You're building momentum.`;
+    if (current < 30) return `${current} days strong. Keep showing up.`;
+    return `${current} days and counting. Incredible consistency.`;
+  }
+  return "Show up today to keep your streak alive.";
 }

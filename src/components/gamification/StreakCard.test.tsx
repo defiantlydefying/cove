@@ -1,16 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import StreakCard, { Streak } from "./StreakCard";
+import StreakCard, { ModuleStreak } from "./StreakCard";
 
-function makeStreak(overrides: Partial<Streak> = {}): Streak {
+function makeStreak(overrides: Partial<ModuleStreak> = {}): ModuleStreak {
   return {
-    id: "streak-1",
-    userId: "user-1",
     type: "tasks",
-    currentStreak: 5,
-    longestStreak: 12,
-    lastActiveAt: new Date().toISOString(),
-    pausedAt: null,
+    current: 5,
+    longest: 12,
+    week: [true, true, true, true, true, false, false],
     totalXp: 50,
     ...overrides,
   };
@@ -18,6 +15,7 @@ function makeStreak(overrides: Partial<Streak> = {}): Streak {
 
 describe("StreakCard", () => {
   beforeEach(() => {
+    // Wednesday (index 2 in Mon-Sun)
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-25T12:00:00Z"));
   });
@@ -27,33 +25,31 @@ describe("StreakCard", () => {
   });
 
   it("renders streak type and count", () => {
-    render(<StreakCard streak={makeStreak({ type: "tasks", currentStreak: 5 })} />);
+    render(<StreakCard streak={makeStreak({ type: "tasks", current: 5 })} />);
     expect(screen.getByText("Tasks")).toBeInTheDocument();
     expect(screen.getByText("5")).toBeInTheDocument();
   });
 
-  it("shows 'Paused' when streak is paused (lastActiveAt before yesterday)", () => {
-    const threeDaysAgo = new Date("2026-03-22T10:00:00Z").toISOString();
-    render(
-      <StreakCard streak={makeStreak({ lastActiveAt: threeDaysAgo })} />,
-    );
-    expect(screen.getByText("Paused")).toBeInTheDocument();
+  it("renders different module types with their labels", () => {
+    render(<StreakCard streak={makeStreak({ type: "focus" })} />);
+    expect(screen.getByText("Focus")).toBeInTheDocument();
   });
 
-  it("does not show 'Paused' when lastActiveAt is today", () => {
-    const today = new Date("2026-03-25T08:00:00Z").toISOString();
-    render(<StreakCard streak={makeStreak({ lastActiveAt: today })} />);
-    expect(screen.queryByText("Paused")).not.toBeInTheDocument();
+  it("shows 'Active today' badge when today's slot in week is active", () => {
+    // Wednesday = index 2; set true there
+    const week = [false, false, true, false, false, false, false];
+    render(<StreakCard streak={makeStreak({ week })} />);
+    expect(screen.getByText("Active today")).toBeInTheDocument();
   });
 
-  it("does not show 'Paused' when lastActiveAt is yesterday", () => {
-    const yesterday = new Date("2026-03-24T20:00:00Z").toISOString();
-    render(<StreakCard streak={makeStreak({ lastActiveAt: yesterday })} />);
-    expect(screen.queryByText("Paused")).not.toBeInTheDocument();
+  it("does not show 'Active today' when today is not active", () => {
+    const week = [true, true, false, false, false, false, false];
+    render(<StreakCard streak={makeStreak({ week })} />);
+    expect(screen.queryByText("Active today")).not.toBeInTheDocument();
   });
 
   it("shows longest streak", () => {
-    render(<StreakCard streak={makeStreak({ longestStreak: 12 })} />);
+    render(<StreakCard streak={makeStreak({ longest: 12 })} />);
     expect(screen.getByText("Best: 12d")).toBeInTheDocument();
   });
 

@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 
 const XP_PER_ACTIVITY = 10;
 
+export type ActivityType = "tasks" | "routines" | "wellness" | "focus" | "habits";
+
 function startOfDay(date: Date): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
@@ -16,6 +18,36 @@ function isYesterday(date: Date, now: Date): boolean {
 
 function isToday(date: Date, now: Date): boolean {
   return startOfDay(date).getTime() === startOfDay(now).getTime();
+}
+
+function dateKey(date: Date): string {
+  return startOfDay(date).toISOString().slice(0, 10);
+}
+
+/**
+ * Record that the user had activity of a given type today in DailyActivity.
+ * Idempotent: adds the type to the array if not already present.
+ */
+async function recordDailyActivity(userId: string, type: ActivityType, now: Date) {
+  const date = startOfDay(now);
+  const existing = await prisma.dailyActivity.findUnique({
+    where: { userId_date: { userId, date } },
+  });
+
+  if (!existing) {
+    return prisma.dailyActivity.create({
+      data: { userId, date, activityTypes: [type] },
+    });
+  }
+
+  if (existing.activityTypes.includes(type)) {
+    return existing;
+  }
+
+  return prisma.dailyActivity.update({
+    where: { id: existing.id },
+    data: { activityTypes: [...existing.activityTypes, type] },
+  });
 }
 
 async function upsertStreak(userId: string, type: string, now: Date) {
@@ -64,15 +96,99 @@ async function upsertStreak(userId: string, type: string, now: Date) {
 
 /**
  * Record a gamification activity for a user.
- * Updates the specific type streak + the daily meta-streak.
- * Also checks and awards any unlocked achievements.
+ * Updates the specific type streak + the daily meta-streak, records activity
+ * in DailyActivity for history tracking, and awards any unlocked achievements.
  */
 export async function recordActivity(userId: string, type: string) {
   const now = new Date();
   const streak = await upsertStreak(userId, type, now);
   const dailyStreak = await upsertStreak(userId, "daily", now);
+  await recordDailyActivity(userId, type as ActivityType, now);
   const newAchievements = await checkAchievements(userId);
   return { streak, dailyStreak, xpEarned: XP_PER_ACTIVITY, newAchievements };
+}
+
+/**
+ * Compute the consecutive-day streak from a set of active date keys,
+ * anchored to today. Counts today if present, otherwise counts backwards
+ * from yesterday. Returns 0 if neither today nor yesterday had activity.
+ */
+export function computeStreakFromDates(activeKeys: Set<string>, now = new Date()): number {
+  const todayKey = dateKey(now);
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayKey = dateKey(yesterday);
+
+  // If neither today nor yesterday had activity, streak is broken
+  if (!activeKeys.has(todayKey) && !activeKeys.has(yesterdayKey)) return 0;
+
+  let streak = 0;
+  const cursor = new Date(now);
+  // If today isn't active but yesterday is, start from yesterday
+  if (!activeKeys.has(todayKey)) {
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  while (activeKeys.has(dateKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  return streak;
+}
+
+/**
+ * Returns the 7 days of the current week (Mon-Sun) with ISO date strings.
+ */
+export function getCurrentWeekDays(now = new Date()): string[] {
+  const d = new Date(now);
+  const day = d.getDay(); // 0 Sun, 1 Mon, ..., 6 Sat
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + diffToMonday);
+  monday.setHours(0, 0, 0, 0);
+
+  const days: string[] = [];
+  for (let i = 0; i < 7; i++) {
+    const dd = new Date(monday);
+    dd.setDate(monday.getDate() + i);
+    days.push(dateKey(dd));
+  }
+  return days;
+}
+
+/**
+ * Fetch the user's DailyActivity history for the last N days and return
+ * per-type active date sets plus an "any activity" set.
+ */
+export async function getActivityHistory(userId: string, daysBack = 60) {
+  const now = new Date();
+  const start = startOfDay(now);
+  start.setDate(start.getDate() - daysBack);
+
+  const rows = await prisma.dailyActivity.findMany({
+    where: { userId, date: { gte: start } },
+    orderBy: { date: "asc" },
+  });
+
+  const any = new Set<string>();
+  const byType: Record<ActivityType, Set<string>> = {
+    tasks: new Set(),
+    routines: new Set(),
+    wellness: new Set(),
+    focus: new Set(),
+    habits: new Set(),
+  };
+
+  for (const row of rows) {
+    const key = dateKey(row.date);
+    any.add(key);
+    for (const t of row.activityTypes) {
+      if (t in byType) byType[t as ActivityType].add(key);
+    }
+  }
+
+  return { any, byType };
 }
 
 /**

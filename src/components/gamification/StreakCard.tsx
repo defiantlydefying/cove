@@ -1,13 +1,10 @@
 import { memo } from "react";
 
-export interface Streak {
-  id: string;
-  userId: string;
+export interface ModuleStreak {
   type: string;
-  currentStreak: number;
-  longestStreak: number;
-  lastActiveAt: string | null;
-  pausedAt: string | null;
+  current: number;
+  longest: number;
+  week: boolean[]; // 7 booleans, Mon-Sun of current week
   totalXp: number;
 }
 
@@ -20,78 +17,75 @@ const TYPE_META: Record<string, { label: string; color: string; bg: string }> = 
   habits: { label: "Habits", color: "text-cove-sage", bg: "bg-cove-sage/10" },
 };
 
-function isPaused(lastActiveAt: string | null): boolean {
-  if (!lastActiveAt) return false;
-  const last = new Date(lastActiveAt);
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  last.setHours(0, 0, 0, 0);
-  yesterday.setHours(0, 0, 0, 0);
-  return last.getTime() < yesterday.getTime();
+const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
+
+function getTodayWeekdayIndex(): number {
+  // Monday = 0, Sunday = 6
+  const d = new Date().getDay(); // 0 Sun .. 6 Sat
+  return d === 0 ? 6 : d - 1;
 }
 
-function isActiveToday(lastActiveAt: string | null): boolean {
-  if (!lastActiveAt) return false;
-  const last = new Date(lastActiveAt);
-  const today = new Date();
-  last.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-  return last.getTime() === today.getTime();
-}
+export default memo(function StreakCard({ streak }: { streak: ModuleStreak }) {
+  const meta = TYPE_META[streak.type] ?? {
+    label: streak.type,
+    color: "text-cove-charcoal",
+    bg: "bg-cove-offwhite",
+  };
 
-export default memo(function StreakCard({ streak }: { streak: Streak }) {
-  const paused = isPaused(streak.lastActiveAt);
-  const active = isActiveToday(streak.lastActiveAt);
-  const meta = TYPE_META[streak.type] ?? { label: streak.type, color: "text-cove-charcoal", bg: "bg-cove-offwhite" };
-
-  // Generate 7-day dots
-  const dots = Array.from({ length: 7 }, (_, i) => {
-    if (streak.currentStreak === 0) return false;
-    // Show last N days as filled based on current streak
-    return i < Math.min(streak.currentStreak, 7);
-  }).reverse();
+  const todayIdx = getTodayWeekdayIndex();
+  const activeToday = streak.week[todayIdx];
 
   return (
-    <div className={`rounded-xl border border-cove-border ${meta.bg} p-4 transition-all ${active ? "ring-2 ring-cove-accent/30" : ""}`}>
+    <div
+      className={`rounded-xl border border-cove-border ${meta.bg} p-4 transition-all ${
+        activeToday ? "ring-2 ring-cove-accent/30" : ""
+      }`}
+    >
       <div className="flex items-center justify-between mb-2">
-        <h3 className={`text-sm font-semibold ${meta.color}`}>
-          {meta.label}
-        </h3>
-        {active && (
+        <h3 className={`text-sm font-semibold ${meta.color}`}>{meta.label}</h3>
+        {activeToday && (
           <span className="text-[10px] font-medium text-cove-accent bg-cove-accent/15 px-2 py-0.5 rounded-full">
             Active today
-          </span>
-        )}
-        {paused && !active && (
-          <span className="text-[10px] text-cove-muted bg-cove-offwhite px-2 py-0.5 rounded-full">
-            Missed a day
           </span>
         )}
       </div>
 
       <div className="flex items-baseline gap-1">
-        <span className={`text-3xl font-bold tabular-nums ${meta.color}`} aria-label={`${streak.currentStreak} day streak`}>
-          {streak.currentStreak}
+        <span
+          className={`text-3xl font-bold tabular-nums ${meta.color}`}
+          aria-label={`${streak.current} day streak`}
+        >
+          {streak.current}
         </span>
         <span className="text-sm text-cove-muted">
-          day{streak.currentStreak !== 1 ? "s" : ""}
+          day{streak.current !== 1 ? "s" : ""}
         </span>
       </div>
 
-      {/* 7-day dots */}
-      <div className="flex gap-1 mt-2 mb-2">
-        {dots.map((filled, i) => (
-          <div
-            key={i}
-            className={`w-3 h-3 rounded-full transition-all ${
-              filled ? `${meta.bg} border-2 border-current ${meta.color}` : "bg-cove-border/30"
-            }`}
-          />
-        ))}
+      {/* Real week view (Mon-Sun) */}
+      <div className="flex gap-1 mt-2 mb-2" aria-label="This week">
+        {streak.week.map((hit, i) => {
+          const isToday = i === todayIdx;
+          return (
+            <div key={i} className="flex flex-col items-center gap-0.5 flex-1">
+              <div
+                className={`w-full h-3 rounded-full transition-all ${
+                  hit
+                    ? `${meta.bg} border-2 border-current ${meta.color}`
+                    : "bg-cove-border/30"
+                } ${isToday ? "ring-1 ring-cove-accent/50 ring-offset-1 ring-offset-transparent" : ""}`}
+                aria-label={`${DAY_LABELS[i]}${hit ? " active" : ""}`}
+              />
+              <span className="text-[9px] text-cove-muted leading-none">
+                {DAY_LABELS[i]}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="flex items-center justify-between text-xs text-cove-muted">
-        <span>Best: {streak.longestStreak}d</span>
+      <div className="flex items-center justify-between text-xs text-cove-muted mt-1">
+        <span>Best: {streak.longest}d</span>
         <span className="text-cove-amber font-semibold">{streak.totalXp} XP</span>
       </div>
     </div>

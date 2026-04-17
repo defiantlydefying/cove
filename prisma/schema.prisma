@@ -249,8 +249,9 @@ model UserSettings {
   soundsOn       Boolean @default(true)
   fontSize       String  @default("medium")
   tone           String  @default("encouraging")
-  sidebarVisible Boolean @default(true)
-  companionType  String  @default("fox")
+  sidebarVisible    Boolean @default(true)
+  companionType     String  @default("fox")
+  companionChosen   Boolean @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
