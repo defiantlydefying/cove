@@ -61,14 +61,76 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   if (body.isRecurring !== undefined) data.isRecurring = body.isRecurring;
   if (body.recurrenceRule !== undefined)
     data.recurrenceRule = body.recurrenceRule;
+  if (body.deferredUntil !== undefined)
+    data.deferredUntil = body.deferredUntil
+      ? new Date(body.deferredUntil)
+      : null;
 
-  if (body.completed !== undefined) {
-    data.completed = body.completed;
-    if (body.completed && !existing.completed) {
-      data.completedAt = new Date();
-    } else if (!body.completed) {
-      data.completedAt = null;
+  // Auto-assign stage from scheduledDate
+  if (body.scheduledDate !== undefined) {
+    data.scheduledDate = body.scheduledDate
+      ? new Date(body.scheduledDate)
+      : null;
+
+    if (body.scheduledDate) {
+      const scheduled = new Date(body.scheduledDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const scheduledDay = new Date(scheduled);
+      scheduledDay.setHours(0, 0, 0, 0);
+
+      if (scheduledDay.getTime() === today.getTime()) {
+        data.stage = "today";
+      } else if (scheduledDay > today) {
+        data.stage = "upcoming";
+      }
     }
+  }
+
+  // Explicit stage override takes precedence
+  if (body.stage !== undefined) {
+    data.stage = body.stage;
+  }
+
+  // Determine effective status: support both new `status` field and legacy `completed` boolean
+  let effectiveStatus: string | undefined;
+
+  if (body.status !== undefined) {
+    effectiveStatus = body.status;
+  } else if (body.completed !== undefined && body.status === undefined) {
+    // Backwards compat: map legacy `completed` boolean to status
+    effectiveStatus = body.completed ? "completed" : "active";
+  }
+
+  if (effectiveStatus !== undefined) {
+    data.status = effectiveStatus;
+
+    if (
+      (effectiveStatus === "completed" || effectiveStatus === "wont_do") &&
+      existing.status !== "completed" &&
+      existing.status !== "wont_do"
+    ) {
+      data.completed = true;
+      data.completedAt = new Date();
+      if (effectiveStatus === "wont_do" && body.completedReason !== undefined) {
+        data.completedReason = body.completedReason;
+      }
+    } else if (
+      effectiveStatus === "active" &&
+      (existing.status === "completed" || existing.status === "wont_do")
+    ) {
+      data.completed = false;
+      data.completedAt = null;
+      data.completedReason = null;
+    }
+  }
+
+  // Accept completedReason even outside status transition if explicitly provided
+  if (
+    body.completedReason !== undefined &&
+    effectiveStatus === undefined
+  ) {
+    data.completedReason = body.completedReason;
   }
 
   const updated = await prisma.task.update({
@@ -76,12 +138,30 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     data,
   });
 
+  // Determine if task was just completed or marked wont_do
+  const justCompleted =
+    (effectiveStatus === "completed" || effectiveStatus === "wont_do") &&
+    existing.status !== "completed" &&
+    existing.status !== "wont_do";
+
   // Record gamification activity when a task is completed
   let gamification = null;
-  if (body.completed && !existing.completed) {
+  if (justCompleted) {
     try {
       gamification = await recordActivity(session.user.id, "tasks");
-    } catch { /* non-blocking */ }
+    } catch {
+      /* non-blocking */
+    }
+
+    // Sync linked planner items (linkedTaskId field may not exist yet)
+    try {
+      await (prisma.plannerItem as any).updateMany({
+        where: { linkedTaskId: id },
+        data: { completed: true },
+      });
+    } catch {
+      /* linkedTaskId field may not exist yet */
+    }
   }
 
   return NextResponse.json({ ...updated, gamification });

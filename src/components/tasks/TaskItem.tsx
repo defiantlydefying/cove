@@ -1,115 +1,307 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState, useCallback } from "react";
 import { tapLight } from "@/lib/capacitor/haptics";
+import { DeferPopover, WontDoPopover } from "./TaskActions";
+import TaskBreakdown from "./TaskBreakdown";
 
 export interface Task {
   id: string;
   title: string;
-  completed: boolean;
   description?: string;
+  completed: boolean;
+  completedAt?: string;
+  status: string;
+  stage: string;
+  scheduledDate?: string;
+  deferredUntil?: string;
   deadline?: string;
-  energyLevel?: "low energy" | "moderate" | "high focus";
-  priority?: "low" | "medium" | "high";
-  duration?: number;
+  priority: string;
+  energyLevel?: string;
+  parentId?: string;
+  sortOrder: number;
+  completedReason?: string;
   isRecurring?: boolean;
   recurrenceRule?: string;
+  subtasks?: Task[];
 }
 
 interface TaskItemProps {
   task: Task;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
-  onEdit?: (task: Task) => void;
+  onUpdate: (id: string, data: Partial<Task>) => void;
+  onAddSubTasks: (parentId: string, steps: { title: string }[]) => void;
+  compact?: boolean;
+  draggable?: boolean;
+  onDragStart?: () => void;
 }
 
-export default memo(function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemProps) {
+const ENERGY_LABELS: Record<string, string> = {
+  low: "Low",
+  "low energy": "Low",
+  moderate: "Med",
+  high: "High",
+  "high focus": "High",
+};
+
+function formatDeadline(deadline: string): string {
+  const d = new Date(deadline);
+  const now = new Date();
+  const diffMs = d.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) return "Overdue";
+  if (diffDays === 0) return "Due today";
+  if (diffDays === 1) return "Due tomorrow";
+  return `Due ${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
+}
+
+export default memo(function TaskItem({
+  task,
+  onToggle,
+  onDelete,
+  onUpdate,
+  onAddSubTasks,
+  compact = false,
+  draggable = false,
+  onDragStart,
+}: TaskItemProps) {
+  const [expanded, setExpanded] = useState(false);
+  const [showBreakdown, setShowBreakdown] = useState(false);
+  const [showDefer, setShowDefer] = useState(false);
+  const [showWontDo, setShowWontDo] = useState(false);
+
+  const isDimmed = task.status === "completed" || task.status === "wont_do";
+  const completedCount = task.subtasks?.filter((s) => s.completed).length ?? 0;
+  const totalCount = task.subtasks?.length ?? 0;
+  const hasSubtasks = totalCount > 0;
+
+  const handleToggle = useCallback(() => {
+    if (!task.completed) tapLight();
+    onToggle(task.id);
+  }, [task.completed, task.id, onToggle]);
+
+  const closeAll = useCallback(() => {
+    setShowDefer(false);
+    setShowWontDo(false);
+  }, []);
+
   return (
-    <div className="flex items-start gap-3 py-3 px-2 group rounded-lg hover:bg-white/5 transition-colors" data-testid="task-item">
-      <input
-        type="checkbox"
-        checked={task.completed}
-        onChange={() => {
-          if (!task.completed) tapLight();
-          onToggle(task.id);
-        }}
-        aria-label={`Toggle ${task.title}`}
-        className="mt-1 shrink-0 h-4 w-4 rounded border-white/30 accent-cove-accent focus:ring-white/20"
-      />
-      <div className="flex-1 min-w-0">
-        <span
-          className={`break-words ${
-            task.completed
-              ? "line-through text-white/40"
-              : "text-white/90"
-          }`}
-        >
-          {task.title}
-        </span>
-        <div className="flex flex-wrap gap-1.5 mt-1">
-          {task.deadline && (
-            <span className="text-xs text-white/50">{task.deadline}</span>
-          )}
-          {task.energyLevel && (
-            <span className="text-xs px-1.5 py-0.5 rounded-md bg-white/10 text-white/70">
-              {task.energyLevel}
-            </span>
-          )}
-          {task.priority && task.priority !== "medium" && (
+    <div
+      className={`group rounded-lg transition-colors ${isDimmed ? "opacity-40" : ""}`}
+      data-testid="task-item"
+      draggable={!isDimmed}
+      onDragStart={(e) => {
+        e.dataTransfer.setData("application/cove-task", JSON.stringify({
+          id: task.id,
+          title: task.title,
+          priority: task.priority,
+        }));
+        e.dataTransfer.effectAllowed = "copy";
+        onDragStart?.();
+      }}
+    >
+      {/* Main row */}
+      <div className="flex items-start gap-3 py-3 px-2">
+        {/* Checkbox */}
+        <input
+          type="checkbox"
+          checked={task.completed}
+          onChange={handleToggle}
+          aria-label={`Toggle ${task.title}`}
+          className="mt-1 shrink-0 h-4 w-4 rounded border-cove-border accent-cove-accent focus:ring-cove-accent/20"
+        />
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            {/* Priority dot */}
+            {task.priority !== "medium" && (
+              <span
+                className={`shrink-0 h-2 w-2 rounded-full ${
+                  task.priority === "high"
+                    ? "bg-cove-error"
+                    : "bg-cove-sage"
+                }`}
+                aria-label={`${task.priority} priority`}
+              />
+            )}
+
+            {/* Title */}
             <span
-              className={`text-xs px-1.5 py-0.5 rounded-md ${
-                task.priority === "high"
-                  ? "bg-cove-amber/20 text-cove-amber"
-                  : "bg-white/10 text-white/60"
+              className={`break-words text-sm ${
+                isDimmed
+                  ? "line-through text-cove-muted"
+                  : "text-cove-charcoal"
               }`}
             >
-              {task.priority}
+              {task.title}
             </span>
+          </div>
+
+          {/* Metadata row */}
+          <div className="flex flex-wrap items-center gap-1.5 mt-1">
+            {/* Deadline */}
+            {!compact && task.deadline && (
+              <span
+                className={`text-xs ${
+                  new Date(task.deadline) < new Date()
+                    ? "text-cove-error"
+                    : "text-cove-muted"
+                }`}
+              >
+                {formatDeadline(task.deadline)}
+              </span>
+            )}
+
+            {/* Energy level badge */}
+            {!compact && task.energyLevel && (
+              <span className="text-xs px-1.5 py-0.5 rounded-md bg-cove-accent-light text-cove-accent">
+                {ENERGY_LABELS[task.energyLevel] ?? task.energyLevel}
+              </span>
+            )}
+
+            {/* Subtask progress */}
+            {hasSubtasks && (
+              <button
+                onClick={() => setExpanded((v) => !v)}
+                className="text-xs text-cove-muted hover:text-cove-charcoal transition-colors"
+              >
+                {completedCount} of {totalCount} steps
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Hover action buttons */}
+        <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity relative">
+          {/* Break down */}
+          <button
+            onClick={() => { closeAll(); setShowBreakdown((v) => !v); }}
+            aria-label="Break down task"
+            className="p-1 text-cove-muted hover:text-cove-charcoal transition-colors rounded"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </button>
+
+          {/* Defer */}
+          <button
+            onClick={() => { setShowWontDo(false); setShowBreakdown(false); setShowDefer((v) => !v); }}
+            aria-label="Defer task"
+            className="p-1 text-cove-muted hover:text-cove-charcoal transition-colors rounded"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </button>
+
+          {/* Won't do */}
+          <button
+            onClick={() => { setShowDefer(false); setShowBreakdown(false); setShowWontDo((v) => !v); }}
+            aria-label="Won't do"
+            className="p-1 text-cove-muted hover:text-cove-charcoal transition-colors rounded"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+
+          {/* Delete */}
+          <button
+            onClick={() => onDelete(task.id)}
+            aria-label={`Delete ${task.title}`}
+            className="p-1 text-cove-muted hover:text-cove-error transition-colors rounded"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+          </button>
+
+          {/* Popovers */}
+          {showDefer && (
+            <DeferPopover
+              onDefer={(data) => onUpdate(task.id, data)}
+              onClose={() => setShowDefer(false)}
+            />
+          )}
+          {showWontDo && (
+            <WontDoPopover
+              onWontDo={(reason) =>
+                onUpdate(task.id, {
+                  status: "wont_do",
+                  completed: true,
+                  completedReason: reason,
+                })
+              }
+              onClose={() => setShowWontDo(false)}
+            />
           )}
         </div>
       </div>
-      {onEdit && (
-        <button
-          onClick={() => onEdit(task)}
-          aria-label={`Edit ${task.title}`}
-          className="opacity-0 group-hover:opacity-100 text-white/40 hover:text-white/80 shrink-0 mt-0.5 transition-opacity"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-        </button>
+
+      {/* TaskBreakdown panel */}
+      {showBreakdown && (
+        <div className="px-2 pb-2">
+          <TaskBreakdown
+            taskTitle={task.title}
+            taskDescription={task.description}
+            onAccept={(steps) => {
+              onAddSubTasks(task.id, steps);
+              setShowBreakdown(false);
+            }}
+            onCancel={() => setShowBreakdown(false)}
+          />
+        </div>
       )}
-      <button
-        onClick={() => onDelete(task.id)}
-        aria-label={`Delete ${task.title}`}
-        className="opacity-0 group-hover:opacity-100 text-white/40 hover:text-white/80 shrink-0 mt-0.5 transition-opacity"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
+
+      {/* Expanded subtasks */}
+      {expanded && hasSubtasks && (
+        <div className="pl-10 pr-2 pb-2 flex flex-col gap-1">
+          {task.subtasks!.map((sub) => (
+            <div
+              key={sub.id}
+              className="flex items-center gap-2 py-1 group/sub"
+            >
+              <input
+                type="checkbox"
+                checked={sub.completed}
+                onChange={() => {
+                  if (!sub.completed) tapLight();
+                  onToggle(sub.id);
+                }}
+                aria-label={`Toggle ${sub.title}`}
+                className="shrink-0 h-3.5 w-3.5 rounded border-cove-border accent-cove-accent"
+              />
+              <span
+                className={`text-xs flex-1 ${
+                  sub.completed
+                    ? "line-through text-cove-muted"
+                    : "text-cove-charcoal"
+                }`}
+              >
+                {sub.title}
+              </span>
+              <button
+                onClick={() => onDelete(sub.id)}
+                aria-label={`Delete ${sub.title}`}
+                className="opacity-0 group-hover/sub:opacity-100 p-0.5 text-cove-muted hover:text-cove-error transition-all rounded"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 });

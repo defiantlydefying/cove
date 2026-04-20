@@ -15,12 +15,12 @@ export default function TaskDetail({ task, onSave, onCancel }: TaskDetailProps) 
   const [description, setDescription] = useState(task.description ?? "");
   const [deadline, setDeadline] = useState(task.deadline ?? "");
   const [priority, setPriority] = useState<"low" | "medium" | "high">(
-    task.priority ?? "medium"
+    (task.priority as "low" | "medium" | "high") ?? "medium"
   );
   const [energyLevel, setEnergyLevel] = useState<
     "low energy" | "moderate" | "high focus" | ""
-  >(task.energyLevel ?? "");
-  const [duration, setDuration] = useState<number>(task.duration ?? 1);
+  >((task.energyLevel as "low energy" | "moderate" | "high focus" | "") ?? "");
+  const [duration, setDuration] = useState<number>(1);
   const [isRecurring, setIsRecurring] = useState(task.isRecurring ?? false);
   const [recurrenceRule, setRecurrenceRule] = useState(
     task.recurrenceRule ?? ""
@@ -58,16 +58,18 @@ export default function TaskDetail({ task, onSave, onCancel }: TaskDetailProps) 
 
       const updated = await res.json();
       onSave({
+        ...task,
         id: updated.id,
         title: updated.title,
         completed: updated.completed,
+        status: updated.status ?? task.status,
+        stage: updated.stage ?? task.stage,
         description: updated.description ?? undefined,
         deadline: updated.deadline
           ? new Date(updated.deadline).toISOString().slice(0, 16)
           : undefined,
         priority: updated.priority ?? undefined,
         energyLevel: updated.energyLevel ?? undefined,
-        duration: updated.duration ?? undefined,
         isRecurring: updated.isRecurring ?? undefined,
         recurrenceRule: updated.recurrenceRule ?? undefined,
       });

@@ -10,6 +10,7 @@ import GamificationPanel from "@/components/gamification/GamificationPanel";
 import ProductivityPanel from "@/components/productivity/ProductivityPanel";
 import FocusHabitsPanel from "@/components/productivity/FocusHabitsPanel";
 import CommunityBrowser from "@/components/community/CommunityBrowser";
+import TasksPage from "@/components/tasks/TasksPage";
 import SettingsPanel from "@/components/settings/SettingsPanel";
 import ReminderScheduler from "@/components/reminders/ReminderScheduler";
 import GuidedTour from "@/components/GuidedTour";
@@ -60,6 +61,11 @@ const icons = {
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   ),
+  tasks: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+    </svg>
+  ),
   companion: (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -70,6 +76,7 @@ const icons = {
 const navItems = [
   { id: "companion", label: "Companion", icon: icons.companion },
   { id: "daily-view", label: "Daily View", icon: icons.dailyView },
+  { id: "tasks", label: "Tasks", icon: icons.tasks },
   { id: "productivity", label: "Planner", icon: icons.productivity },
   { id: "focus-habits", label: "Focus & Habits", icon: icons.focusHabits },
   { id: "routines", label: "Routines", icon: icons.routines },
@@ -80,6 +87,7 @@ const navItems = [
 ];
 
 const defaultModuleStates: Record<string, boolean> = {
+  tasks: true,
   routines: true,
   wellness: true,
   reminders: true,
@@ -148,7 +156,7 @@ export default function DashboardPage() {
       navItems={navItems}
       activeItem={activeItem}
       onItemChange={setActiveItem}
-      sidebarContent={<TaskList />}
+      sidebarContent={<TaskList onNavigateToTasks={() => setActiveItem("tasks")} />}
       moduleStates={moduleStates}
       onToggleModule={handleToggleModule}
       sidebarControlRef={sidebarControlRef}
@@ -162,6 +170,7 @@ export default function DashboardPage() {
       <div key={activeItem} className="animate-soft-bounce">
         {activeItem === "companion" && <CompanionScreen />}
         {activeItem === "daily-view" && <DailyView />}
+        {activeItem === "tasks" && isModuleEnabled("tasks") && <TasksPage />}
         {activeItem === "routines" && isModuleEnabled("routines") && (
           <RoutineList />
         )}
