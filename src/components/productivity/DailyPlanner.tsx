@@ -54,13 +54,14 @@ export default function DailyPlanner() {
     if (item) updatePlannerItem({ id, completed: !item.completed });
   };
 
-  const handleAdd = useCallback((item: { title: string; date?: string; zone?: string; startTime?: string; endTime?: string }) => {
+  const handleAdd = useCallback((item: { title: string; date?: string; zone?: string; startTime?: string; endTime?: string; linkedTaskId?: string }) => {
     addPlannerItem({
       title: item.title,
       zone: item.zone || "must",
       date: item.date || todayStr,
       startTime: item.startTime,
       endTime: item.endTime,
+      linkedTaskId: item.linkedTaskId,
     });
   }, [addPlannerItem, todayStr]);
 

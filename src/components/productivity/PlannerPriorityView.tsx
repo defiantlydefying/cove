@@ -11,6 +11,12 @@ const ZONES = [
   { key: "could", label: "Could Do", bg: "bg-purple-50", border: "border-purple-200/50", text: "text-purple-700", headerBg: "bg-purple-100/50" },
 ];
 
+const PRIORITY_TO_ZONE: Record<string, string> = {
+  high: "must",
+  medium: "should",
+  low: "could",
+};
+
 const VISIBLE_HOURS = Array.from({ length: 17 }, (_, i) => i + 6);
 const HOUR_HEIGHT = 48;
 const START_HOUR = 6;
@@ -38,7 +44,7 @@ interface PlannerPriorityViewProps {
   onToggleComplete: (id: string) => void;
   onUpdate: (item: { id: string } & Partial<PlannerItemType>) => void;
   onDelete: (id: string) => void;
-  onAdd: (item: { title: string; date?: string; zone?: string; startTime?: string; endTime?: string }) => void;
+  onAdd: (item: { title: string; date?: string; zone?: string; startTime?: string; endTime?: string; linkedTaskId?: string }) => void;
   onReorder: (items: Array<{ id: string; sortOrder: number; zone?: string }>) => void;
 }
 
@@ -61,6 +67,7 @@ export default function PlannerPriorityView({
   const [newItems, setNewItems] = useState<Record<string, string>>({});
   const dragItem = useRef<string | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const pendingLinkedTaskId = useRef<string | null>(null);
 
   // Current time line
   const [nowMin, setNowMin] = useState(() => {
@@ -114,6 +121,33 @@ export default function PlannerPriorityView({
     });
   }, [editor]);
 
+  // Handle external task drop on day column
+  const handleTaskDrop = useCallback((e: React.DragEvent, dayDate: string) => {
+    e.preventDefault();
+    const taskData = e.dataTransfer.getData("application/cove-task");
+    if (!taskData) return;
+    const task = JSON.parse(taskData) as { id: string; title: string; priority: string };
+    const col = (e.target as HTMLElement).closest("[data-day-col]");
+    if (!col) return;
+    const rect = col.getBoundingClientRect();
+    const scrollTop = gridRef.current?.scrollTop ?? 0;
+    const y = e.clientY - rect.top + scrollTop;
+    const totalMin = Math.floor(y / HOUR_HEIGHT * 60) + START_HOUR * 60;
+    const snapped = Math.round(totalMin / 30) * 30;
+    const zone = PRIORITY_TO_ZONE[task.priority] || "must";
+
+    pendingLinkedTaskId.current = task.id;
+    setEditor({
+      mode: "create",
+      title: task.title,
+      date: dayDate,
+      startTime: minToTime(snapped),
+      endTime: minToTime(snapped + 30),
+      zone,
+      position: { top: e.clientY - 100, left: Math.min(e.clientX, window.innerWidth - 320) },
+    });
+  }, []);
+
   // Click existing block
   const handleBlockClick = useCallback((e: React.MouseEvent, item: PlannerItemType) => {
     e.stopPropagation();
@@ -135,8 +169,10 @@ export default function PlannerPriorityView({
     if (editor?.mode === "edit" && data.id) {
       onUpdate({ id: data.id, title: data.title, date: data.date, startTime: data.startTime, endTime: data.endTime, zone: data.zone });
     } else {
-      onAdd({ title: data.title, date: data.date, startTime: data.startTime, endTime: data.endTime, zone: data.zone });
+      const linkedTaskId = pendingLinkedTaskId.current ?? undefined;
+      onAdd({ title: data.title, date: data.date, startTime: data.startTime, endTime: data.endTime, zone: data.zone, linkedTaskId });
     }
+    pendingLinkedTaskId.current = null;
     setEditor(null);
   }, [editor, onUpdate, onAdd]);
 
@@ -269,6 +305,12 @@ export default function PlannerPriorityView({
                       day.isToday ? "bg-cove-accent/3" : ""
                     }`}
                     onClick={(e) => handleGridClick(e, day.date)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      if (e.dataTransfer.types.includes("application/cove-task")) {
+                        handleTaskDrop(e, day.date);
+                      }
+                    }}
                   >
                     {dayTimed.map((item) => {
                       const startMin = timeToMin(item.startTime!) - START_HOUR * 60;
@@ -289,7 +331,10 @@ export default function PlannerPriorityView({
                           style={{ top: `${top}px`, height: `${height}px` }}
                           onClick={(e) => handleBlockClick(e, item)}
                         >
-                          <span className="font-medium truncate block leading-tight">{item.title}</span>
+                          <span className="font-medium truncate block leading-tight">
+                            {item.linkedTaskId && <span className="inline-block mr-0.5 text-[9px] opacity-80" title="Linked to task">&#x2713;</span>}
+                            {item.title}
+                          </span>
                           {height > 30 && (
                             <span className="text-[8px] opacity-80 leading-tight">
                               {formatTimeLabel(item.startTime!)}

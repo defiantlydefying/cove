@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const body = await req.json();
-  const { title, date, zone, startTime, endTime, taskId } = body;
+  const { title, date, zone, startTime, endTime, taskId, linkedTaskId } = body;
 
   const dateVal = new Date(date || new Date().toISOString().split("T")[0]);
 
@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
       startTime: startTime || null,
       endTime: endTime || null,
       taskId: taskId || null,
+      linkedTaskId: linkedTaskId || null,
     },
   });
 
@@ -85,6 +86,23 @@ export async function PATCH(req: NextRequest) {
     where: { id },
     data: updates,
   });
+
+  // Sync linked task when planner item is completed
+  if (updates.completed && updated.linkedTaskId) {
+    try {
+      const linkedTask = await prisma.task.findFirst({
+        where: { id: updated.linkedTaskId, userId: user.id },
+      });
+      if (linkedTask && (linkedTask as Record<string, unknown>).status === "active") {
+        await prisma.task.update({
+          where: { id: updated.linkedTaskId },
+          data: { status: "completed", completed: true, completedAt: new Date() },
+        });
+        const { recordActivity } = await import("@/lib/gamification");
+        await recordActivity(user.id, "tasks").catch(() => {});
+      }
+    } catch { /* non-blocking */ }
+  }
 
   return NextResponse.json(updated);
 }

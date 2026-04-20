@@ -29,6 +29,7 @@ export interface PlannerItem {
   endTime: string | null;
   completed: boolean;
   taskId: string | null;
+  linkedTaskId?: string | null;
 }
 
 export interface HabitCheck {
@@ -77,7 +78,7 @@ interface ProductivityState {
   setWeekStartDate: (date: string) => void;
   fetchPlannerForWeek: (startDate: string) => Promise<void>;
   addFocusSession: (session: Omit<FocusSession, "id" | "completedAt">) => Promise<Record<string, unknown> | null>;
-  addPlannerItem: (item: { title: string; date?: string; zone?: string; startTime?: string; endTime?: string; taskId?: string }) => Promise<void>;
+  addPlannerItem: (item: { title: string; date?: string; zone?: string; startTime?: string; endTime?: string; taskId?: string; linkedTaskId?: string }) => Promise<void>;
   updatePlannerItem: (item: { id: string } & Partial<PlannerItem>) => Promise<void>;
   deletePlannerItem: (id: string) => Promise<void>;
   reorderPlannerItems: (items: Array<{ id: string; sortOrder: number; zone?: string }>) => Promise<void>;
