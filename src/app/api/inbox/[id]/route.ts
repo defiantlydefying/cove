@@ -23,6 +23,9 @@ export async function PATCH(
   }
 
   const allowed: Record<string, unknown> = {};
+  if (body.content !== undefined && typeof body.content === "string" && body.content.trim()) {
+    allowed.content = body.content.trim();
+  }
   if (body.status && ["unprocessed", "converted", "dismissed"].includes(body.status)) {
     allowed.status = body.status;
   }

@@ -240,6 +240,24 @@ export default function CompanionScreen() {
     setInboxItems((prev) => prev.filter((i) => i.id !== id));
   };
 
+  const handleUpdateInboxItem = async (id: string, content: string) => {
+    setInboxItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, content } : i))
+    );
+    try {
+      const res = await fetch(`/api/inbox/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      // Revert on error
+      const res = await fetch("/api/inbox?status=unprocessed");
+      if (res.ok) setInboxItems(await res.json());
+    }
+  };
+
   const handleSortComplete = async () => {
     const res = await fetch("/api/inbox?status=unprocessed");
     if (res.ok) setInboxItems(await res.json());
@@ -295,7 +313,7 @@ export default function CompanionScreen() {
         {/* Typing indicator while companion is thinking */}
         {sending && (
           <div className="flex items-start gap-3">
-            <CompanionAvatar type={companionType} size={36} />
+            <CompanionAvatar type={companionType} size="sm" />
             <div className="bg-cove-card border border-cove-accent/10 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
               <div className="flex items-center gap-1">
                 <span className="w-2 h-2 bg-cove-muted rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -308,7 +326,7 @@ export default function CompanionScreen() {
 
         {inboxItems.length > 0 && (
           <div className="pt-4 space-y-3">
-            <InboxList items={inboxItems} onConvert={handleConvert} onDismiss={handleDismiss} />
+            <InboxList items={inboxItems} onConvert={handleConvert} onDismiss={handleDismiss} onUpdate={handleUpdateInboxItem} />
             <InboxSorter companionType={companionType} onSortComplete={handleSortComplete} />
           </div>
         )}
