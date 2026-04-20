@@ -129,19 +129,7 @@ export default function CompanionScreen() {
       setSending(true);
 
       try {
-        // Save to inbox
-        const inboxRes = await fetch("/api/inbox", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: content.trim(), source }),
-        });
-
-        if (inboxRes.ok) {
-          const item = await inboxRes.json();
-          setInboxItems((prev) => [item, ...prev]);
-        }
-
-        // Get AI response
+        // Get AI response first — it tells us whether to save to inbox
         const history = [...messages, userMsg].map((m) => ({
           sender: m.sender,
           content: m.content,
@@ -154,7 +142,21 @@ export default function CompanionScreen() {
         });
 
         if (chatRes.ok) {
-          const { reply } = await chatRes.json();
+          const { reply, actionable } = await chatRes.json();
+
+          // Only save to inbox if the AI deems it actionable
+          if (actionable) {
+            const inboxRes = await fetch("/api/inbox", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ content: content.trim(), source }),
+            });
+            if (inboxRes.ok) {
+              const item = await inboxRes.json();
+              setInboxItems((prev) => [item, ...prev]);
+            }
+          }
+
           setMessages((prev) => [
             ...prev,
             {
@@ -166,7 +168,6 @@ export default function CompanionScreen() {
           ]);
         } else {
           // Fallback to static copy if AI fails
-          console.error("Companion chat failed:", chatRes.status, await chatRes.text().catch(() => ""));
           const ack = getCompanionCopy(companionType, "capture_ack");
           setMessages((prev) => [
             ...prev,
@@ -290,6 +291,20 @@ export default function CompanionScreen() {
             timestamp={msg.timestamp}
           />
         ))}
+
+        {/* Typing indicator while companion is thinking */}
+        {sending && (
+          <div className="flex items-start gap-3">
+            <CompanionAvatar type={companionType} size={36} />
+            <div className="bg-cove-card border border-cove-accent/10 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 bg-cove-muted rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                <span className="w-2 h-2 bg-cove-muted rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                <span className="w-2 h-2 bg-cove-muted rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              </div>
+            </div>
+          </div>
+        )}
 
         {inboxItems.length > 0 && (
           <div className="pt-4 space-y-3">

@@ -78,13 +78,33 @@ export async function POST(request: NextRequest) {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-  const prompt = `${systemPrompt}${context}\n\n${conversationHistory ? `Recent conversation:\n${conversationHistory}\n\n` : ""}User: ${body.message}\n\nRespond in character:`;
+  const prompt = `${systemPrompt}${context}\n\n${conversationHistory ? `Recent conversation:\n${conversationHistory}\n\n` : ""}User: ${body.message}\n\nRespond as a JSON object with two fields:
+- "reply": your in-character response (string)
+- "actionable": whether the user's message contains something they need to do, remember, or act on later (boolean). Greetings like "hi", "hey", casual conversation like "im feeling good", emotional sharing, or questions directed at you are NOT actionable. Things like "i need to do my hw", "buy groceries", "remember to call mom" ARE actionable.
+
+Respond with ONLY the JSON object, no markdown fencing.`;
 
   try {
     const result = await model.generateContent(prompt);
-    const reply = result.response.text().trim();
+    const text = result.response.text().trim();
 
-    return NextResponse.json({ reply, companionType });
+    let reply: string;
+    let actionable = false;
+
+    try {
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        reply = parsed.reply ?? text;
+        actionable = parsed.actionable === true;
+      } else {
+        reply = text;
+      }
+    } catch {
+      reply = text;
+    }
+
+    return NextResponse.json({ reply, companionType, actionable });
   } catch {
     return NextResponse.json({ error: "Failed to generate response" }, { status: 500 });
   }
