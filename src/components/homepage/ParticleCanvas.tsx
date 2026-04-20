@@ -103,6 +103,23 @@ export default function ParticleCanvas({ className = "", onFormationComplete }: 
       const isConverging = phaseRef.current === "converge";
       const convergeFactor = isConverging ? Math.min((elapsed - 1.5) / 2.5, 1) : 0;
 
+      // Draw radial glow behind formation as particles converge
+      if (isConverging && convergeFactor > 0.2) {
+        const centerX = w / 2;
+        const centerY = h / 2;
+        const glowAlpha = Math.min((convergeFactor - 0.2) / 0.8, 1);
+        const pulse = convergeFactor >= 1 ? 1 + Math.sin(elapsed * 1.5) * 0.15 : 1;
+        const glowRadius = Math.min(w, h) * 0.25 * pulse;
+
+        const glow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, glowRadius);
+        glow.addColorStop(0, `rgba(107,143,113,${0.12 * glowAlpha})`);
+        glow.addColorStop(0.4, `rgba(126,170,160,${0.06 * glowAlpha})`);
+        glow.addColorStop(0.7, `rgba(196,160,85,${0.03 * glowAlpha})`);
+        glow.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, w, h);
+      }
+
       for (const p of particles) {
         const dx = p.x - mouse.x;
         const dy = p.y - mouse.y;
@@ -133,11 +150,26 @@ export default function ParticleCanvas({ className = "", onFormationComplete }: 
         p.x += p.vx;
         p.y += p.vy;
 
+        // Brighten particles as they converge and add glow
+        const brighten = isConverging ? convergeFactor * 0.4 : 0;
+        const particleAlpha = Math.min(p.alpha + brighten, 0.9);
+        const glowSize = isConverging ? p.size * (1 + convergeFactor * 0.8) : p.size;
+
+        if (isConverging && convergeFactor > 0.5) {
+          ctx.shadowColor = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${0.5 * convergeFactor})`;
+          ctx.shadowBlur = glowSize * 3;
+        } else {
+          ctx.shadowColor = "transparent";
+          ctx.shadowBlur = 0;
+        }
+
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${p.alpha})`;
+        ctx.arc(p.x, p.y, glowSize, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.color[0]},${p.color[1]},${p.color[2]},${particleAlpha})`;
         ctx.fill();
       }
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
 
       const connectionDist = isConverging ? 60 + convergeFactor * 40 : 80;
       for (let i = 0; i < particles.length; i++) {

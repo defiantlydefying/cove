@@ -26,10 +26,10 @@ export default function NavBar() {
         </a>
         <div className="flex items-center gap-6">
           <MagneticElement>
-            <a href="#features" className="text-sm text-cove-muted hover:text-cove-charcoal transition-colors">Features</a>
+            <a href="/features" className="text-sm text-cove-muted hover:text-cove-charcoal transition-colors">Features</a>
           </MagneticElement>
           <MagneticElement>
-            <a href="#about" className="text-sm text-cove-muted hover:text-cove-charcoal transition-colors">About</a>
+            <a href="/about" className="text-sm text-cove-muted hover:text-cove-charcoal transition-colors">About</a>
           </MagneticElement>
           <MagneticElement>
             <a
