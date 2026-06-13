@@ -18,13 +18,14 @@ interface EventEditorProps {
   onSave: (data: EventData) => void;
   onDelete?: () => void;
   onCancel: () => void;
+  onChange?: (data: { title: string; date: string; startTime: string; endTime: string; zone: string }) => void;
   isEditing: boolean;
 }
 
 const ZONES = [
-  { key: "must", label: "Must Do" },
-  { key: "should", label: "Should Do" },
-  { key: "could", label: "Could Do" },
+  { key: "must", label: "Must Do", color: "#C4795B" },
+  { key: "should", label: "Should Do", color: "#C4A055" },
+  { key: "could", label: "Could Do", color: "#7EAAA0" },
 ];
 
 function generateTimeOptions() {
@@ -52,6 +53,11 @@ function timeDiffMin(start: string, end: string) {
   return (eh * 60 + em) - (sh * 60 + sm);
 }
 
+function formatDateLabel(dateStr: string) {
+  const d = new Date(dateStr + "T12:00:00");
+  return d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+}
+
 export default function EventEditor({
   initial,
   position,
@@ -59,6 +65,7 @@ export default function EventEditor({
   onSave,
   onDelete,
   onCancel,
+  onChange,
   isEditing,
 }: EventEditorProps) {
   const [title, setTitle] = useState(initial.title);
@@ -66,6 +73,13 @@ export default function EventEditor({
   const [startTime, setStartTime] = useState(initial.startTime);
   const [endTime, setEndTime] = useState(initial.endTime);
   const [zone, setZone] = useState(initial.zone);
+
+  // Notify parent of changes for live preview
+  useEffect(() => {
+    onChange?.({ title, date, startTime, endTime, zone });
+  }, [title, date, startTime, endTime, zone]);
+  const [showDayPicker, setShowDayPicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
 
@@ -73,7 +87,6 @@ export default function EventEditor({
     titleRef.current?.focus();
   }, []);
 
-  // Close on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -90,16 +103,38 @@ export default function EventEditor({
   };
 
   const duration = timeDiffMin(startTime, endTime);
+  const currentZone = ZONES.find((z) => z.key === zone) || ZONES[0];
+
+  // Clamp position to viewport
+  const clampedTop = Math.max(8, Math.min(position.top, typeof window !== "undefined" ? window.innerHeight - 420 : position.top));
+  const clampedLeft = Math.max(8, Math.min(position.left, typeof window !== "undefined" ? window.innerWidth - 440 : position.left));
 
   return (
     <div
       ref={ref}
-      className="absolute z-50 w-72 bg-cove-card border border-cove-border rounded-xl shadow-lg overflow-hidden"
-      style={{ top: `${position.top}px`, left: `${position.left}px` }}
+      className="absolute z-50 w-[420px] bg-white rounded-lg shadow-[0_24px_38px_3px_rgba(0,0,0,0.14),0_9px_46px_8px_rgba(0,0,0,0.12),0_11px_15px_-7px_rgba(0,0,0,0.2)] overflow-hidden"
+      style={{ top: `${clampedTop}px`, left: `${clampedLeft}px` }}
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Header */}
-      <div className="px-4 pt-3 pb-2">
+      {/* Top bar — drag handle + close */}
+      <div className="flex items-center justify-between px-2 pt-2 pb-0">
+        <div className="w-8 h-8 flex items-center justify-center rounded-full text-[#5f6368]">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+          </svg>
+        </div>
+        <button
+          onClick={onCancel}
+          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f1f3f4] text-[#5f6368] transition-colors"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Title input */}
+      <div className="px-6 pb-4">
         <input
           ref={titleRef}
           value={title}
@@ -108,127 +143,143 @@ export default function EventEditor({
             if (e.key === "Enter") handleSave();
             if (e.key === "Escape") onCancel();
           }}
-          placeholder="Event title"
+          placeholder="Add title"
           maxLength={100}
-          className="w-full text-sm font-medium bg-transparent border-none outline-none text-cove-charcoal placeholder:text-cove-muted"
+          className="w-full text-[22px] font-normal bg-transparent outline-none text-[#3c4043] placeholder:text-[#80868b] border-b-2 border-[#e0e0e0] pb-2 focus:border-cove-accent transition-colors"
         />
       </div>
 
-      <div className="px-4 pb-3 flex flex-col gap-3">
-        {/* Date selector (when week view provides days) */}
-        {weekDays && weekDays.length > 0 && (
-          <div>
-            <label className="text-[10px] text-cove-muted block mb-1">Day</label>
-            <div className="flex gap-1">
-              {weekDays.map((d) => (
-                <button
-                  key={d.date}
-                  onClick={() => setDate(d.date)}
-                  className={`flex-1 px-1 py-1.5 text-[10px] font-medium rounded-lg border transition-colors ${
-                    date === d.date
-                      ? "bg-cove-accent/10 border-cove-accent/30 text-cove-accent"
-                      : "border-cove-border/30 text-cove-muted hover:border-cove-border"
-                  }`}
-                >
-                  {d.label}
-                </button>
-              ))}
+      {/* Priority tabs */}
+      <div className="px-6 pb-4">
+        <div className="flex gap-1">
+          {ZONES.map((z) => (
+            <button
+              key={z.key}
+              onClick={() => setZone(z.key)}
+              className={`px-4 py-1.5 text-[13px] font-medium rounded-full transition-all ${
+                zone === z.key
+                  ? "text-white"
+                  : "text-[#5f6368] hover:bg-[#f1f3f4]"
+              }`}
+              style={zone === z.key ? { backgroundColor: z.color } : undefined}
+            >
+              {z.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Details list */}
+      <div className="px-3 pb-4 space-y-0">
+        {/* Date + time row */}
+        <button
+          onClick={() => { setShowTimePicker(!showTimePicker); setShowDayPicker(false); }}
+          className="w-full flex items-center gap-4 py-3 hover:bg-[#f1f3f4] px-3 rounded-md transition-colors"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5f6368" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+          </svg>
+          <div className="text-left">
+            <p className="text-[14px] text-[#3c4043]">
+              {date ? formatDateLabel(date) : "Select day"}
+              {"    "}
+              {formatTime(startTime)}  –  {formatTime(endTime)}
+            </p>
+            {duration > 0 && (
+              <p className="text-xs text-[#70757a] mt-0.5">
+                Time zone &middot; {duration >= 60 ? `${Math.floor(duration / 60)}h${duration % 60 ? ` ${duration % 60}m` : ""}` : `${duration}m`}
+              </p>
+            )}
+          </div>
+        </button>
+
+        {/* Expanded time picker */}
+        {showTimePicker && (
+          <div className="pl-10 pb-2 space-y-3">
+            {/* Day selector */}
+            {weekDays && weekDays.length > 0 && (
+              <div className="flex gap-1">
+                {weekDays.map((d) => (
+                  <button
+                    key={d.date}
+                    onClick={() => setDate(d.date)}
+                    className={`flex-1 py-2 text-[11px] font-medium rounded-md transition-all ${
+                      date === d.date
+                        ? "bg-cove-accent text-white"
+                        : "text-[#70757a] hover:bg-[#f1f3f4]"
+                    }`}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Time selectors */}
+            <div className="flex items-center gap-3">
+              <select
+                value={startTime}
+                onChange={(e) => {
+                  setStartTime(e.target.value);
+                  const newStart = e.target.value;
+                  if (timeDiffMin(newStart, endTime) <= 0) {
+                    const [h, m] = newStart.split(":").map(Number);
+                    const endMin = h * 60 + m + 60;
+                    setEndTime(`${String(Math.floor(endMin / 60) % 24).padStart(2, "0")}:${String(endMin % 60).padStart(2, "0")}`);
+                  }
+                }}
+                className="flex-1 px-3 py-2 text-sm bg-white border border-[#DADCE0] rounded-md text-[#3c4043] focus:outline-none focus:border-cove-accent cursor-pointer"
+              >
+                {TIME_OPTIONS.map((t) => (
+                  <option key={t} value={t}>{formatTime(t)}</option>
+                ))}
+              </select>
+              <span className="text-[#80868b] text-sm">–</span>
+              <select
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="flex-1 px-3 py-2 text-sm bg-white border border-[#DADCE0] rounded-md text-[#3c4043] focus:outline-none focus:border-cove-accent cursor-pointer"
+              >
+                {TIME_OPTIONS.filter((t) => timeDiffMin(startTime, t) > 0).map((t) => (
+                  <option key={t} value={t}>{formatTime(t)}</option>
+                ))}
+              </select>
             </div>
           </div>
         )}
 
-        {/* Time selectors */}
-        <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <label className="text-[10px] text-cove-muted block mb-0.5">Start</label>
-            <select
-              value={startTime}
-              onChange={(e) => {
-                setStartTime(e.target.value);
-                // Auto-adjust end time if it's before start
-                const newStart = e.target.value;
-                if (timeDiffMin(newStart, endTime) <= 0) {
-                  const [h, m] = newStart.split(":").map(Number);
-                  const endMin = h * 60 + m + 60;
-                  setEndTime(`${String(Math.floor(endMin / 60) % 24).padStart(2, "0")}:${String(endMin % 60).padStart(2, "0")}`);
-                }
-              }}
-              className="w-full px-2 py-1.5 text-xs bg-cove-offwhite border border-cove-border rounded-lg text-cove-charcoal focus:outline-none focus:border-cove-accent"
-            >
-              {TIME_OPTIONS.map((t) => (
-                <option key={t} value={t}>{formatTime(t)}</option>
-              ))}
-            </select>
+        {/* Priority indicator row */}
+        <div className="flex items-center gap-4 py-3 px-3">
+          <div className="w-5 h-5 flex items-center justify-center">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: currentZone.color }} />
           </div>
-
-          <span className="text-cove-muted text-xs mt-3">to</span>
-
-          <div className="flex-1">
-            <label className="text-[10px] text-cove-muted block mb-0.5">End</label>
-            <select
-              value={endTime}
-              onChange={(e) => setEndTime(e.target.value)}
-              className="w-full px-2 py-1.5 text-xs bg-cove-offwhite border border-cove-border rounded-lg text-cove-charcoal focus:outline-none focus:border-cove-accent"
-            >
-              {TIME_OPTIONS.filter((t) => timeDiffMin(startTime, t) > 0).map((t) => (
-                <option key={t} value={t}>{formatTime(t)}</option>
-              ))}
-            </select>
-          </div>
+          <p className="text-[14px] text-[#3c4043]">{currentZone.label} priority</p>
         </div>
+      </div>
 
-        {/* Duration display */}
-        {duration > 0 && (
-          <p className="text-[10px] text-cove-muted -mt-1">
-            {duration >= 60 ? `${Math.floor(duration / 60)}h ${duration % 60 ? `${duration % 60}m` : ""}` : `${duration}m`}
-          </p>
+      {/* Footer actions */}
+      <div className="flex items-center justify-end gap-2 px-4 py-3 bg-[#f8f9fa]">
+        {isEditing && onDelete && (
+          <button
+            onClick={onDelete}
+            className="mr-auto text-sm text-[#C4795B]/70 hover:text-[#C4795B] transition-colors px-3 py-2"
+          >
+            Delete
+          </button>
         )}
-
-        {/* Zone / priority */}
-        <div>
-          <label className="text-[10px] text-cove-muted block mb-1">Priority</label>
-          <div className="flex gap-1">
-            {ZONES.map((z) => (
-              <button
-                key={z.key}
-                onClick={() => setZone(z.key)}
-                className={`flex-1 px-2 py-1.5 text-[11px] font-medium rounded-lg border transition-colors ${
-                  zone === z.key
-                    ? "bg-cove-accent/10 border-cove-accent/30 text-cove-accent"
-                    : "border-cove-border/30 text-cove-muted hover:border-cove-border"
-                }`}
-              >
-                {z.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center gap-2 pt-1 border-t border-cove-border/30">
-          {isEditing && onDelete && (
-            <button
-              onClick={onDelete}
-              className="text-xs text-cove-error/70 hover:text-cove-error transition-colors"
-            >
-              Delete
-            </button>
-          )}
-          <div className="flex-1" />
-          <button
-            onClick={onCancel}
-            className="px-3 py-1.5 text-xs text-cove-muted hover:text-cove-charcoal transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!title.trim()}
-            className="px-4 py-1.5 text-xs font-medium text-white bg-cove-accent rounded-lg hover:bg-cove-accent-hover transition-colors disabled:opacity-40"
-          >
-            {isEditing ? "Save" : "Create"}
-          </button>
-        </div>
+        <button
+          onClick={onCancel}
+          className="px-5 py-2 text-sm font-medium text-cove-accent hover:bg-cove-accent/5 rounded-full transition-colors"
+        >
+          More options
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={!title.trim()}
+          className="px-6 py-2 text-sm font-medium text-white bg-cove-accent rounded-full hover:bg-cove-accent-hover transition-colors disabled:opacity-40"
+        >
+          Save
+        </button>
       </div>
     </div>
   );
