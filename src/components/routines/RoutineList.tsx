@@ -6,6 +6,7 @@ import { tapLight } from "@/lib/capacitor/haptics";
 import RoutineCard, { Routine } from "./RoutineCard";
 import RoutineForm, { RoutineFormData } from "./RoutineForm";
 import PublishRoutineForm from "@/components/community/PublishRoutineForm";
+import RoutineSharePicker from "@/components/community/RoutineSharePicker";
 
 const TEMPLATES = [
   {
@@ -90,6 +91,7 @@ export default function RoutineList() {
   const [aiError, setAiError] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [sharingRoutine, setSharingRoutine] = useState<Routine | null>(null);
+  const [showSharePicker, setShowSharePicker] = useState(false);
   const { toast } = useToast();
 
   async function fetchRoutines() {
@@ -274,8 +276,18 @@ export default function RoutineList() {
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold tracking-tight text-cove-charcoal">Routines</h2>
-          <button
-            onClick={() => {
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowSharePicker(!showSharePicker)}
+              className="text-sm text-cove-accent hover:text-cove-accent-hover transition-colors flex items-center gap-1"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+              </svg>
+              Share
+            </button>
+            <button
+              onClick={() => {
               if (showForm) {
                 setShowForm(false);
                 setFormInitialData(undefined);
@@ -287,6 +299,7 @@ export default function RoutineList() {
           >
             {showForm ? "Cancel" : "+ New routine"}
           </button>
+          </div>
         </div>
 
         {/* Templates and AI section */}
@@ -347,6 +360,27 @@ export default function RoutineList() {
           </div>
         )}
       </div>
+
+      {/* Share picker */}
+      {showSharePicker && !showForm && (
+        <div className="animate-fade-in-up">
+          <RoutineSharePicker
+            onSelect={(routine) => {
+              setShowSharePicker(false);
+              setSharingRoutine({
+                id: routine.id,
+                name: routine.name,
+                steps: routine.steps,
+                active: true,
+                startTime: routine.startTime,
+                showTimes: routine.showTimes,
+                showDurations: routine.showDurations,
+              });
+            }}
+            onCancel={() => setShowSharePicker(false)}
+          />
+        </div>
+      )}
 
       {/* Form */}
       {showForm && (

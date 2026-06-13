@@ -9,7 +9,7 @@ import DailyView from "@/components/daily/DailyView";
 import GamificationPanel from "@/components/gamification/GamificationPanel";
 import ProductivityPanel from "@/components/productivity/ProductivityPanel";
 import FocusHabitsPanel from "@/components/productivity/FocusHabitsPanel";
-import CommunityBrowser from "@/components/community/CommunityBrowser";
+import CommunityTabs from "@/components/community/CommunityTabs";
 import TasksPage from "@/components/tasks/TasksPage";
 import SettingsPanel from "@/components/settings/SettingsPanel";
 import ReminderScheduler from "@/components/reminders/ReminderScheduler";
@@ -98,7 +98,7 @@ const defaultModuleStates: Record<string, boolean> = {
 };
 
 export default function DashboardPage() {
-  const [activeItem, setActiveItem] = useState("companion");
+  const [activeItem, setActiveItem] = useState("daily-view");
   const [moduleStates, setModuleStates] =
     useState<Record<string, boolean>>(defaultModuleStates);
   const [companionType, setCompanionType] = useState<CompanionType>("fox");
@@ -166,7 +166,7 @@ export default function DashboardPage() {
         setActiveTab={setActiveItem}
         setSidebarVisible={(v) => sidebarControlRef.current?.(v)}
       />
-      {activeItem !== "companion" && <QuickCapture companionType={companionType} />}
+      {activeItem !== "companion" && activeItem !== "tasks" && activeItem !== "planner" && <QuickCapture companionType={companionType} />}
       <div key={activeItem} className="animate-soft-bounce">
         {activeItem === "companion" && <CompanionScreen />}
         {activeItem === "daily-view" && <DailyView />}
@@ -190,7 +190,7 @@ export default function DashboardPage() {
           <FocusHabitsPanel />
         )}
         {activeItem === "community" && isModuleEnabled("community") && (
-          <CommunityBrowser />
+          <CommunityTabs />
         )}
         {activeItem === "settings" && <SettingsPanel />}
       </div>

@@ -38,6 +38,10 @@ model User {
   communityReports    CommunityReport[]
   dailyActivities     DailyActivity[]
   inboxItems          InboxItem[]
+  vents               Vent[]
+  ventComments        VentComment[]
+  ventReports         VentReport[]
+  avatarKey           String?
 }
 
 model Account {
@@ -448,4 +452,58 @@ model InboxItem {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
+}
+
+model CommunityAvatar {
+  id              String @id @default(cuid())
+  key             String @unique
+  label           String
+  category        String @default("starter")
+  unlockType      String @default("default")
+  unlockThreshold Int?
+}
+
+model Vent {
+  id                String   @id @default(cuid())
+  authorId          String
+  body              String
+  lifespan          String
+  expiresAt         DateTime
+  contactPreference String   @default("both")
+  reportCount       Int      @default(0)
+  hidden            Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  author   User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments VentComment[]
+  reports  VentReport[]
+
+  @@index([expiresAt])
+  @@index([authorId])
+}
+
+model VentComment {
+  id        String   @id @default(cuid())
+  ventId    String
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+
+  vent   Vent @relation(fields: [ventId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([ventId])
+}
+
+model VentReport {
+  id        String   @id @default(cuid())
+  ventId    String
+  userId    String
+  reason    String
+  createdAt DateTime @default(now())
+
+  vent Vent @relation(fields: [ventId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ventId])
 }

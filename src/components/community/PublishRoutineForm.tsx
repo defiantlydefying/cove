@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/providers/ToastProvider";
+import { generateRandomName } from "@/lib/randomName";
 
 interface PublishStep {
   title: string;
@@ -20,15 +21,6 @@ interface PublishRoutineFormProps {
 
 const CONDITION_TAGS = ["ADHD", "Autism", "Anxiety", "Depression", "OCD", "PTSD", "Bipolar", "Dyslexia", "General"];
 const TYPE_TAGS = ["Morning", "Evening", "Work", "Self-Care", "Exercise", "Hygiene", "Social", "Wind-Down", "Focus"];
-
-function generateRandomName(): string {
-  const adjectives = ["calm", "quiet", "gentle", "warm", "bright", "soft", "kind", "steady", "clear", "still"];
-  const nouns = ["river", "fern", "stone", "cloud", "leaf", "moon", "meadow", "ridge", "brook", "pine"];
-  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-  const noun = nouns[Math.floor(Math.random() * nouns.length)];
-  const num = Math.floor(Math.random() * 99) + 1;
-  return `${adj}_${noun}_${num}`;
-}
 
 export default function PublishRoutineForm({
   routineName,
