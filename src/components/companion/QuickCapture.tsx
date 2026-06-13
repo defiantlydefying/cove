@@ -16,7 +16,9 @@ export default function QuickCapture({ companionType }: QuickCaptureProps) {
   const [value, setValue] = useState("");
   const [ack, setAck] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [imageExtracting, setImageExtracting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -68,6 +70,47 @@ export default function QuickCapture({ companionType }: QuickCaptureProps) {
     }
   };
 
+  const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) return;
+
+    setImageExtracting(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const res = await fetch("/api/companion/image-extract", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: reader.result }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const items = data.items || [];
+          let savedCount = 0;
+          for (const item of items) {
+            const endpoint = item.category === "task" ? "/api/tasks" : "/api/reminders";
+            const body = item.category === "task"
+              ? { title: item.content, scheduledDate: item.dueDate || undefined }
+              : { title: item.content, type: "custom", scheduledFor: item.dueDate || undefined };
+            const saveRes = await fetch(endpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(body),
+            });
+            if (saveRes.ok) savedCount++;
+          }
+          setAck(data.summary || `Extracted ${savedCount} items from your screenshot.`);
+          setTimeout(() => { setAck(null); setOpen(false); }, 2500);
+        }
+      } finally {
+        setImageExtracting(false);
+        if (fileRef.current) fileRef.current.value = "";
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <>
       <button
@@ -103,6 +146,11 @@ export default function QuickCapture({ companionType }: QuickCaptureProps) {
                   <CompanionAvatar type={companionType} size="sm" />
                   <p className="text-sm text-cove-charcoal">{ack}</p>
                 </div>
+              ) : imageExtracting ? (
+                <div className="flex items-center gap-3 py-4 justify-center">
+                  <CompanionAvatar type={companionType} size="sm" />
+                  <p className="text-sm text-cove-charcoal animate-pulse">Reading your screenshot...</p>
+                </div>
               ) : (
                 <div className="flex items-center gap-3">
                   <CompanionAvatar type={companionType} size="sm" />
@@ -116,6 +164,19 @@ export default function QuickCapture({ companionType }: QuickCaptureProps) {
                     className="flex-1 bg-cove-card border border-cove-accent/20 rounded-xl px-4 py-2.5 text-sm text-cove-charcoal placeholder:text-cove-muted/50 focus:outline-none focus:border-cove-accent/40"
                     disabled={sending}
                   />
+                  <input ref={fileRef} type="file" accept="image/*" capture="environment" onChange={handleImage} className="hidden" />
+                  <button
+                    onClick={() => fileRef.current?.click()}
+                    disabled={sending}
+                    className="p-2.5 rounded-xl text-cove-accent hover:bg-cove-accent/10 transition-colors disabled:opacity-40"
+                    aria-label="Upload screenshot"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                  </button>
                   <VoiceInput onTranscript={handleVoice} disabled={sending} />
                   <button
                     onClick={submit}

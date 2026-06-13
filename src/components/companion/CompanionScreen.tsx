@@ -7,6 +7,8 @@ import CompanionPicker from "./CompanionPicker";
 import VoiceInput from "./VoiceInput";
 import InboxList from "./InboxList";
 import InboxSorter from "./InboxSorter";
+import BrainDump from "./BrainDump";
+import ImageCapture from "./ImageCapture";
 import type { CompanionType } from "@/lib/companions";
 import { getCompanion } from "@/lib/companions";
 import { getCompanionCopy } from "@/lib/companionCopy";
@@ -36,20 +38,17 @@ export default function CompanionScreen() {
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
+  const [activeMode, setActiveMode] = useState<"chat" | "brain-dump" | "image">("chat");
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [greetingRes, inboxRes, settingsRes] = await Promise.all([
-          fetch("/api/companion/greeting"),
-          fetch("/api/inbox?status=unprocessed"),
-          fetch("/api/settings"),
-        ]);
-
+        // Fetch settings first to check if companion is chosen
+        const settingsRes = await fetch("/api/settings").catch(() => null);
         let companionChosen = false;
 
-        if (settingsRes.ok) {
+        if (settingsRes?.ok) {
           const settings = await settingsRes.json();
           if (settings.companionType) setCompanionType(settings.companionType);
           companionChosen = settings.companionChosen === true;
@@ -61,7 +60,13 @@ export default function CompanionScreen() {
           return;
         }
 
-        if (greetingRes.ok) {
+        // Only fetch greeting and inbox after confirming companion is chosen
+        const [greetingRes, inboxRes] = await Promise.all([
+          fetch("/api/companion/greeting").catch(() => null),
+          fetch("/api/inbox?status=unprocessed").catch(() => null),
+        ]);
+
+        if (greetingRes?.ok) {
           const { greeting, companionType: ct } = await greetingRes.json();
           if (ct) setCompanionType(ct);
           setMessages([
@@ -74,7 +79,7 @@ export default function CompanionScreen() {
           ]);
         }
 
-        if (inboxRes.ok) {
+        if (inboxRes?.ok) {
           setInboxItems(await inboxRes.json());
         }
       } finally {
@@ -190,6 +195,8 @@ export default function CompanionScreen() {
     const item = inboxItems.find((i) => i.id === id);
     if (!item) return;
 
+    const shortContent = item.content.length > 40 ? item.content.slice(0, 40) + "..." : item.content;
+
     if (to === "task") {
       const res = await fetch("/api/tasks", {
         method: "POST",
@@ -208,6 +215,16 @@ export default function CompanionScreen() {
           }),
         });
         setInboxItems((prev) => prev.filter((i) => i.id !== id));
+        // Companion acknowledges
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `convert-${Date.now()}`,
+            content: `"${shortContent}" is now in your Tasks inbox. You can find it there whenever you're ready.`,
+            sender: "companion" as const,
+            timestamp: new Date(),
+          },
+        ]);
       }
     } else if (to === "reminder") {
       const res = await fetch("/api/reminders", {
@@ -227,6 +244,16 @@ export default function CompanionScreen() {
           }),
         });
         setInboxItems((prev) => prev.filter((i) => i.id !== id));
+        // Companion acknowledges
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `convert-${Date.now()}`,
+            content: `I'll remind you about "${shortContent}". You can set the exact time in your Reminders.`,
+            sender: "companion" as const,
+            timestamp: new Date(),
+          },
+        ]);
       }
     }
   };
@@ -324,17 +351,83 @@ export default function CompanionScreen() {
           </div>
         )}
 
-        {inboxItems.length > 0 && (
+        {inboxItems.length > 0 && activeMode === "chat" && (
           <div className="pt-4 space-y-3">
             <InboxList items={inboxItems} onConvert={handleConvert} onDismiss={handleDismiss} onUpdate={handleUpdateInboxItem} />
             <InboxSorter companionType={companionType} onSortComplete={handleSortComplete} />
           </div>
         )}
 
+        {activeMode === "brain-dump" && (
+          <div className="pt-2">
+            <BrainDump
+              companionType={companionType}
+              onComplete={(msg) => {
+                setActiveMode("chat");
+                setMessages((prev) => [
+                  ...prev,
+                  { id: `bd-${Date.now()}`, content: msg, sender: "companion", timestamp: new Date() },
+                ]);
+              }}
+              onClose={() => setActiveMode("chat")}
+            />
+          </div>
+        )}
+
+        {activeMode === "image" && (
+          <div className="pt-2">
+            <ImageCapture
+              companionType={companionType}
+              onComplete={(msg) => {
+                setActiveMode("chat");
+                setMessages((prev) => [
+                  ...prev,
+                  { id: `img-${Date.now()}`, content: msg, sender: "companion", timestamp: new Date() },
+                ]);
+              }}
+              onClose={() => setActiveMode("chat")}
+            />
+          </div>
+        )}
+
         <div ref={chatEndRef} />
       </div>
 
-      <div className="border-t border-cove-accent/10 px-4 py-3">
+      <div className="border-t border-cove-accent/10 px-4 py-3 space-y-2">
+        {/* Mode toggle buttons */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setActiveMode(activeMode === "brain-dump" ? "chat" : "brain-dump")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors ${
+              activeMode === "brain-dump"
+                ? "bg-cove-accent text-white"
+                : "bg-cove-accent/10 text-cove-accent hover:bg-cove-accent/20"
+            }`}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7z" />
+              <line x1="9" y1="21" x2="15" y2="21" />
+            </svg>
+            Brain dump
+          </button>
+          <button
+            onClick={() => setActiveMode(activeMode === "image" ? "chat" : "image")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors ${
+              activeMode === "image"
+                ? "bg-cove-accent text-white"
+                : "bg-cove-accent/10 text-cove-accent hover:bg-cove-accent/20"
+            }`}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            Screenshot
+          </button>
+        </div>
+
+        {/* Chat input */}
         <div className="flex items-center gap-2">
           <input
             type="text"
@@ -343,12 +436,12 @@ export default function CompanionScreen() {
             onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
             placeholder="What's on your mind?"
             className="flex-1 bg-cove-card border border-cove-accent/20 rounded-xl px-4 py-2.5 text-sm text-cove-charcoal placeholder:text-cove-muted/50 focus:outline-none focus:border-cove-accent/40"
-            disabled={sending}
+            disabled={sending || activeMode !== "chat"}
           />
-          <VoiceInput onTranscript={(t) => sendMessage(t, "voice")} disabled={sending} />
+          <VoiceInput onTranscript={(t) => sendMessage(t, "voice")} disabled={sending || activeMode !== "chat"} />
           <button
             onClick={() => sendMessage(input)}
-            disabled={!input.trim() || sending}
+            disabled={!input.trim() || sending || activeMode !== "chat"}
             className="p-2.5 rounded-xl bg-cove-accent text-white disabled:opacity-40 transition-opacity"
             aria-label="Send"
           >
