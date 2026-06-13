@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 const STEPS = [
   {
@@ -24,11 +24,13 @@ const STEPS = [
 ];
 
 export default function HowItWorks() {
+  const reduced = useReducedMotion();
+
   return (
     <section id="about" className="w-full py-24 bg-[#1C1B18]">
       <div className="max-w-5xl mx-auto px-6">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={reduced ? {} : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
@@ -44,10 +46,14 @@ export default function HowItWorks() {
           {STEPS.map((step, i) => (
             <motion.div
               key={step.number}
-              initial={{ opacity: 0, y: 30 }}
+              initial={reduced ? {} : { opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: i * 0.15 }}
+              transition={{
+                duration: 0.7,
+                delay: i * 0.2,
+                ease: [0.25, 0.4, 0.25, 1],
+              }}
               className="relative"
             >
               {/* Connector line */}

@@ -1,4 +1,4 @@
-const CACHE_NAME = "cove-shell-v1";
+const CACHE_NAME = "cove-shell-v2";
 const SHELL_ASSETS = [
   "/dashboard",
   "/branding/android-chrome-192x192.png",
@@ -26,6 +26,9 @@ self.addEventListener("fetch", (event) => {
 
   if (request.method !== "GET") return;
   if (request.url.includes("/api/")) return;
+
+  // Don't cache HTML navigation requests — prevents stale page issues
+  if (request.mode === "navigate") return;
 
   event.respondWith(
     caches.match(request).then((cached) => {

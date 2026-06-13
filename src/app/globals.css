@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "lenis/dist/lenis.css";
 
 /* Scrollbar styling */
 * {
@@ -284,6 +285,61 @@ button, input, select, textarea {
   stroke-dasharray: 200;
   stroke-dashoffset: 200;
   animation: logo-stroke 1.5s ease-out 1.5s forwards;
+}
+
+/* ── Hero grain overlay ── */
+.hero-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 180px 180px;
+}
+
+/* ── Shimmer text effect ── */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.text-shimmer {
+  background: linear-gradient(
+    90deg,
+    #6B8F71 0%,
+    #A8D4AE 25%,
+    #C4A055 50%,
+    #A8D4AE 75%,
+    #6B8F71 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 4s linear infinite;
+}
+
+/* ── Glow pulse for hero ── */
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50% { opacity: 0.25; transform: scale(1.05); }
+}
+
+.hero-glow {
+  animation: glowPulse 6s ease-in-out infinite;
+}
+
+.hero-glow-slow {
+  animation: glowPulse 8s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+.hero-glow-slower {
+  animation: glowPulse 10s ease-in-out infinite;
+  animation-delay: 4s;
 }
 
 @media (prefers-reduced-motion: reduce) {

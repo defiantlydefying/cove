@@ -11,7 +11,7 @@ export default function SplitReveal() {
       {/* Heading */}
       <motion.div
         className="text-center mb-16 px-6"
-        initial={{ opacity: 0, y: 16 }}
+        initial={reduced ? {} : { opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
@@ -29,7 +29,7 @@ export default function SplitReveal() {
           style={{
             background: "linear-gradient(135deg, #A89F93, #9B9185)",
           }}
-          initial={{ opacity: 0, x: -20 }}
+          initial={reduced ? {} : { opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
@@ -55,7 +55,7 @@ export default function SplitReveal() {
           style={{
             background: "linear-gradient(135deg, #EEF2EC, #F2EDE5)",
           }}
-          initial={{ opacity: 0, x: 20 }}
+          initial={reduced ? {} : { opacity: 0, x: 20 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.15 }}
@@ -65,7 +65,7 @@ export default function SplitReveal() {
               <motion.div
                 key={i}
                 className="flex items-center gap-2.5"
-                initial={{ opacity: 0, x: 10 }}
+                initial={reduced ? {} : { opacity: 0, x: 10 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 const FEATURES = [
   {
@@ -109,22 +109,14 @@ const FEATURES = [
   },
 ];
 
-const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.15 } },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-};
-
 export default function FeatureShowcase() {
+  const reduced = useReducedMotion();
+
   return (
-    <section id="features" className="w-full py-24 bg-[#F7F5F0]">
+    <section id="features" className="w-full py-24 bg-[#F7F5F0]" suppressHydrationWarning>
       <div className="max-w-6xl mx-auto px-6">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={reduced ? {} : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
@@ -139,40 +131,43 @@ export default function FeatureShowcase() {
           </p>
         </motion.div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6"
-        >
-          {FEATURES.map((feature) => (
-            <motion.div
-              key={feature.label}
-              variants={itemVariants}
-              className="group flex flex-col rounded-2xl border border-[#E5E0D8] bg-white overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-            >
-              {/* Mockup */}
-              <div className="p-4 bg-[#FAFAF8]">
-                {feature.mockup}
-              </div>
-
-              {/* Text */}
-              <div className="p-6 flex-1 flex flex-col">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${feature.color}15`, color: feature.color }}>
-                    {feature.icon}
+        {/* Alternating layout instead of uniform 3-grid */}
+        <div className="flex flex-col gap-16">
+          {FEATURES.map((feature, i) => {
+            const isReversed = i % 2 === 1;
+            return (
+              <motion.div
+                key={feature.label}
+                initial={reduced ? {} : { opacity: 0, x: isReversed ? 40 : -40 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.7, ease: [0.25, 0.4, 0.25, 1] }}
+                className={`grid grid-cols-1 md:grid-cols-2 gap-8 items-center ${isReversed ? "md:direction-rtl" : ""}`}
+              >
+                {/* Mockup side */}
+                <div className={`rounded-2xl border border-[#E5E0D8] bg-white overflow-hidden ${isReversed ? "md:order-2" : ""}`}>
+                  <div className="p-5 bg-[#FAFAF8]">
+                    {feature.mockup}
                   </div>
-                  <span className="text-xs font-medium tracking-wider uppercase" style={{ color: feature.color }}>
-                    {feature.label}
-                  </span>
                 </div>
-                <h3 className="text-lg font-semibold text-[#3D3832] mb-2">{feature.title}</h3>
-                <p className="text-sm text-[#8A8480] leading-relaxed flex-1">{feature.description}</p>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+
+                {/* Text side */}
+                <div className={`flex flex-col ${isReversed ? "md:order-1 md:items-end md:text-right" : ""}`}>
+                  <div className={`flex items-center gap-2 mb-4 ${isReversed ? "md:flex-row-reverse" : ""}`}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${feature.color}15`, color: feature.color }}>
+                      {feature.icon}
+                    </div>
+                    <span className="text-xs font-medium tracking-wider uppercase" style={{ color: feature.color }}>
+                      {feature.label}
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-semibold text-[#3D3832] mb-3">{feature.title}</h3>
+                  <p className="text-sm text-[#8A8480] leading-relaxed max-w-md">{feature.description}</p>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

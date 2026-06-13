@@ -1,8 +1,41 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
 import NavBar from "@/components/homepage/NavBar";
 import Footer from "@/components/homepage/Footer";
+
+function StatementReveal({ text, accent }: { text: string; accent?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-20%" });
+  const words = text.split(" ");
+
+  return (
+    <div ref={ref} className="max-w-4xl mx-auto px-6 py-20">
+      <h2 className="text-[clamp(1.8rem,4vw,3.2rem)] font-semibold tracking-tight leading-[1.2] text-center">
+        {words.map((word, wi) => (
+          <span key={wi} className="inline-block mr-[0.3em]">
+            {word.split("").map((char, ci) => {
+              const i = wi * 6 + ci;
+              const isAccent = accent && word.toLowerCase().replace(/[.,!?]/, "") === accent.toLowerCase();
+              return (
+                <motion.span
+                  key={ci}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={inView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.3, delay: i * 0.025 }}
+                  className={`inline-block ${isAccent ? "text-cove-accent" : "text-[#3D3832]"}`}
+                >
+                  {char}
+                </motion.span>
+              );
+            })}
+          </span>
+        ))}
+      </h2>
+    </div>
+  );
+}
 
 const VALUES = [
   {
@@ -108,6 +141,11 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* Statement */}
+        <section className="w-full bg-white">
+          <StatementReveal text="You deserve tools that work with your brain, not against it." accent="with" />
+        </section>
+
         {/* Values */}
         <section className="w-full py-24 bg-white">
           <div className="max-w-5xl mx-auto px-6">
@@ -200,9 +238,6 @@ export default function AboutPage() {
                 </p>
                 <p>
                   Every design decision — from the color palette to the animation timing — is intentional. Muted earth tones reduce visual stimulation. Rounded corners feel softer than sharp edges. Animations are gentle and can be turned off entirely.
-                </p>
-                <p>
-                  Cove is free for personal use and always will be.
                 </p>
               </div>
             </motion.div>

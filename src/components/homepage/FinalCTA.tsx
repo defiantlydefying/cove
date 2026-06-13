@@ -1,8 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 export default function FinalCTA() {
+  const reduced = useReducedMotion();
+
   return (
     <section className="w-full py-32 bg-[#1C1B18] relative overflow-hidden">
       {/* Ambient glow */}
@@ -12,30 +14,30 @@ export default function FinalCTA() {
 
       <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
         <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={reduced ? {} : { opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.8 }}
           className="text-3xl md:text-5xl font-semibold text-[#E5E0D8] tracking-tight leading-tight"
         >
           Your calm starts here.
         </motion.h2>
 
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={reduced ? {} : { opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
           className="text-base text-[#E5E0D8]/40 mt-5 max-w-md mx-auto leading-relaxed"
         >
-          Free to use. No credit card. Set up in under a minute.
+          No credit card required. Set up in under a minute.
         </motion.p>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={reduced ? {} : { opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
           className="mt-8"
         >
           <a
