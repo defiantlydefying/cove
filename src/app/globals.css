@@ -25,7 +25,8 @@
   background: var(--cove-charcoal);
 }
 
-:root {
+:root,
+[data-theme="light"] {
   --background: #F7F5F0;
   --foreground: #3D3832;
   --cove-accent: #6B8F71;
@@ -39,6 +40,7 @@
   --cove-sand-light: #F2EDE5;
   --cove-offwhite: #F7F5F0;
   --cove-charcoal: #3D3832;
+  --cove-ink: #211E1A;
   --cove-muted: #9A928A;
   --cove-border: #DDD6CC;
   --cove-border-light: #EBE6DE;
@@ -106,6 +108,7 @@
   --cove-sand-light: #282520;
   --cove-offwhite: #1C1B18;
   --cove-charcoal: #E5E0D8;
+  --cove-ink: #F0EBE3;
   --cove-muted: #8E887F;
   --cove-border: #3D3830;
   --cove-border-light: #302C26;
@@ -129,6 +132,39 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Display serif for marketing headlines — elegant, editorial, single weight. */
+.font-display {
+  font-family: var(--font-instrument-serif), Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  /* Instrument Serif has thin strokes; a deep ink keeps headlines legible on the
+     light, busy hero. Wins over text-cove-charcoal (unlayered). */
+  color: var(--cove-ink);
+}
+
+.font-display em,
+.font-display .italic {
+  font-style: italic;
+}
+
+/* Small editorial eyebrow label with a leading hairline rule. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.eyebrow::before {
+  content: "";
+  width: 1.6rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.5;
 }
 
 /* Font size settings */
@@ -310,9 +346,10 @@ button, input, select, textarea {
   background: linear-gradient(
     90deg,
     #6B8F71 0%,
-    #A8D4AE 25%,
-    #C4A055 50%,
-    #A8D4AE 75%,
+    #7EAAA0 22%,
+    #6C9BC4 42%,
+    #4E8EA8 58%,
+    #7EAAA0 78%,
     #6B8F71 100%
   );
   background-size: 200% auto;
@@ -340,6 +377,48 @@ button, input, select, textarea {
 .hero-glow-slower {
   animation: glowPulse 10s ease-in-out infinite;
   animation-delay: 4s;
+}
+
+/* ── Custom cursor (marketing pages) ── */
+/* White + mix-blend-mode: difference so the cursor inverts against whatever is
+   beneath it — text, the water current, cards. Over interactive elements the
+   ring fills to a solid disc for a stronger invert. */
+.cove-cursor-dot,
+.cove-cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: difference;
+  will-change: transform, opacity;
+}
+
+.cove-cursor-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: #ffffff;
+  transition: opacity 0.25s ease;
+}
+
+.cove-cursor-ring {
+  width: 38px;
+  height: 38px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  transition: opacity 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.cove-cursor-ring.is-hover {
+  border-color: transparent;
+  background: #ffffff;
+}
+
+body.cursor-none,
+body.cursor-none * {
+  cursor: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -4,6 +4,9 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import NavBar from "@/components/homepage/NavBar";
 import Footer from "@/components/homepage/Footer";
+import LivingCoveCanvas from "@/components/homepage/LivingCoveCanvas";
+import CustomCursor from "@/components/homepage/CustomCursor";
+import LenisProvider from "@/components/providers/LenisProvider";
 
 function StatementReveal({ text, accent }: { text: string; accent?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -12,7 +15,7 @@ function StatementReveal({ text, accent }: { text: string; accent?: string }) {
 
   return (
     <div ref={ref} className="max-w-4xl mx-auto px-6 py-20">
-      <h2 className="text-[clamp(1.8rem,4vw,3.2rem)] font-semibold tracking-tight leading-[1.2] text-center">
+      <h2 className="font-display text-[clamp(2rem,4.4vw,3.6rem)] font-normal tracking-[-0.01em] leading-[1.12] text-center">
         {words.map((word, wi) => (
           <span key={wi} className="inline-block mr-[0.3em]">
             {word.split("").map((char, ci) => {
@@ -54,8 +57,8 @@ const VALUES = [
     color: "#C4A055",
   },
   {
-    title: "Built for different brains",
-    description: "Cove is designed with ADHD, anxiety, and executive function challenges in mind. AI breaks tasks into micro-steps. Voice capture lets you brain dump without typing. The companion never judges.",
+    title: "Designed with different brains in mind",
+    description: "Cove draws on the lived experience of people with ADHD, anxiety, and executive function differences. AI breaks tasks into micro-steps. Voice capture lets you brain dump without typing. The companion never judges.",
     color: "#A08BA0",
   },
 ];
@@ -74,40 +77,49 @@ const MODULES = [
 
 export default function AboutPage() {
   return (
-    <>
+    <LenisProvider>
+      <div data-theme="light">
+      <CustomCursor />
       <NavBar />
       <main>
         {/* Hero */}
-        <section className="relative w-full pt-32 pb-24 bg-[#1C1B18] overflow-hidden">
-          <div className="absolute inset-0" aria-hidden="true">
-            <div className="absolute w-[500px] h-[500px] rounded-full top-[10%] left-[20%]" style={{ background: "radial-gradient(circle, rgba(107,143,113,0.1) 0%, transparent 70%)", filter: "blur(80px)" }} />
-            <div className="absolute w-[400px] h-[400px] rounded-full bottom-[10%] right-[15%]" style={{ background: "radial-gradient(circle, rgba(126,170,160,0.07) 0%, transparent 70%)", filter: "blur(80px)" }} />
+        <section className="hero-grain relative w-full min-h-[80svh] flex items-center pt-32 pb-24 overflow-hidden">
+          <div className="absolute inset-0 z-0" aria-hidden="true">
+            <LivingCoveCanvas />
           </div>
+          <div
+            className="absolute inset-0 z-[1] pointer-events-none"
+            aria-hidden="true"
+            style={{
+              background:
+                "radial-gradient(120% 85% at 50% 45%, rgba(241,236,228,0.74) 0%, rgba(241,236,228,0.44) 52%, rgba(241,236,228,0) 84%)",
+            }}
+          />
 
           <div className="relative z-10 max-w-3xl mx-auto px-6 text-center">
             <motion.span
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-block text-xs font-medium tracking-widest uppercase text-cove-accent mb-4"
+              className="inline-block text-xs font-medium tracking-[0.22em] uppercase text-cove-accent mb-5"
             >
               About Cove
             </motion.span>
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl md:text-5xl font-semibold text-[#E5E0D8] tracking-tight leading-tight"
+              transition={{ duration: 0.7, delay: 0.1 }}
+              className="font-display text-[clamp(2.8rem,6.4vw,5rem)] font-normal text-cove-charcoal tracking-[-0.01em] leading-[1.0]"
             >
               A productivity app that
               <br />
-              <span className="text-cove-accent">actually gets it.</span>
+              <span className="text-shimmer italic">actually gets it.</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg text-[#E5E0D8]/40 mt-6 max-w-xl mx-auto leading-relaxed"
+              transition={{ duration: 0.7, delay: 0.25 }}
+              className="text-lg md:text-xl text-cove-charcoal/75 mt-7 max-w-xl mx-auto leading-relaxed"
             >
               Most productivity tools are built for neurotypical brains. Cove is built for the rest of us — the ones who think differently, plan differently, and need tools that meet them where they are.
             </motion.p>
@@ -131,10 +143,10 @@ export default function AboutPage() {
                   They punish you for missing a day. They show angry red badges. They give you a system so complex that maintaining it becomes another task. And when you inevitably fall off, you feel worse than before you started.
                 </p>
                 <p>
-                  For people with ADHD, anxiety, or executive function challenges, this isn&apos;t just annoying — it&apos;s actively harmful. The shame spiral of an overdue task list is one of the primary reasons people abandon productivity tools entirely.
+                  If you think differently — whether that&apos;s ADHD, anxiety, or just an executive function style that doesn&apos;t fit the mold — this isn&apos;t just annoying. The shame spiral of an overdue task list is one of the most common reasons people give up on productivity tools entirely.
                 </p>
                 <p>
-                  Cove takes a different approach. We built every feature around one question: <strong className="text-[#3D3832]">does this reduce overwhelm, or add to it?</strong>
+                  Cove takes a different approach. We designed every feature around one question: <strong className="text-[#3D3832]">does this reduce overwhelm, or add to it?</strong> Cove is a productivity and wellness tool — not therapy, and not a replacement for professional care.
                 </p>
               </div>
             </motion.div>
@@ -157,7 +169,7 @@ export default function AboutPage() {
               className="text-center mb-16"
             >
               <span className="text-xs font-medium tracking-widest uppercase text-cove-accent">Principles</span>
-              <h2 className="text-3xl font-semibold text-[#3D3832] tracking-tight mt-3">
+              <h2 className="font-display text-[clamp(2rem,4.2vw,3.4rem)] font-normal text-cove-charcoal tracking-[-0.01em] mt-3">
                 What we believe
               </h2>
             </motion.div>
@@ -194,7 +206,7 @@ export default function AboutPage() {
               className="text-center mb-12"
             >
               <span className="text-xs font-medium tracking-widest uppercase text-cove-accent">Modules</span>
-              <h2 className="text-3xl font-semibold text-[#3D3832] tracking-tight mt-3">
+              <h2 className="font-display text-[clamp(2rem,4.2vw,3.4rem)] font-normal text-cove-charcoal tracking-[-0.01em] mt-3">
                 Everything is opt-in
               </h2>
               <p className="text-base text-[#A09A90] mt-3 max-w-lg mx-auto">
@@ -206,10 +218,10 @@ export default function AboutPage() {
               {MODULES.map((mod, i) => (
                 <motion.div
                   key={mod.name}
-                  initial={{ opacity: 0, y: 15 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: i * 0.05 }}
+                  initial={{ opacity: 0, y: 36, filter: "blur(8px)" }}
+                  whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.75, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
                   className="rounded-xl border border-[#E5E0D8] bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-all"
                 >
                   <h3 className="text-sm font-semibold text-[#3D3832] mb-1">{mod.name}</h3>
@@ -245,17 +257,20 @@ export default function AboutPage() {
         </section>
 
         {/* CTA */}
-        <section className="w-full py-24 bg-[#1C1B18]">
+        <section
+          className="w-full py-24 relative overflow-hidden border-t border-cove-border-light"
+          style={{ background: "linear-gradient(135deg, #EAF0EB 0%, #F2EDE5 100%)" }}
+        >
           <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
             <div className="absolute inset-0 -z-10" aria-hidden="true">
-              <div className="absolute w-[400px] h-[400px] rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ background: "radial-gradient(circle, rgba(107,143,113,0.08) 0%, transparent 70%)", filter: "blur(80px)" }} />
+              <div className="absolute w-[400px] h-[400px] rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ background: "radial-gradient(circle, rgba(107,143,113,0.12) 0%, transparent 70%)", filter: "blur(80px)" }} />
             </div>
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="text-3xl md:text-4xl font-semibold text-[#E5E0D8] tracking-tight"
+              className="font-display text-[clamp(2.4rem,5.5vw,4.4rem)] font-normal text-cove-charcoal tracking-[-0.01em] leading-[1.0]"
             >
               Ready to try something different?
             </motion.h2>
@@ -268,9 +283,10 @@ export default function AboutPage() {
             >
               <a
                 href="/register"
-                className="inline-block px-10 py-4 rounded-xl bg-cove-accent text-white font-medium text-base hover:bg-cove-accent-hover transition-all hover:-translate-y-0.5 shadow-lg shadow-cove-accent/20"
+                className="group inline-flex items-center gap-2 px-10 py-4 rounded-full bg-cove-accent text-white font-medium text-base hover:bg-cove-accent-hover transition-all hover:-translate-y-0.5 shadow-lg shadow-cove-accent/20"
               >
                 Start your cove
+                <span className="transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
               </a>
             </motion.div>
           </div>
@@ -278,6 +294,7 @@ export default function AboutPage() {
 
         <Footer />
       </main>
-    </>
+      </div>
+    </LenisProvider>
   );
 }

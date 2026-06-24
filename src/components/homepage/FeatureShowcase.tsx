@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 
 const FEATURES = [
   {
@@ -112,18 +112,34 @@ const FEATURES = [
 export default function FeatureShowcase() {
   const reduced = useReducedMotion();
 
+  const container: Variants = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.07 } },
+  };
+  const item: Variants = reduced
+    ? { hidden: {}, show: {} }
+    : {
+        hidden: { opacity: 0, y: 44, filter: "blur(10px)" },
+        show: {
+          opacity: 1,
+          y: 0,
+          filter: "blur(0px)",
+          transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+        },
+      };
+
   return (
-    <section id="features" className="w-full py-24 bg-[#F7F5F0]" suppressHydrationWarning>
+    <section id="features" className="w-full py-20 md:py-28 bg-[#F7F5F0]" suppressHydrationWarning>
       <div className="max-w-6xl mx-auto px-6">
         <motion.div
           initial={reduced ? {} : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
           <span className="text-xs font-medium tracking-widest uppercase text-cove-accent">Features</span>
-          <h2 className="text-3xl md:text-4xl font-semibold text-[#3D3832] tracking-tight mt-3">
+          <h2 className="font-display text-[clamp(2.5rem,5.4vw,4.4rem)] font-normal text-cove-charcoal tracking-[-0.015em] leading-[1.0] mt-5">
             Everything you need,<br />nothing you don&apos;t.
           </h2>
           <p className="text-base text-[#A09A90] mt-4 max-w-lg mx-auto">
@@ -131,43 +147,36 @@ export default function FeatureShowcase() {
           </p>
         </motion.div>
 
-        {/* Alternating layout instead of uniform 3-grid */}
-        <div className="flex flex-col gap-16">
-          {FEATURES.map((feature, i) => {
-            const isReversed = i % 2 === 1;
-            return (
-              <motion.div
-                key={feature.label}
-                initial={reduced ? {} : { opacity: 0, x: isReversed ? 40 : -40 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-80px" }}
-                transition={{ duration: 0.7, ease: [0.25, 0.4, 0.25, 1] }}
-                className={`grid grid-cols-1 md:grid-cols-2 gap-8 items-center ${isReversed ? "md:direction-rtl" : ""}`}
-              >
-                {/* Mockup side */}
-                <div className={`rounded-2xl border border-[#E5E0D8] bg-white overflow-hidden ${isReversed ? "md:order-2" : ""}`}>
-                  <div className="p-5 bg-[#FAFAF8]">
-                    {feature.mockup}
+        {/* Compact grid — every card drops in together */}
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          {FEATURES.map((feature) => (
+            <motion.div
+              key={feature.label}
+              variants={item}
+              className="group flex flex-col rounded-2xl border border-[#E5E0D8] bg-white overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-[transform,box-shadow] duration-300"
+            >
+              <div className="p-4 bg-[#FAFAF8] border-b border-[#E5E0D8]/60">{feature.mockup}</div>
+              <div className="p-6 flex flex-col flex-1">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${feature.color}15`, color: feature.color }}>
+                    {feature.icon}
                   </div>
+                  <span className="text-[11px] font-medium tracking-wider uppercase" style={{ color: feature.color }}>
+                    {feature.label}
+                  </span>
                 </div>
-
-                {/* Text side */}
-                <div className={`flex flex-col ${isReversed ? "md:order-1 md:items-end md:text-right" : ""}`}>
-                  <div className={`flex items-center gap-2 mb-4 ${isReversed ? "md:flex-row-reverse" : ""}`}>
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${feature.color}15`, color: feature.color }}>
-                      {feature.icon}
-                    </div>
-                    <span className="text-xs font-medium tracking-wider uppercase" style={{ color: feature.color }}>
-                      {feature.label}
-                    </span>
-                  </div>
-                  <h3 className="text-2xl font-semibold text-[#3D3832] mb-3">{feature.title}</h3>
-                  <p className="text-sm text-[#8A8480] leading-relaxed max-w-md">{feature.description}</p>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+                <h3 className="text-xl font-semibold text-cove-charcoal mb-2">{feature.title}</h3>
+                <p className="text-sm text-[#8A8480] leading-relaxed">{feature.description}</p>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );

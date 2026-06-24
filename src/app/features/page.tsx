@@ -4,6 +4,9 @@ import { motion, useInView } from "framer-motion";
 import { useRef, useEffect, useState, ReactNode } from "react";
 import NavBar from "@/components/homepage/NavBar";
 import Footer from "@/components/homepage/Footer";
+import LivingCoveCanvas from "@/components/homepage/LivingCoveCanvas";
+import CustomCursor from "@/components/homepage/CustomCursor";
+import LenisProvider from "@/components/providers/LenisProvider";
 
 // ─── Scroll-triggered counter ───────────────────────────────────────
 function Counter({ target, suffix = "" }: { target: number; suffix?: string }) {
@@ -38,7 +41,7 @@ function StatementReveal({ text, accent }: { text: string; accent?: string }) {
 
   return (
     <div ref={ref} className="max-w-4xl mx-auto px-6 py-20">
-      <h2 className="text-[clamp(1.8rem,4vw,3.2rem)] font-semibold tracking-tight leading-[1.2] text-center">
+      <h2 className="font-display text-[clamp(2rem,4.4vw,3.6rem)] font-normal tracking-[-0.01em] leading-[1.12] text-center">
         {words.map((word, wi) => (
           <span key={wi} className="inline-block mr-[0.3em]">
             {word.split("").map((char, ci) => {
@@ -365,39 +368,49 @@ const STATS = [
 // ─── Page ───────────────────────────────────────────────────────────
 export default function FeaturesPage() {
   return (
-    <>
+    <LenisProvider>
+      <div data-theme="light">
+      <CustomCursor />
       <NavBar />
       <main>
         {/* Hero */}
-        <section className="relative w-full pt-32 pb-20 bg-[#1C1B18] overflow-hidden">
-          <div className="absolute inset-0" aria-hidden="true">
-            <div className="absolute w-[500px] h-[500px] rounded-full top-[10%] right-[10%]" style={{ background: "radial-gradient(circle, rgba(107,143,113,0.1) 0%, transparent 70%)", filter: "blur(80px)" }} />
+        <section className="hero-grain relative w-full min-h-[80svh] flex items-center pt-32 pb-20 overflow-hidden">
+          <div className="absolute inset-0 z-0" aria-hidden="true">
+            <LivingCoveCanvas />
           </div>
+          <div
+            className="absolute inset-0 z-[1] pointer-events-none"
+            aria-hidden="true"
+            style={{
+              background:
+                "radial-gradient(120% 85% at 50% 45%, rgba(241,236,228,0.74) 0%, rgba(241,236,228,0.44) 52%, rgba(241,236,228,0) 84%)",
+            }}
+          />
 
           <div className="relative z-10 max-w-3xl mx-auto px-6 text-center">
             <motion.span
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-block text-xs font-medium tracking-widest uppercase text-cove-accent mb-4"
+              className="inline-block text-xs font-medium tracking-[0.22em] uppercase text-cove-accent mb-5"
             >
               Features
             </motion.span>
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl md:text-5xl font-semibold text-[#E5E0D8] tracking-tight leading-tight"
+              transition={{ duration: 0.7, delay: 0.1 }}
+              className="font-display text-[clamp(2.8rem,6.4vw,5rem)] font-normal text-cove-charcoal tracking-[-0.01em] leading-[1.0]"
             >
               Everything you need,
               <br />
-              <span className="text-cove-accent">nothing you don&apos;t.</span>
+              <span className="text-shimmer italic">nothing you don&apos;t.</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg text-[#E5E0D8]/40 mt-6 max-w-xl mx-auto leading-relaxed"
+              transition={{ duration: 0.7, delay: 0.25 }}
+              className="text-lg md:text-xl text-cove-charcoal/75 mt-7 max-w-xl mx-auto leading-relaxed"
             >
               Every module is opt-in. Start with what you need, add more when it feels right.
             </motion.p>
@@ -440,10 +453,10 @@ export default function FeaturesPage() {
                   {category.items.map((feature, fi) => (
                     <motion.div
                       key={feature.title}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.5, delay: fi * 0.08 }}
+                      initial={{ opacity: 0, y: 48, filter: "blur(10px)" }}
+                      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      viewport={{ once: true, margin: "-60px" }}
+                      transition={{ duration: 0.85, delay: fi * 0.1, ease: [0.22, 1, 0.36, 1] }}
                       className="rounded-2xl border border-[#E5E0D8] bg-white overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                     >
                       {/* Animated mockup if available */}
@@ -472,26 +485,29 @@ export default function FeaturesPage() {
         ))}
 
         {/* CTA */}
-        <section className="w-full py-24 bg-[#1C1B18]">
+        <section
+          className="w-full py-24 relative overflow-hidden border-t border-cove-border-light"
+          style={{ background: "linear-gradient(135deg, #EAF0EB 0%, #F2EDE5 100%)" }}
+        >
           <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
             <div className="absolute inset-0 -z-10" aria-hidden="true">
-              <div className="absolute w-[400px] h-[400px] rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ background: "radial-gradient(circle, rgba(107,143,113,0.08) 0%, transparent 70%)", filter: "blur(80px)" }} />
+              <div className="absolute w-[400px] h-[400px] rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ background: "radial-gradient(circle, rgba(107,143,113,0.12) 0%, transparent 70%)", filter: "blur(80px)" }} />
             </div>
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="text-3xl md:text-5xl font-semibold text-[#E5E0D8] tracking-tight"
+              className="font-display text-[clamp(2.8rem,7vw,5.6rem)] font-normal text-cove-charcoal tracking-[-0.015em] leading-[0.98]"
             >
-              Get started today.
+              Get started <em className="italic">today</em>.
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-base text-[#E5E0D8]/40 mt-4"
+              className="text-base text-cove-muted mt-4"
             >
               No credit card required. Set up in under a minute.
             </motion.p>
@@ -504,9 +520,10 @@ export default function FeaturesPage() {
             >
               <a
                 href="/register"
-                className="inline-block px-10 py-4 rounded-xl bg-cove-accent text-white font-medium text-base hover:bg-cove-accent-hover transition-all hover:-translate-y-0.5 shadow-lg shadow-cove-accent/20"
+                className="group inline-flex items-center gap-2 px-10 py-4 rounded-full bg-cove-accent text-white font-medium text-base hover:bg-cove-accent-hover transition-all hover:-translate-y-0.5 shadow-lg shadow-cove-accent/20"
               >
                 Start your cove
+                <span className="transition-transform duration-300 group-hover:translate-x-1">&rarr;</span>
               </a>
             </motion.div>
           </div>
@@ -514,6 +531,7 @@ export default function FeaturesPage() {
 
         <Footer />
       </main>
-    </>
+      </div>
+    </LenisProvider>
   );
 }

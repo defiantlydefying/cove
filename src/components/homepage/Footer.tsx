@@ -32,9 +32,15 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-5 border-t border-cove-border-light flex items-center justify-between">
+        <div className="mt-8 pt-5 border-t border-cove-border-light flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[11px] text-cove-muted/50">
             &copy; {new Date().getFullYear()} Cove. All rights reserved.
+          </p>
+          <p className="text-[11px] text-cove-muted/50 max-w-md sm:text-right">
+            Cove is a wellness and productivity tool, not a medical device. It does not
+            diagnose, treat, or cure any condition and is not a substitute for professional
+            care. If you&apos;re in crisis, contact your local emergency services or call or
+            text 988 (US).
           </p>
         </div>
       </div>

@@ -7,7 +7,7 @@ export default function SplitReveal() {
   const reduced = useReducedMotion();
 
   return (
-    <section className="w-full py-24 bg-cove-offwhite overflow-hidden">
+    <section className="w-full py-20 md:py-28 bg-cove-card border-t border-cove-border-light overflow-hidden">
       {/* Heading */}
       <motion.div
         className="text-center mb-16 px-6"
@@ -16,8 +16,8 @@ export default function SplitReveal() {
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
       >
-        <p className="text-2xl md:text-3xl font-medium text-cove-charcoal tracking-tight">
-          The difference is <span className="text-cove-accent">calm</span>.
+        <p className="font-display text-[clamp(2.2rem,4.8vw,3.8rem)] font-normal text-cove-charcoal tracking-[-0.01em] leading-[1.04]">
+          The difference is <span className="text-shimmer italic">calm</span>.
         </p>
       </motion.div>
 
@@ -29,10 +29,10 @@ export default function SplitReveal() {
           style={{
             background: "linear-gradient(135deg, #A89F93, #9B9185)",
           }}
-          initial={reduced ? {} : { opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
+          initial={reduced ? {} : { opacity: 0, y: 48, filter: "blur(10px)" }}
+          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="relative w-full h-20 mb-8">
             <div className="absolute top-0 left-2 w-8 h-8 rounded-lg border-2 border-white/50 rotate-12" />
@@ -53,12 +53,12 @@ export default function SplitReveal() {
         <motion.div
           className="rounded-2xl p-8 md:p-10"
           style={{
-            background: "linear-gradient(135deg, #EEF2EC, #F2EDE5)",
+            background: "linear-gradient(135deg, #E2EDF1, #ECF2EE)",
           }}
-          initial={reduced ? {} : { opacity: 0, x: 20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7, delay: 0.15 }}
+          initial={reduced ? {} : { opacity: 0, y: 48, filter: "blur(10px)" }}
+          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.9, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="flex flex-col gap-2 mb-8">
             {["Morning routine", "Deep focus", "Wellness check-in"].map((item, i) => (

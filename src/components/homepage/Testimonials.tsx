@@ -30,7 +30,7 @@ export default function Testimonials() {
   const reduced = useReducedMotion();
 
   return (
-    <section className="w-full py-24 bg-[#F7F5F0]">
+    <section className="w-full py-20 md:py-28 bg-cove-offwhite border-t border-cove-border-light">
       <div className="max-w-5xl mx-auto px-6">
         <motion.div
           initial={reduced ? {} : { opacity: 0 }}
@@ -40,8 +40,8 @@ export default function Testimonials() {
           className="text-center mb-12"
         >
           <span className="text-xs font-medium tracking-widest uppercase text-cove-accent">Community</span>
-          <h2 className="text-3xl font-semibold text-[#3D3832] tracking-tight mt-3">
-            Built for brains like yours.
+          <h2 className="font-display text-[clamp(2.5rem,5.4vw,4.4rem)] font-normal text-cove-charcoal tracking-[-0.015em] leading-[1.0] mt-5">
+            Built for brains like <em className="italic">yours</em>.
           </h2>
         </motion.div>
 
@@ -49,10 +49,10 @@ export default function Testimonials() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           {/* Featured quote — takes 3 columns */}
           <motion.div
-            initial={reduced ? {} : { opacity: 0, scale: 0.96 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
+            initial={reduced ? {} : { opacity: 0, y: 48, filter: "blur(10px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className="md:col-span-3 rounded-2xl border border-[#E5E0D8] bg-white p-8 md:p-10 flex flex-col"
           >
             <div className="text-4xl mb-4" style={{ color: QUOTES[0].color }}>&ldquo;</div>
@@ -75,10 +75,10 @@ export default function Testimonials() {
             {QUOTES.slice(1).map((quote, i) => (
               <motion.div
                 key={quote.name}
-                initial={reduced ? {} : { opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.15 + i * 0.1, ease: [0.25, 0.4, 0.25, 1] }}
+                initial={reduced ? {} : { opacity: 0, y: 40, filter: "blur(8px)" }}
+                whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.8, delay: 0.12 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
                 className="rounded-2xl border border-[#E5E0D8] bg-white p-6 flex flex-col flex-1"
               >
                 <div className="text-2xl mb-3" style={{ color: quote.color }}>&ldquo;</div>

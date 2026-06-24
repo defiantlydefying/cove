@@ -34,7 +34,7 @@ export default function NavBar() {
           <MagneticElement>
             <a
               href="/register"
-              className="text-sm px-4 py-2 rounded-lg bg-cove-accent text-cove-sidebar-text font-medium hover:bg-cove-accent-hover transition-colors"
+              className="text-sm px-5 py-2 rounded-full bg-cove-accent text-cove-sidebar-text font-medium hover:bg-cove-accent-hover transition-colors"
             >
               Get started
             </a>

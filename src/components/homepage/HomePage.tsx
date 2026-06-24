@@ -1,5 +1,7 @@
 "use client";
 
+import LenisProvider from "@/components/providers/LenisProvider";
+import CustomCursor from "./CustomCursor";
 import NavBar from "./NavBar";
 import HeroSection from "./HeroSection";
 import FeatureShowcase from "./FeatureShowcase";
@@ -11,7 +13,11 @@ import Footer from "./Footer";
 
 export default function HomePage() {
   return (
-    <>
+    <LenisProvider>
+      {/* Marketing is light-only; pin the theme so a user's dark app setting
+          doesn't flip the text colors light on these hardcoded-cream pages. */}
+      <div data-theme="light">
+      <CustomCursor />
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-cove-accent focus:text-white focus:rounded-lg focus:text-sm focus:font-medium"
@@ -28,6 +34,7 @@ export default function HomePage() {
         <FinalCTA />
         <Footer />
       </main>
-    </>
+      </div>
+    </LenisProvider>
   );
 }
