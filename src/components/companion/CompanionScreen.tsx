@@ -9,6 +9,7 @@ import InboxList from "./InboxList";
 import InboxSorter from "./InboxSorter";
 import BrainDump from "./BrainDump";
 import ImageCapture from "./ImageCapture";
+import CrisisResources from "./CrisisResources";
 import type { CompanionType } from "@/lib/companions";
 import { getCompanion } from "@/lib/companions";
 import { getCompanionCopy } from "@/lib/companionCopy";
@@ -19,6 +20,7 @@ interface ChatMessage {
   sender: "companion" | "user";
   source?: "text" | "voice";
   timestamp: Date;
+  crisis?: boolean;
 }
 
 interface InboxItemData {
@@ -147,7 +149,7 @@ export default function CompanionScreen() {
         });
 
         if (chatRes.ok) {
-          const { reply, actionable } = await chatRes.json();
+          const { reply, actionable, crisis } = await chatRes.json();
 
           // Only save to inbox if the AI deems it actionable
           if (actionable) {
@@ -169,6 +171,7 @@ export default function CompanionScreen() {
               content: reply,
               sender: "companion",
               timestamp: new Date(),
+              crisis: crisis === true,
             },
           ]);
         } else {
@@ -321,20 +324,22 @@ export default function CompanionScreen() {
         <CompanionAvatar type={companionType} size="md" />
         <div>
           <p className="text-sm font-semibold text-cove-charcoal capitalize">{companionType}</p>
-          <p className="text-xs text-cove-muted">Your companion</p>
+          <p className="text-xs text-cove-muted">AI companion · not a person or a substitute for professional care</p>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.map((msg) => (
-          <CompanionMessage
-            key={msg.id}
-            content={msg.content}
-            sender={msg.sender}
-            companionType={companionType}
-            source={msg.source}
-            timestamp={msg.timestamp}
-          />
+          <div key={msg.id} className="space-y-3">
+            <CompanionMessage
+              content={msg.content}
+              sender={msg.sender}
+              companionType={companionType}
+              source={msg.source}
+              timestamp={msg.timestamp}
+            />
+            {msg.crisis && <CrisisResources />}
+          </div>
         ))}
 
         {/* Typing indicator while companion is thinking */}

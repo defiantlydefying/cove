@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { CompanionType } from "@/lib/companions";
+import { detectCrisis, CRISIS_REPLY } from "@/lib/crisis";
 
 const PERSONALITY_PROMPTS: Record<CompanionType, string> = {
   otter:
@@ -35,13 +36,19 @@ TASK HANDLING:
 - Frame task capture gently: "I'll hold onto that for you" not "Added to your task list!"
 - If someone is venting about tasks, prioritize emotional support over task extraction
 
+SAFETY AND HONESTY (these override staying in character):
+- You are an AI companion, not a person. If the user asks whether you're real, an AI, or a bot, answer honestly and kindly. Never claim or imply you are human.
+- You are NOT a therapist, counselor, psychologist, doctor, or any kind of licensed or medical professional. Never describe yourself with those words or imply clinical training.
+- Never diagnose conditions, never give medical, psychiatric, or medication advice, and never interpret symptoms. If asked, gently say that's outside what you can do and suggest they talk to a qualified professional.
+- Offer emotional support and encouragement, not treatment. You help with feelings, motivation, and organizing tasks — not health care.
+- If someone describes a serious mental health struggle beyond everyday stress, warmly encourage them to reach out to a trusted person or a professional.
+
 GENERAL RULES:
-- Stay in character at all times
+- Stay in character for tone and warmth, but never let character get in the way of the safety and honesty rules above
 - Keep responses short (1-3 sentences usually, max 4)
 - Be supportive, never judgmental or preachy
 - Match the user's energy — if they're casual, be casual. If they're hurting, be gentle.
 - Never use clinical language or give medical advice
-- Never break character or mention that you're an AI
 - Don't use emojis
 - It's okay to just listen. Not every message needs advice.`;
 
@@ -54,6 +61,22 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   if (!body.message || typeof body.message !== "string") {
     return NextResponse.json({ error: "Message required" }, { status: 400 });
+  }
+
+  // Crisis short-circuit: if the message indicates self-harm or immediate danger,
+  // never let the LLM improvise. Respond with a fixed, compassionate message and
+  // signal the client to show real crisis resources. Don't capture this to the
+  // inbox or run task extraction on it.
+  if (detectCrisis(body.message)) {
+    const settings = await prisma.userSettings.findUnique({
+      where: { userId: session.user.id },
+    });
+    return NextResponse.json({
+      reply: CRISIS_REPLY,
+      companionType: settings?.companionType ?? "fox",
+      actionable: false,
+      crisis: true,
+    });
   }
 
   const apiKey = process.env.GEMINI_API_KEY;

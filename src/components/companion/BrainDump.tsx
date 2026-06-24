@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CompanionAvatar from "./CompanionAvatar";
 import VoiceInput from "./VoiceInput";
+import CrisisResources from "./CrisisResources";
 import type { CompanionType } from "@/lib/companions";
 
 interface ParsedItem {
@@ -23,6 +24,7 @@ export default function BrainDump({ companionType, onComplete, onClose }: BrainD
   const [parsing, setParsing] = useState(false);
   const [items, setItems] = useState<ParsedItem[]>([]);
   const [summary, setSummary] = useState("");
+  const [crisis, setCrisis] = useState(false);
   const [accepted, setAccepted] = useState<Set<number>>(new Set());
   const [dismissed, setDismissed] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);
@@ -46,6 +48,11 @@ export default function BrainDump({ companionType, onComplete, onClose }: BrainD
 
       if (res.ok) {
         const data = await res.json();
+        if (data.crisis) {
+          setCrisis(true);
+          setSummary(data.summary || "");
+          return;
+        }
         setItems(data.items || []);
         setSummary(data.summary || "Got it all sorted.");
       }
@@ -155,6 +162,31 @@ export default function BrainDump({ companionType, onComplete, onClose }: BrainD
     reminder: "bg-amber-100 text-amber-700",
     note: "bg-purple-100 text-purple-700",
   };
+
+  // Crisis: a self-harm signal was detected — show support, not parsed tasks.
+  if (crisis) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-3"
+      >
+        <div className="flex items-center gap-2">
+          <CompanionAvatar type={companionType} size="sm" />
+          <p className="text-sm text-cove-charcoal">{summary}</p>
+        </div>
+        <CrisisResources />
+        <div className="flex justify-end">
+          <button
+            onClick={onClose}
+            className="text-xs text-cove-muted hover:text-cove-charcoal transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </motion.div>
+    );
+  }
 
   // Phase 1: Input
   if (items.length === 0) {
