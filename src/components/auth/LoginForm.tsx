@@ -1,14 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+
+// NextAuth redirects back to the sign-in page with ?error=<code> when OAuth fails.
+// Map the common codes to friendly text (and show the raw code so failures aren't silent).
+const ERROR_MESSAGES: Record<string, string> = {
+  OAuthAccountNotLinked:
+    "This email is already registered with a password. Sign in with your password instead.",
+  OAuthCallback: "Google sign-in could not be completed. Please try again.",
+  Callback: "Sign-in could not be completed. Please try again.",
+  AccessDenied: "Access was denied. Please try a different account.",
+  Configuration: "Sign-in is misconfigured. Please contact support.",
+};
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get("error");
+    if (code) setError(ERROR_MESSAGES[code] ?? `Sign-in failed (${code}).`);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
