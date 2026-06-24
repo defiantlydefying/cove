@@ -219,7 +219,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
         <div data-testid="companion-step">
           <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-3">Choose your companion</h2>
           <p className="text-cove-muted mb-8 leading-relaxed">
-            Your companion will be your guide through cove. Pick the personality that feels right for you \u2014 you can switch anytime.
+            Your companion will be your guide through cove. Pick the personality that feels right for you — you can switch anytime.
           </p>
           <CompanionPicker selected={companionType} onSelect={setCompanionType} />
         </div>

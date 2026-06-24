@@ -187,7 +187,7 @@ export default function EventEditor({
             </p>
             {duration > 0 && (
               <p className="text-xs text-[#70757a] mt-0.5">
-                Time zone &middot; {duration >= 60 ? `${Math.floor(duration / 60)}h${duration % 60 ? ` ${duration % 60}m` : ""}` : `${duration}m`}
+                Duration &middot; {duration >= 60 ? `${Math.floor(duration / 60)}h${duration % 60 ? ` ${duration % 60}m` : ""}` : `${duration}m`}
               </p>
             )}
           </div>
