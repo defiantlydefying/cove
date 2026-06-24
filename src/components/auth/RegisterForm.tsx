@@ -3,28 +3,39 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { isAtLeastAge, MIN_AGE } from "@/lib/age";
+import DateOfBirthPicker from "@/components/auth/DateOfBirthPicker";
 
 export default function RegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!isAtLeastAge(dateOfBirth, MIN_AGE)) {
+      setError("You must be at least 13 years old to use Cove.");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, dateOfBirth }),
       });
 
       if (res.status === 409) {
         setError("A user with this email already exists");
+      } else if (res.status === 403) {
+        setError("You must be at least 13 years old to use Cove.");
       } else if (!res.ok) {
         setError("Something went wrong");
       } else {
@@ -90,6 +101,13 @@ export default function RegisterForm() {
           required
           className="mt-1 block w-full rounded-lg border border-cove-border px-3 py-2.5 text-sm bg-cove-offwhite text-cove-charcoal placeholder:text-cove-muted focus:border-cove-accent focus:outline-none focus:ring-2 focus:ring-cove-accent/20 transition-colors"
         />
+      </div>
+      <div>
+        <label id="dateOfBirth-label" htmlFor="dateOfBirth" className="block text-sm font-medium text-cove-charcoal mb-1.5">
+          Date of birth
+        </label>
+        <DateOfBirthPicker value={dateOfBirth} onChange={setDateOfBirth} />
+        <p className="mt-1.5 text-xs text-cove-muted">You must be 13 or older to use Cove.</p>
       </div>
       <button
         type="submit"
