@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import SessionProvider from "@/components/providers/SessionProvider";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 import ToastProvider from "@/components/providers/ToastProvider";
@@ -17,12 +18,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Display serif for headlines — the editorial character the marketing pages need.
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
-  subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
+// Display serif for headlines — Krylon (Tom Robin Karlsson), self-hosted.
+// Elegant, light, editorial; the character the marketing pages need.
+const displaySerif = localFont({
+  src: [
+    { path: "../../public/fonts/Krylon-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/Krylon-Regular.woff", weight: "400", style: "normal" },
+  ],
+  variable: "--font-display-serif",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -58,7 +62,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${displaySerif.variable} h-full antialiased`}
     >
       <body className="h-full flex flex-col">
         <CapacitorInit />
