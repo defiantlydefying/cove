@@ -24,11 +24,17 @@ const START_HOUR = 6;
 function pad(n: number) { return String(n).padStart(2, "0"); }
 function minToTime(m: number) { return `${pad(Math.floor(m / 60))}:${pad(m % 60)}`; }
 function timeToMin(t: string) { const [h, m] = t.split(":").map(Number); return h * 60 + m; }
-function formatTimeLabel(t: string) {
-  const [h, m] = t.split(":").map(Number);
-  const ampm = h >= 12 ? "PM" : "AM";
-  const hr = h === 0 ? 12 : h > 12 ? h - 12 : h;
-  return `${hr}:${String(m).padStart(2, "0")} ${ampm}`;
+// Compact range for the narrow grid blocks, e.g. "9:30 – 10:30am" — drops the
+// minutes when :00 and the start meridiem when it matches the end (Google-style).
+function formatRangeCompact(start: string, end: string) {
+  const part = (t: string, withMer: boolean) => {
+    const [h, m] = t.split(":").map(Number);
+    const hr = h % 12 === 0 ? 12 : h % 12;
+    const mer = h >= 12 ? "pm" : "am";
+    return `${hr}${m === 0 ? "" : `:${String(m).padStart(2, "0")}`}${withMer ? mer : ""}`;
+  };
+  const sameMer = (Number(start.split(":")[0]) >= 12) === (Number(end.split(":")[0]) >= 12);
+  return `${part(start, !sameMer)} – ${part(end, true)}`;
 }
 
 interface WeekDay {
@@ -331,8 +337,8 @@ export default function PlannerPriorityView({
                             {item.title}
                           </span>
                           {height > 34 && (
-                            <span className="text-[10px] opacity-80 leading-snug">
-                              {formatTimeLabel(item.startTime!)} – {formatTimeLabel(item.endTime!)}
+                            <span className="block text-[10px] opacity-80 leading-snug whitespace-nowrap truncate">
+                              {formatRangeCompact(item.startTime!, item.endTime!)}
                             </span>
                           )}
                         </div>
@@ -356,8 +362,8 @@ export default function PlannerPriorityView({
                             {editor.title || "(No title)"}
                           </span>
                           {previewHeight > 34 && (
-                            <span className="text-[10px] opacity-80 leading-snug">
-                              {formatTimeLabel(editor.startTime)} – {formatTimeLabel(editor.endTime)}
+                            <span className="block text-[10px] opacity-80 leading-snug whitespace-nowrap truncate">
+                              {formatRangeCompact(editor.startTime, editor.endTime)}
                             </span>
                           )}
                         </div>

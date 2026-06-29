@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 
 interface EventData {
   id?: string;
@@ -105,15 +105,23 @@ export default function EventEditor({
   const duration = timeDiffMin(startTime, endTime);
   const currentZone = ZONES.find((z) => z.key === zone) || ZONES[0];
 
-  // Clamp position to viewport
-  const clampedTop = Math.max(8, Math.min(position.top, typeof window !== "undefined" ? window.innerHeight - 420 : position.top));
-  const clampedLeft = Math.max(8, Math.min(position.left, typeof window !== "undefined" ? window.innerWidth - 440 : position.left));
+  // Clamp to the viewport using the editor's actual measured size, so it is
+  // never cut off — re-measuring when the time picker expands changes height.
+  const [pos, setPos] = useState({ top: position.top, left: position.left });
+  useLayoutEffect(() => {
+    if (!ref.current) return;
+    const margin = 8;
+    const { offsetHeight: h, offsetWidth: w } = ref.current;
+    const top = Math.max(margin, Math.min(position.top, window.innerHeight - h - margin));
+    const left = Math.max(margin, Math.min(position.left, window.innerWidth - w - margin));
+    setPos({ top, left });
+  }, [position.top, position.left, showTimePicker]);
 
   return (
     <div
       ref={ref}
-      className="absolute z-50 w-[420px] bg-white rounded-lg shadow-[0_24px_38px_3px_rgba(0,0,0,0.14),0_9px_46px_8px_rgba(0,0,0,0.12),0_11px_15px_-7px_rgba(0,0,0,0.2)] overflow-hidden"
-      style={{ top: `${clampedTop}px`, left: `${clampedLeft}px` }}
+      className="absolute z-50 w-[420px] max-h-[calc(100vh-16px)] overflow-y-auto bg-white rounded-lg shadow-[0_24px_38px_3px_rgba(0,0,0,0.14),0_9px_46px_8px_rgba(0,0,0,0.12),0_11px_15px_-7px_rgba(0,0,0,0.2)]"
+      style={{ top: `${pos.top}px`, left: `${pos.left}px` }}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Top bar — drag handle + close */}
