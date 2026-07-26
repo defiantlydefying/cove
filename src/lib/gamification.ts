@@ -4,9 +4,14 @@ const XP_PER_ACTIVITY = 10;
 
 export type ActivityType = "tasks" | "routines" | "wellness" | "focus" | "habits";
 
+// Derive the calendar day in UTC. DailyActivity.date is a date-only column
+// (`@db.Date`) that Prisma reads back as UTC midnight, so keying days in UTC
+// keeps writes, reads, and today/yesterday comparisons aligned regardless of
+// the server's timezone. Using local hours here shifts DB-loaded dates by a
+// day on any non-UTC server (e.g. local dev), silently breaking streaks.
 function startOfDay(date: Date): Date {
   const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
+  d.setUTCHours(0, 0, 0, 0);
   return d;
 }
 
@@ -142,16 +147,16 @@ export function computeStreakFromDates(activeKeys: Set<string>, now = new Date()
  */
 export function getCurrentWeekDays(now = new Date()): string[] {
   const d = new Date(now);
-  const day = d.getDay(); // 0 Sun, 1 Mon, ..., 6 Sat
+  const day = d.getUTCDay(); // 0 Sun, 1 Mon, ..., 6 Sat
   const diffToMonday = day === 0 ? -6 : 1 - day;
   const monday = new Date(d);
-  monday.setDate(d.getDate() + diffToMonday);
-  monday.setHours(0, 0, 0, 0);
+  monday.setUTCDate(d.getUTCDate() + diffToMonday);
+  monday.setUTCHours(0, 0, 0, 0);
 
   const days: string[] = [];
   for (let i = 0; i < 7; i++) {
     const dd = new Date(monday);
-    dd.setDate(monday.getDate() + i);
+    dd.setUTCDate(monday.getUTCDate() + i);
     days.push(dateKey(dd));
   }
   return days;

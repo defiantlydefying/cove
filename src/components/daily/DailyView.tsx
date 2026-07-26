@@ -426,21 +426,57 @@ export default function DailyView() {
                 </span>
                 <span className="text-sm text-cove-muted">days in a row</span>
               </div>
-              {/* Week dots */}
-              <div className="flex gap-1.5 mt-4">
-                {gamification.weekActivity.map((day, i) => (
-                  <div
-                    key={i}
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                      day.hit ? "bg-cove-accent" : "bg-cove-border-light"
-                    }`}
-                  >
-                    {day.hit && (
-                      <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M2 6.5L4.5 9L10 3" /></svg>
-                    )}
+              {/* Week dots — checked-in days are filled; missed days get a soft
+                  dash (gentle, never red); today is an open ring; future days
+                  stay faint. */}
+              {(() => {
+                // The row is always Mon→Sun, so compare by column index rather
+                // than parsing date strings (avoids UTC/local mismatches).
+                const jsDay = new Date().getDay(); // 0=Sun … 6=Sat
+                const todayIdx = jsDay === 0 ? 6 : jsDay - 1; // Mon=0 … Sun=6
+                return (
+                  <div className="flex gap-1.5 mt-4">
+                    {gamification.weekActivity.map((day, i) => {
+                      const isToday = i === todayIdx;
+                      const isFuture = i > todayIdx;
+                      const missed = !day.hit && i < todayIdx;
+                      return (
+                        <div
+                          key={i}
+                          title={
+                            day.hit
+                              ? "Checked in"
+                              : isToday
+                              ? "Today — here whenever you're ready"
+                              : isFuture
+                              ? ""
+                              : "No check-in that day"
+                          }
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                            day.hit
+                              ? "bg-cove-accent"
+                              : isToday
+                              ? "border-[1.5px] border-cove-accent/45 bg-cove-accent/5"
+                              : isFuture
+                              ? "bg-cove-border-light/50"
+                              : "bg-cove-border-light"
+                          }`}
+                        >
+                          {day.hit && (
+                            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M2 6.5L4.5 9L10 3" /></svg>
+                          )}
+                          {isToday && !day.hit && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-cove-accent/60" />
+                          )}
+                          {missed && (
+                            <span className="w-2.5 h-[2px] rounded-full bg-cove-muted/40" />
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
+                );
+              })()}
               <div className="flex gap-1.5 mt-1">
                 {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
                   <div key={i} className="w-7 text-center text-[9px] text-cove-muted">{d}</div>
