@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, KeyboardEvent } from "react";
 import { useToast } from "@/components/providers/ToastProvider";
+import { notifyTasksChanged, onTasksChanged } from "@/lib/taskEvents";
 import TaskItem, { Task } from "./TaskItem";
 import { DeferPopover } from "./TaskActions";
 
@@ -51,6 +52,9 @@ export default function TaskList({ onNavigateToTasks }: TaskListProps) {
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
+
+  // Stay in sync when a task is added/changed from the main pipeline or Daily card.
+  useEffect(() => onTasksChanged(fetchTasks), [fetchTasks]);
 
   function toggleNeedsAttention() {
     setNeedsAttentionCollapsed((prev) => {
@@ -108,6 +112,7 @@ export default function TaskList({ onNavigateToTasks }: TaskListProps) {
       } else {
         toast("Task added to inbox.", "success");
       }
+      notifyTasksChanged();
     } catch {
       if (stage === "today") {
         setTasks((prev) => prev.filter((t) => t.id !== tempId));
@@ -136,6 +141,7 @@ export default function TaskList({ onNavigateToTasks }: TaskListProps) {
         body: JSON.stringify({ status: willComplete ? "completed" : "active" }),
       });
       if (!res.ok) throw new Error();
+      notifyTasksChanged();
       if (willComplete) {
         const data = await res.json();
         const gam = data?.gamification;
@@ -167,6 +173,7 @@ export default function TaskList({ onNavigateToTasks }: TaskListProps) {
     try {
       const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
+      notifyTasksChanged();
       toast("Task deleted.", "success");
     } catch {
       setTasks(prev);
@@ -176,8 +183,13 @@ export default function TaskList({ onNavigateToTasks }: TaskListProps) {
 
   async function handleUpdate(id: string, data: Partial<Task>) {
     const prev = tasks;
-    // Optimistically remove from Today view (defer / won't do moves it away)
-    setTasks((curr) => curr.filter((t) => t.id !== id));
+    // Only drop it from Today if it's actually moving to another stage; a date
+    // tag keeps it here.
+    if (data.stage && data.stage !== "today") {
+      setTasks((curr) => curr.filter((t) => t.id !== id));
+    } else {
+      setTasks((curr) => curr.map((t) => (t.id === id ? { ...t, ...data } : t)));
+    }
 
     try {
       const res = await fetch(`/api/tasks/${id}`, {
@@ -186,6 +198,7 @@ export default function TaskList({ onNavigateToTasks }: TaskListProps) {
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error();
+      notifyTasksChanged();
     } catch {
       setTasks(prev);
       toast("Couldn\u2019t update task. Try again.", "error");
@@ -206,6 +219,7 @@ export default function TaskList({ onNavigateToTasks }: TaskListProps) {
         if (!res.ok) throw new Error();
       }
       await fetchTasks();
+      notifyTasksChanged();
     } catch {
       toast("Couldn\u2019t add sub-tasks. Try again.", "error");
     }

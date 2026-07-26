@@ -14,11 +14,14 @@ export async function GET() {
   today.setHours(0, 0, 0, 0);
 
   const [tasks, routines, wellness, reminders] = await Promise.all([
+    // "Today" — same definition the Tasks pipeline / Today drawer uses
+    // (stage "today" + active), so the Daily View card and the side drawer agree.
     prisma.task.findMany({
       where: {
         userId,
-        completed: false,
         parentId: null,
+        stage: "today",
+        status: "active",
       },
       orderBy: [{ priority: "desc" }, { sortOrder: "asc" }],
       take: 10,

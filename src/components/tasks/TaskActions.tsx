@@ -15,16 +15,18 @@ function nextMondayStr() {
   return d.toISOString().split("T")[0];
 }
 
+// A far-future date used as a "Someday" tag — keeps the task in place (it never
+// reads as overdue or shows up in date views) while letting us render "Someday".
+export const SOMEDAY_DATE = "2999-12-31";
+
 interface DeferData {
-  scheduledDate?: string;
-  stage: string;
-  deferredUntil?: string;
+  scheduledDate: string | null;
 }
 
 const DEFER_OPTIONS = [
-  { label: "Tomorrow", getValue: (): DeferData => ({ scheduledDate: tomorrowStr(), stage: "upcoming", deferredUntil: tomorrowStr() }) },
-  { label: "Next week", getValue: (): DeferData => ({ scheduledDate: nextMondayStr(), stage: "upcoming", deferredUntil: nextMondayStr() }) },
-  { label: "Someday", getValue: (): DeferData => ({ stage: "someday" }) },
+  { label: "Tomorrow", getValue: (): DeferData => ({ scheduledDate: tomorrowStr() }) },
+  { label: "Next week", getValue: (): DeferData => ({ scheduledDate: nextMondayStr() }) },
+  { label: "Someday", getValue: (): DeferData => ({ scheduledDate: SOMEDAY_DATE }) },
 ];
 
 const WONT_DO_REASONS = ["Not relevant", "Too big", "Scope changed"];
@@ -57,15 +59,10 @@ export function DeferPopover({ onDefer, onClose }: { onDefer: (data: DeferData) 
           <div className="p-2">
             <input
               type="date"
-              min={tomorrowStr()}
+              min={todayStr()}
               onChange={(e) => {
                 if (e.target.value) {
-                  const isToday = e.target.value === todayStr();
-                  onDefer({
-                    scheduledDate: e.target.value,
-                    stage: isToday ? "today" : "upcoming",
-                    deferredUntil: e.target.value,
-                  });
+                  onDefer({ scheduledDate: e.target.value });
                   onClose();
                 }
               }}
@@ -81,6 +78,14 @@ export function DeferPopover({ onDefer, onClose }: { onDefer: (data: DeferData) 
             Pick a date...
           </button>
         )}
+      </div>
+      <div className="border-t border-cove-border/30">
+        <button
+          onClick={() => { onDefer({ scheduledDate: null }); onClose(); }}
+          className="w-full px-3 py-2 text-xs text-left text-cove-muted hover:bg-cove-offwhite transition-colors"
+        >
+          Clear date
+        </button>
       </div>
     </div>
   );

@@ -66,13 +66,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       ? new Date(body.deferredUntil)
       : null;
 
-  // Auto-assign stage from scheduledDate
+  // A scheduled date is just a tag. Only pull a task OUT of the Inbox when it's
+  // first scheduled — tasks already in a list (Today/Upcoming/Someday) keep their
+  // place, so dating a Today task never makes it disappear.
   if (body.scheduledDate !== undefined) {
     data.scheduledDate = body.scheduledDate
       ? new Date(body.scheduledDate)
       : null;
 
-    if (body.scheduledDate) {
+    if (body.scheduledDate && existing.stage === "inbox") {
       const scheduled = new Date(body.scheduledDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);

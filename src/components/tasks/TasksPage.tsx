@@ -4,15 +4,14 @@ import { useState } from "react";
 import TaskPipeline from "./TaskPipeline";
 
 const TABS = [
-  { id: "inbox", label: "Inbox" },
+  { id: "all", label: "All" },
   { id: "today", label: "Today" },
   { id: "upcoming", label: "Upcoming" },
-  { id: "someday", label: "Someday" },
   { id: "done", label: "Done" },
 ];
 
 export default function TasksPage() {
-  const [activeTab, setActiveTab] = useState("today");
+  const [activeTab, setActiveTab] = useState("all");
 
   return (
     <div className="flex flex-col gap-4 max-w-3xl">

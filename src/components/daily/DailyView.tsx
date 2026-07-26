@@ -6,6 +6,7 @@ import CheckinForm, { WellnessCheckinData } from "@/components/wellness/CheckinF
 import CompanionAvatar from "@/components/companion/CompanionAvatar";
 import VoiceInput from "@/components/companion/VoiceInput";
 import type { CompanionType } from "@/lib/companions";
+import { notifyTasksChanged, onTasksChanged } from "@/lib/taskEvents";
 
 /* ── Types ── */
 
@@ -161,6 +162,9 @@ export default function DailyView() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Refresh the daily card when tasks change in the pipeline or the drawer.
+  useEffect(() => onTasksChanged(fetchData), [fetchData]);
+
   /* ── Handlers ── */
 
   async function handleTaskToggle(id: string) {
@@ -177,6 +181,7 @@ export default function DailyView() {
         body: JSON.stringify({ completed: !task?.completed }),
       });
       if (!res.ok) throw new Error();
+      notifyTasksChanged();
     } catch {
       setData((prev) => prev ? {
         ...prev,

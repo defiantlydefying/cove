@@ -3,6 +3,19 @@
 import { memo, useState, useCallback } from "react";
 import { tapLight } from "@/lib/capacitor/haptics";
 import { DeferPopover, WontDoPopover } from "./TaskActions";
+
+function formatWhen(scheduledDate: string): string {
+  const datePart = scheduledDate.slice(0, 10);
+  if (datePart.startsWith("2999")) return "Someday";
+  const d = new Date(datePart + "T00:00:00");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((d.getTime() - today.getTime()) / 86400000);
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Tomorrow";
+  if (diffDays === -1) return "Yesterday";
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
 import TaskBreakdown from "./TaskBreakdown";
 
 export interface Task {
@@ -13,7 +26,7 @@ export interface Task {
   completedAt?: string;
   status: string;
   stage: string;
-  scheduledDate?: string;
+  scheduledDate?: string | null;
   deferredUntil?: string;
   deadline?: string;
   priority: string;
@@ -142,6 +155,13 @@ export default memo(function TaskItem({
 
           {/* Metadata row */}
           <div className="flex flex-wrap items-center gap-1.5 mt-1">
+            {/* When tag (a plan date — never moves the task) */}
+            {!compact && task.scheduledDate && (
+              <span className="text-[11px] text-cove-accent bg-cove-accent-light rounded-full px-1.5 py-0.5">
+                {formatWhen(task.scheduledDate)}
+              </span>
+            )}
+
             {/* Deadline */}
             {!compact && task.deadline && (
               <span

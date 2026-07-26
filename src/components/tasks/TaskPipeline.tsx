@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, KeyboardEvent } from "react";
 import { useToast } from "@/components/providers/ToastProvider";
+import { notifyTasksChanged, onTasksChanged } from "@/lib/taskEvents";
 import TaskItem, { Task } from "./TaskItem";
 import { DeferPopover } from "./TaskActions";
 
@@ -64,7 +65,8 @@ export default function TaskPipeline({ stage }: TaskPipelineProps) {
     setError(false);
     setLoading(true);
     try {
-      const res = await fetch(`/api/tasks?stage=${stage}`);
+      // "all" omits the stage filter → every active task, across buckets.
+      const res = await fetch(stage === "all" ? "/api/tasks" : `/api/tasks?stage=${stage}`);
       if (!res.ok) throw new Error();
       const data = await res.json();
       setTasks(data);
@@ -78,6 +80,9 @@ export default function TaskPipeline({ stage }: TaskPipelineProps) {
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
+
+  // Refetch when any other task view (drawer, Daily card) changes a task.
+  useEffect(() => onTasksChanged(fetchTasks), [fetchTasks]);
 
   // --- Filters ---
 
@@ -120,13 +125,15 @@ export default function TaskPipeline({ stage }: TaskPipelineProps) {
   }
 
   async function handleAdd(title: string) {
+    // From the "All" view, new tasks land in the inbox bucket.
+    const addStage = stage === "all" ? "inbox" : stage;
     const tempId = `temp-${Date.now()}`;
     const newTask: Task = {
       id: tempId,
       title,
       completed: false,
       status: "active",
-      stage,
+      stage: addStage,
       priority: "medium",
       sortOrder: 0,
     };
@@ -137,11 +144,12 @@ export default function TaskPipeline({ stage }: TaskPipelineProps) {
       const res = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, stage }),
+        body: JSON.stringify({ title, stage: addStage }),
       });
       if (!res.ok) throw new Error();
       const created = await res.json();
       setTasks((prev) => prev.map((t) => (t.id === tempId ? created : t)));
+      notifyTasksChanged();
     } catch {
       setTasks((prev) => prev.filter((t) => t.id !== tempId));
       toast("Couldn\u2019t add task. Try again.", "error");
@@ -178,6 +186,7 @@ export default function TaskPipeline({ stage }: TaskPipelineProps) {
         body: JSON.stringify({ status: willComplete ? "completed" : "active" }),
       });
       if (!res.ok) throw new Error();
+      notifyTasksChanged();
       if (willComplete) {
         const data = await res.json();
         const gam = data?.gamification;
@@ -218,6 +227,7 @@ export default function TaskPipeline({ stage }: TaskPipelineProps) {
     try {
       const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
+      notifyTasksChanged();
       toast("Task deleted.", "success");
     } catch {
       setTasks(prev);
@@ -243,6 +253,7 @@ export default function TaskPipeline({ stage }: TaskPipelineProps) {
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error();
+      notifyTasksChanged();
     } catch {
       setTasks(prev);
       toast("Couldn\u2019t update task. Try again.", "error");
@@ -263,6 +274,7 @@ export default function TaskPipeline({ stage }: TaskPipelineProps) {
         if (!res.ok) throw new Error();
       }
       await fetchTasks();
+      notifyTasksChanged();
     } catch {
       toast("Couldn\u2019t add sub-tasks. Try again.", "error");
     }
@@ -324,9 +336,27 @@ export default function TaskPipeline({ stage }: TaskPipelineProps) {
   const completedTasks = filtered.filter((t) => t.status === "completed");
   const wontDoTasks = filtered.filter((t) => t.status === "wont_do");
 
+  // All view — every active task, grouped by its bucket
+  const ALL_GROUP_ORDER = ["today", "upcoming", "someday", "inbox"];
+  const ALL_GROUP_LABELS: Record<string, string> = {
+    today: "Today",
+    upcoming: "Upcoming",
+    someday: "Someday",
+    inbox: "Inbox",
+  };
+  const allGroups =
+    stage === "all"
+      ? ALL_GROUP_ORDER.map((s) => ({
+          stage: s,
+          label: ALL_GROUP_LABELS[s],
+          tasks: filtered.filter((t) => t.stage === s),
+        })).filter((g) => g.tasks.length > 0)
+      : [];
+
   // --- Empty state messages ---
 
   const emptyMessages: Record<string, string> = {
+    all: "No tasks yet. Add one above to get started.",
     inbox: "Your inbox is clear \u2014 nothing unprocessed",
     today: "A clear day. Add tasks from your inbox, or enjoy the space.",
     upcoming: "Nothing scheduled for the coming days",
@@ -445,6 +475,38 @@ export default function TaskPipeline({ stage }: TaskPipelineProps) {
           </div>
         )}
       </div>
+
+      {/* ========== ALL VIEW ========== */}
+      {stage === "all" && (
+        <>
+          {filtered.length === 0 ? (
+            <p className="text-sm text-cove-muted text-center py-8">{emptyMessages.all}</p>
+          ) : (
+            <div className="flex flex-col gap-5">
+              {allGroups.map((group) => (
+                <div key={group.stage}>
+                  <h3 className="text-[11px] font-medium uppercase tracking-wider text-cove-muted mb-1.5 px-2">
+                    {group.label}
+                    <span className="ml-1.5 text-cove-muted/60">{group.tasks.length}</span>
+                  </h3>
+                  <div className="flex flex-col divide-y divide-cove-border/30">
+                    {group.tasks.map((task) => (
+                      <TaskItem
+                        key={task.id}
+                        task={task}
+                        onToggle={handleToggle}
+                        onDelete={handleDelete}
+                        onUpdate={handleUpdate}
+                        onAddSubTasks={handleAddSubTasks}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
 
       {/* ========== INBOX VIEW ========== */}
       {stage === "inbox" && (
