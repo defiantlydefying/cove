@@ -488,10 +488,11 @@ export default function DailyView() {
           )}
         </section>
 
-        {/* Companion Card */}
-        <section className="rounded-2xl bg-cove-card p-5 shadow-sm border border-cove-border-light/50 flex flex-col">
+        {/* Companion Card — sizes to its message instead of stretching to match
+            the tall wellness check-in beside it. */}
+        <section className="self-start rounded-2xl bg-cove-card p-5 shadow-sm border border-cove-border-light/50 flex flex-col">
           <h2 className="text-sm font-semibold text-cove-charcoal mb-3">Companion</h2>
-          <div className="flex-1 bg-gradient-to-br from-cove-offwhite to-cove-accent/5 rounded-xl p-4 text-[13px] text-cove-charcoal/80 leading-relaxed">
+          <div className="bg-gradient-to-br from-cove-offwhite to-cove-accent/5 rounded-xl p-4 text-[13px] text-cove-charcoal/80 leading-relaxed">
             {companionGreeting ? `"${companionGreeting}"` : "Your companion is here for you."}
           </div>
           <div className="flex items-center gap-2 mt-3">
