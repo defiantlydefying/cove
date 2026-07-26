@@ -236,6 +236,19 @@ button, input, select, textarea {
   padding-top: env(safe-area-inset-top);
 }
 
+.capacitor-ios .native-safe-top {
+  padding-top: calc(env(safe-area-inset-top) + 1rem);
+}
+
+.capacitor-ios .native-safe-top-offset {
+  top: calc(env(safe-area-inset-top) + 0.75rem);
+}
+
+.capacitor-ios .native-safe-panel {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 .capacitor-ios .tab-bar-bottom {
   padding-bottom: env(safe-area-inset-bottom);
 }

@@ -1,11 +1,14 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
+const serverUrl = process.env.COVE_SERVER_URL ?? "http://localhost:3000";
+
 const config: CapacitorConfig = {
   appId: "app.cove.companion",
   appName: "Cove",
+  webDir: "native-shell",
   server: {
-    url: "http://localhost:3000",
-    cleartext: true,
+    url: serverUrl,
+    cleartext: serverUrl.startsWith("http://"),
   },
   plugins: {
     SplashScreen: {

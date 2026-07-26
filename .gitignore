@@ -41,13 +41,11 @@ yarn-error.log*
 next-env.d.ts
 .superpowers/
 .agents/
-.claude/
 skills-lock.json
-CLAUDE.md
 AGENTS.md
 
 /src/generated/prisma
 
-# Capacitor iOS build
-ios/
+# Capacitor's generated iOS project is source; its build output is ignored by
+# ios/.gitignore.
 .superpowers/

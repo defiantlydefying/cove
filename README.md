@@ -145,3 +145,34 @@ Cove uses a calm, nature-inspired design language with soft earth tones, rounded
 | ORM | Prisma |
 | Auth | NextAuth.js |
 | Native | Capacitor (iOS / Android) |
+
+## Run on iPhone Simulator
+
+Cove's native iOS shell loads the Next.js server, so local mobile development
+uses the web dev server and Xcode together. Node.js 22 or newer is required by
+Capacitor 8.
+
+```bash
+npm install
+npm run cap:sync
+npm run dev
+```
+
+In a second terminal:
+
+```bash
+npm run cap:open
+```
+
+Select an iPhone simulator in Xcode and press Run. The simulator can reach the
+Mac's development server at `http://localhost:3000`.
+
+For a hosted build, sync with Cove's HTTPS deployment URL before building:
+
+```bash
+COVE_SERVER_URL=https://your-cove-host.example npm run cap:sync
+```
+
+The checked-in `native-shell/` page is an offline fallback. Cove itself remains
+server-backed because authentication, API routes, and Prisma cannot be exported
+as a static Next.js site.

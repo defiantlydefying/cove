@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "framer-motion";
+import Link from "next/link";
 import CoveLogo from "./CoveLogo";
 import MagneticElement from "./MagneticElement";
 
@@ -11,7 +12,7 @@ export default function NavBar() {
 
   return (
     <motion.nav
-      className="fixed top-0 left-0 right-0 z-50 px-5 py-4"
+      className="native-safe-top fixed top-0 left-0 right-0 z-50 px-5 py-4"
       style={{
         backgroundColor: useTransform(bgOpacity, (v) => `rgba(247,245,240,${v})`),
         backdropFilter: useTransform(scrollY, [0, 100], ["blur(0px)", "blur(12px)"]),
@@ -20,24 +21,24 @@ export default function NavBar() {
       }}
     >
       <div className="max-w-6xl mx-auto flex items-center justify-between">
-        <a href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <CoveLogo size={28} />
           <span className="text-base font-semibold tracking-tight text-cove-charcoal">cove</span>
-        </a>
+        </Link>
         <div className="flex items-center gap-6">
           <MagneticElement>
-            <a href="/features" className="text-sm text-cove-muted hover:text-cove-charcoal transition-colors">Features</a>
+            <Link href="/features" className="text-sm text-cove-muted hover:text-cove-charcoal transition-colors">Features</Link>
           </MagneticElement>
           <MagneticElement>
-            <a href="/about" className="text-sm text-cove-muted hover:text-cove-charcoal transition-colors">About</a>
+            <Link href="/about" className="text-sm text-cove-muted hover:text-cove-charcoal transition-colors">About</Link>
           </MagneticElement>
           <MagneticElement>
-            <a
+            <Link
               href="/register"
               className="text-sm px-5 py-2 rounded-full bg-cove-accent text-cove-sidebar-text font-medium hover:bg-cove-accent-hover transition-colors"
             >
               Get started
-            </a>
+            </Link>
           </MagneticElement>
         </div>
       </div>
