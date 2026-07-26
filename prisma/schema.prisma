@@ -300,6 +300,7 @@ model PlannerItem {
   startTime String?
   endTime   String?
   completed Boolean  @default(false)
+  recurrence String? // null/"none" | "daily" | "weekdays" | "weekly"
   taskId       String?
   linkedTaskId String?
   createdAt    DateTime @default(now())

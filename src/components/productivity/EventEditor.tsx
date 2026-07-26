@@ -9,7 +9,15 @@ interface EventData {
   startTime: string;
   endTime: string;
   zone: string;
+  recurrence?: string;
 }
+
+const RECURRENCE_OPTIONS = [
+  { value: "none", label: "Does not repeat" },
+  { value: "daily", label: "Every day" },
+  { value: "weekdays", label: "Every weekday (Mon–Fri)" },
+  { value: "weekly", label: "Every week" },
+];
 
 interface EventEditorProps {
   initial: EventData;
@@ -73,6 +81,7 @@ export default function EventEditor({
   const [startTime, setStartTime] = useState(initial.startTime);
   const [endTime, setEndTime] = useState(initial.endTime);
   const [zone, setZone] = useState(initial.zone);
+  const [recurrence, setRecurrence] = useState(initial.recurrence || "none");
 
   // Notify parent of changes for live preview
   useEffect(() => {
@@ -99,22 +108,39 @@ export default function EventEditor({
 
   const handleSave = () => {
     if (!title.trim()) return;
-    onSave({ id: initial.id, title: title.trim(), date, startTime, endTime, zone });
+    onSave({ id: initial.id, title: title.trim(), date, startTime, endTime, zone, recurrence });
   };
 
   const duration = timeDiffMin(startTime, endTime);
   const currentZone = ZONES.find((z) => z.key === zone) || ZONES[0];
 
-  // Clamp to the viewport using the editor's actual measured size, so it is
-  // never cut off — re-measuring when the time picker expands changes height.
+  // `position` is in viewport coordinates, but the editor is absolutely
+  // positioned inside an offset parent (the overlay sits within a transformed
+  // ancestor, so it isn't the viewport). Clamp the desired position to the
+  // viewport using the measured size, then convert into the offset parent's
+  // local coordinates so it lands exactly where intended and never overflows.
   const [pos, setPos] = useState({ top: position.top, left: position.left });
   useLayoutEffect(() => {
     if (!ref.current) return;
     const margin = 8;
     const { offsetHeight: h, offsetWidth: w } = ref.current;
-    const top = Math.max(margin, Math.min(position.top, window.innerHeight - h - margin));
-    const left = Math.max(margin, Math.min(position.left, window.innerWidth - w - margin));
-    setPos({ top, left });
+
+    // Open to the RIGHT of the click; if it won't fit, flip to the LEFT of it.
+    let vpLeft = position.left + 12;
+    if (vpLeft + w + margin > window.innerWidth) {
+      vpLeft = position.left - w - 12;
+    }
+    vpLeft = Math.max(margin, Math.min(vpLeft, window.innerWidth - w - margin));
+
+    // Center-ish vertically on the click, then keep on screen.
+    let vpTop = position.top - 40;
+    vpTop = Math.max(margin, Math.min(vpTop, window.innerHeight - h - margin));
+
+    // Convert viewport coords into the offset parent's local space (it's the
+    // portaled overlay at the viewport origin, so this is usually a no-op).
+    const parent = ref.current.offsetParent as HTMLElement | null;
+    const pRect = parent?.getBoundingClientRect() ?? { left: 0, top: 0 };
+    setPos({ top: vpTop - pRect.top, left: vpLeft - pRect.left });
   }, [position.top, position.left, showTimePicker]);
 
   return (
@@ -263,6 +289,23 @@ export default function EventEditor({
           </div>
           <p className="text-[14px] text-[#3c4043]">{currentZone.label} priority</p>
         </div>
+
+        {/* Repeat row */}
+        <div className="flex items-center gap-4 py-2 px-3">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5f6368" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" />
+            <polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
+          </svg>
+          <select
+            value={recurrence}
+            onChange={(e) => setRecurrence(e.target.value)}
+            className="flex-1 text-[14px] bg-transparent text-[#3c4043] outline-none cursor-pointer -ml-1 py-1 rounded hover:bg-[#f1f3f4] focus:bg-[#f1f3f4]"
+          >
+            {RECURRENCE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Footer actions */}
@@ -275,12 +318,6 @@ export default function EventEditor({
             Delete
           </button>
         )}
-        <button
-          onClick={onCancel}
-          className="px-5 py-2 text-sm font-medium text-cove-accent hover:bg-cove-accent/5 rounded-full transition-colors"
-        >
-          More options
-        </button>
         <button
           onClick={handleSave}
           disabled={!title.trim()}

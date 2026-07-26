@@ -28,6 +28,7 @@ export interface PlannerItem {
   startTime: string | null;
   endTime: string | null;
   completed: boolean;
+  recurrence?: string | null;
   taskId: string | null;
   linkedTaskId?: string | null;
 }
@@ -78,7 +79,7 @@ interface ProductivityState {
   setWeekStartDate: (date: string) => void;
   fetchPlannerForWeek: (startDate: string) => Promise<void>;
   addFocusSession: (session: Omit<FocusSession, "id" | "completedAt">) => Promise<Record<string, unknown> | null>;
-  addPlannerItem: (item: { title: string; date?: string; zone?: string; startTime?: string; endTime?: string; taskId?: string; linkedTaskId?: string }) => Promise<void>;
+  addPlannerItem: (item: { title: string; date?: string; zone?: string; startTime?: string; endTime?: string; recurrence?: string; taskId?: string; linkedTaskId?: string }) => Promise<void>;
   updatePlannerItem: (item: { id: string } & Partial<PlannerItem>) => Promise<void>;
   deletePlannerItem: (id: string) => Promise<void>;
   reorderPlannerItems: (items: Array<{ id: string; sortOrder: number; zone?: string }>) => Promise<void>;
@@ -205,7 +206,7 @@ export function ProductivityProvider({ children }: { children: ReactNode }) {
     }
   }, [toast]);
 
-  const addPlannerItem = useCallback(async (item: { title: string; date?: string; zone?: string; startTime?: string; endTime?: string; taskId?: string }) => {
+  const addPlannerItem = useCallback(async (item: { title: string; date?: string; zone?: string; startTime?: string; endTime?: string; recurrence?: string; taskId?: string; linkedTaskId?: string }) => {
     try {
       const res = await fetch("/api/productivity/planner", {
         method: "POST",

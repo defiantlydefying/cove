@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import type { PlannerItem as PlannerItemType } from "./ProductivityContext";
 import PlannerItem from "./PlannerItem";
 import EventEditor from "./EventEditor";
@@ -50,7 +51,7 @@ interface PlannerPriorityViewProps {
   onToggleComplete: (id: string) => void;
   onUpdate: (item: { id: string } & Partial<PlannerItemType>) => void;
   onDelete: (id: string) => void;
-  onAdd: (item: { title: string; date?: string; zone?: string; startTime?: string; endTime?: string; linkedTaskId?: string }) => void;
+  onAdd: (item: { title: string; date?: string; zone?: string; startTime?: string; endTime?: string; recurrence?: string; linkedTaskId?: string }) => void;
   onReorder: (items: Array<{ id: string; sortOrder: number; zone?: string }>) => void;
 }
 
@@ -97,6 +98,7 @@ export default function PlannerPriorityView({
     startTime: string;
     endTime: string;
     zone: string;
+    recurrence?: string;
     position: { top: number; left: number };
   } | null>(null);
 
@@ -120,7 +122,7 @@ export default function PlannerPriorityView({
       startTime: minToTime(snapped),
       endTime: minToTime(snapped + 60),
       zone: "must",
-      position: { top: e.clientY - 100, left: Math.min(e.clientX, window.innerWidth - 440) },
+      position: { top: e.clientY, left: e.clientX },
     });
   }, [editor]);
 
@@ -146,7 +148,7 @@ export default function PlannerPriorityView({
       startTime: minToTime(snapped),
       endTime: minToTime(snapped + 30),
       zone,
-      position: { top: e.clientY - 100, left: Math.min(e.clientX, window.innerWidth - 440) },
+      position: { top: e.clientY, left: e.clientX },
     });
   }, []);
 
@@ -161,16 +163,17 @@ export default function PlannerPriorityView({
       startTime: item.startTime!,
       endTime: item.endTime!,
       zone: item.zone,
-      position: { top: e.clientY - 100, left: Math.min(e.clientX, window.innerWidth - 440) },
+      recurrence: item.recurrence ?? "none",
+      position: { top: e.clientY, left: e.clientX },
     });
   }, []);
 
-  const handleEditorSave = useCallback((data: { id?: string; title: string; date?: string; startTime: string; endTime: string; zone: string }) => {
+  const handleEditorSave = useCallback((data: { id?: string; title: string; date?: string; startTime: string; endTime: string; zone: string; recurrence?: string }) => {
     if (editor?.mode === "edit" && data.id) {
-      onUpdate({ id: data.id, title: data.title, date: data.date, startTime: data.startTime, endTime: data.endTime, zone: data.zone });
+      onUpdate({ id: data.id, title: data.title, date: data.date, startTime: data.startTime, endTime: data.endTime, zone: data.zone, recurrence: data.recurrence ?? "none" });
     } else {
       const linkedTaskId = pendingLinkedTaskId.current ?? undefined;
-      onAdd({ title: data.title, date: data.date, startTime: data.startTime, endTime: data.endTime, zone: data.zone, linkedTaskId });
+      onAdd({ title: data.title, date: data.date, startTime: data.startTime, endTime: data.endTime, zone: data.zone, recurrence: data.recurrence, linkedTaskId });
     }
     pendingLinkedTaskId.current = null;
     setEditor(null);
@@ -200,8 +203,36 @@ export default function PlannerPriorityView({
     dragItem.current = null;
   };
 
+  // Expand recurring timed items onto the matching days of the visible week.
+  // Occurrences keep the base item's id, so editing/completing/deleting acts on
+  // the whole series (and keys stay unique — one occurrence per base per day).
+  const expandedItems = useMemo(() => {
+    const dow = (d: string) => new Date(d + "T12:00:00").getDay();
+    const out: PlannerItemType[] = [];
+    for (const item of items) {
+      const anchor = typeof item.date === "string" ? item.date.split("T")[0] : new Date(item.date).toISOString().split("T")[0];
+      const rec = item.recurrence;
+      if (!rec || rec === "none" || !item.startTime) {
+        out.push(item);
+        continue;
+      }
+      const anchorDow = dow(anchor);
+      for (const wd of weekDays) {
+        if (wd.date < anchor) continue; // recurrence starts at its anchor date
+        const d = dow(wd.date);
+        const matches =
+          rec === "daily" ? true :
+          rec === "weekdays" ? (d >= 1 && d <= 5) :
+          rec === "weekly" ? (d === anchorDow) :
+          false;
+        if (matches) out.push({ ...item, date: wd.date });
+      }
+    }
+    return out;
+  }, [items, weekDays]);
+
   const getItemsForDay = (date: string) => {
-    return items.filter((i) => {
+    return expandedItems.filter((i) => {
       const d = typeof i.date === "string" ? i.date.split("T")[0] : new Date(i.date).toISOString().split("T")[0];
       return d === date;
     });
@@ -334,6 +365,7 @@ export default function PlannerPriorityView({
                         >
                           <span className="font-medium truncate block leading-snug">
                             {item.linkedTaskId && <span className="inline-block mr-0.5 text-[9px] opacity-80" title="Linked to task">&#x2713;</span>}
+                            {item.recurrence && item.recurrence !== "none" && <span className="inline-block mr-0.5 text-[9px] opacity-90" title="Repeats">&#x21bb;</span>}
                             {item.title}
                           </span>
                           {height > 34 && (
@@ -467,8 +499,9 @@ export default function PlannerPriorityView({
         })}
       </div>
 
-      {/* Event editor overlay */}
-      {editor && (
+      {/* Event editor overlay — portaled to <body> so it escapes the dashboard's
+          transformed wrapper and positions against the real viewport. */}
+      {editor && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-50" onClick={() => setEditor(null)}>
           <div onClick={(e) => e.stopPropagation()} data-event-editor>
             <EventEditor
@@ -479,6 +512,7 @@ export default function PlannerPriorityView({
                 startTime: editor.startTime,
                 endTime: editor.endTime,
                 zone: editor.zone,
+                recurrence: editor.recurrence,
               }}
               position={editor.position}
               weekDays={editorWeekDays}
@@ -489,7 +523,8 @@ export default function PlannerPriorityView({
               isEditing={editor.mode === "edit"}
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -15,14 +15,21 @@ export async function GET(req: NextRequest) {
   const endDate = req.nextUrl.searchParams.get("endDate");
   const dateParam = req.nextUrl.searchParams.get("date");
 
-  let where: { userId: string; date?: Date | { gte: Date; lte: Date } } = { userId: user.id };
-
-  if (startDate && endDate) {
-    where.date = { gte: new Date(startDate), lte: new Date(endDate) };
-  } else {
-    const d = dateParam || new Date().toISOString().split("T")[0];
-    where.date = new Date(d);
-  }
+  // For a week range, also include recurring items anchored on/before the range
+  // end — the client expands them onto the matching days.
+  const where =
+    startDate && endDate
+      ? {
+          userId: user.id,
+          OR: [
+            { date: { gte: new Date(startDate), lte: new Date(endDate) } },
+            { recurrence: { not: null }, date: { lte: new Date(endDate) } },
+          ],
+        }
+      : {
+          userId: user.id,
+          date: new Date(dateParam || new Date().toISOString().split("T")[0]),
+        };
 
   const items = await prisma.plannerItem.findMany({
     where,
@@ -41,7 +48,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const body = await req.json();
-  const { title, date, zone, startTime, endTime, taskId, linkedTaskId } = body;
+  const { title, date, zone, startTime, endTime, taskId, linkedTaskId, recurrence } = body;
 
   const dateVal = new Date(date || new Date().toISOString().split("T")[0]);
 
@@ -60,6 +67,7 @@ export async function POST(req: NextRequest) {
       sortOrder: (maxOrder?.sortOrder ?? -1) + 1,
       startTime: startTime || null,
       endTime: endTime || null,
+      recurrence: recurrence && recurrence !== "none" ? recurrence : null,
       taskId: taskId || null,
       linkedTaskId: linkedTaskId || null,
     },
@@ -78,6 +86,7 @@ export async function PATCH(req: NextRequest) {
 
   const body = await req.json();
   const { id, ...updates } = body;
+  if (updates.recurrence === "none") updates.recurrence = null;
 
   const item = await prisma.plannerItem.findFirst({ where: { id, userId: user.id } });
   if (!item) return NextResponse.json({ error: "Not found" }, { status: 404 });

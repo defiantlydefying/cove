@@ -129,6 +129,14 @@ export default function DashboardPage() {
       .catch(() => {});
   }, []);
 
+  // The Planner needs the full width, so collapse the Tasks sidebar whenever
+  // it becomes active. The user can still reopen it via the Tasks toggle.
+  useEffect(() => {
+    if (activeItem === "productivity") {
+      sidebarControlRef.current?.(false);
+    }
+  }, [activeItem]);
+
   const handleToggleModule = useCallback(
     (tabId: string, enabled: boolean) => {
       setModuleStates((prev) => ({ ...prev, [tabId]: enabled }));
