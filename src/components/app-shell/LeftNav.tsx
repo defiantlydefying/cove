@@ -87,7 +87,7 @@ export default function LeftNav({
         id="mobile-nav-toggle"
         onClick={() => setMobileOpen(true)}
         aria-label="Open navigation"
-        className="native-safe-top-offset fixed top-3 left-3 z-50 p-2 rounded-lg bg-cove-sidebar text-cove-sidebar-text shadow-lg md:hidden"
+        className="mobile-nav-toggle native-safe-top-offset fixed top-3 left-3 z-50 p-2 rounded-lg bg-cove-sidebar text-cove-sidebar-text shadow-lg md:hidden"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
@@ -109,7 +109,7 @@ export default function LeftNav({
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         className={`
-          native-safe-panel flex flex-col h-full bg-cove-sidebar text-cove-sidebar-text transition-all duration-300 ease-out overflow-hidden shrink-0
+          app-left-nav native-safe-panel flex flex-col h-full bg-cove-sidebar text-cove-sidebar-text transition-all duration-300 ease-out overflow-hidden shrink-0
           fixed top-0 left-0 z-50 md:relative md:z-auto
           ${mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}

@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import LeftNav from "./LeftNav";
 import Sidebar from "./Sidebar";
+import NativeTabBar from "./NativeTabBar";
 import OfflineBanner from "@/components/OfflineBanner";
 
 interface NavItem {
@@ -47,11 +48,14 @@ export default function AppShell({
   // Show sidebar by default on desktop
   useEffect(() => {
     const isDesktop = window.matchMedia("(min-width: 768px)").matches;
-    setSidebarVisible(isDesktop);
+    const frame = window.requestAnimationFrame(() => {
+      setSidebarVisible(isDesktop);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="app-shell flex h-screen overflow-hidden">
       <OfflineBanner />
       <a
         href="#main-content"
@@ -73,24 +77,38 @@ export default function AppShell({
       {/* Main content area */}
       <div className="flex flex-col flex-1 min-w-0 min-h-0">
         {/* Top bar */}
-        <header className="flex items-center justify-between px-5 py-3 border-b border-cove-border-light bg-cove-card shrink-0">
-          <div className="flex items-center gap-2">
+        <header className="app-top-bar flex items-center justify-between px-5 py-3 border-b border-cove-border-light bg-cove-card shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
             {/* Spacer for mobile hamburger */}
-            <div className="w-8 md:hidden" />
-            <h1 className="text-lg font-semibold text-cove-charcoal tracking-tight">
-              {navItems.find((i) => i.id === activeItem)?.label ?? "Cove"}
-            </h1>
+            <div className="mobile-nav-spacer w-8 md:hidden" />
+            <div className="min-w-0">
+              <p className="native-header-overline">Cove</p>
+              <h1 className="app-screen-title text-lg font-semibold text-cove-charcoal tracking-tight truncate">
+                {activeItem === "daily-view"
+                  ? "Today"
+                  : navItems.find((i) => i.id === activeItem)?.label ??
+                    (activeItem === "settings" ? "Settings" : "Cove")}
+              </h1>
+            </div>
           </div>
           <button
             id="sidebar-toggle"
             onClick={() => setSidebarVisible(!sidebarVisible)}
             aria-label={sidebarVisible ? "Close tasks" : "Open tasks"}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-cove-muted hover:text-cove-charcoal border border-cove-border rounded-lg hover:bg-cove-offwhite transition-colors"
+            className="desktop-task-toggle flex items-center gap-1.5 px-3 py-1.5 text-sm text-cove-muted hover:text-cove-charcoal border border-cove-border rounded-lg hover:bg-cove-offwhite transition-colors"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="3" x2="9" y2="21" />
             </svg>
             Tasks
+          </button>
+          <button
+            type="button"
+            className="native-profile-button"
+            onClick={() => onItemChange("settings")}
+            aria-label="Open settings"
+          >
+            {userName?.trim().charAt(0).toUpperCase() || "C"}
           </button>
         </header>
 
@@ -98,7 +116,7 @@ export default function AppShell({
         <div className="flex flex-1 min-h-0 overflow-hidden">
           <main
             id="main-content"
-            className="flex-1 overflow-auto p-6 bg-cove-offwhite"
+            className="app-main-content flex-1 overflow-auto p-6 bg-cove-offwhite"
           >
             {children}
           </main>
@@ -111,6 +129,12 @@ export default function AppShell({
           </Sidebar>
         </div>
       </div>
+      <NativeTabBar
+        items={navItems}
+        activeItem={activeItem}
+        onItemChange={onItemChange}
+        moduleStates={moduleStates}
+      />
     </div>
   );
 }

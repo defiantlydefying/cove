@@ -124,7 +124,7 @@ export default function QuickCapture({ companionType }: QuickCaptureProps) {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-cove-accent text-white shadow-lg hover:bg-cove-accent-hover transition-all hover:-translate-y-0.5 flex items-center justify-center"
+          className="quick-capture-fab fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-cove-accent text-white shadow-lg hover:bg-cove-accent-hover transition-all hover:-translate-y-0.5 flex items-center justify-center"
           aria-label="Talk to your companion"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -145,12 +145,13 @@ export default function QuickCapture({ companionType }: QuickCaptureProps) {
               onClick={() => setOpen(false)}
             />
             <motion.div
-              className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] bg-cove-bg rounded-2xl p-4 shadow-xl border border-cove-border"
+              className="quick-capture-sheet fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] bg-cove-offwhite rounded-2xl p-4 shadow-xl border border-cove-border"
               initial={{ opacity: 0, y: 16, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16, scale: 0.98 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
             >
+              <div className="native-sheet-handle" aria-hidden="true" />
               {ack ? (
                 <div className="flex items-center gap-3 py-4 justify-center">
                   <CompanionAvatar type={companionType} size="sm" />

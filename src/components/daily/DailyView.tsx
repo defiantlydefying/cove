@@ -323,7 +323,7 @@ export default function DailyView() {
   const hasWellnessHistory = sortedWellness.length > 0;
 
   return (
-    <div className="flex flex-col gap-6 max-w-3xl mx-auto p-2">
+    <div className="daily-view flex flex-col gap-6 max-w-3xl mx-auto p-2">
 
       {/* ── Companion Greeting ── */}
       <div className="flex items-center gap-3">
@@ -339,7 +339,7 @@ export default function DailyView() {
       </div>
 
       {/* ── Quick Capture ── */}
-      <div className="ml-[60px]">
+      <div className="daily-capture ml-[60px]">
         {captureAck ? (
           <div className="flex items-center gap-2 text-sm text-cove-charcoal bg-cove-card rounded-2xl px-4 py-3 border border-cove-accent/10">
             <CompanionAvatar type={companionType} size="sm" />

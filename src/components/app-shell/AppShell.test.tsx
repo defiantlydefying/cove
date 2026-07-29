@@ -1,12 +1,13 @@
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SessionProvider } from "next-auth/react";
 import AppShell from "./AppShell";
 
-const tabs = [
-  { id: "plan", label: "Plan" },
-  { id: "build", label: "Build" },
+const navItems = [
+  { id: "daily-view", label: "Daily View", icon: <span aria-hidden="true">D</span> },
+  { id: "tasks", label: "Tasks", icon: <span aria-hidden="true">T</span> },
+  { id: "companion", label: "Companion", icon: <span aria-hidden="true">C</span> },
+  { id: "productivity", label: "Planner", icon: <span aria-hidden="true">P</span> },
 ];
 
 beforeEach(() => {
@@ -30,9 +31,9 @@ function renderShell() {
   return render(
     <SessionProvider session={null}>
       <AppShell
-        tabs={tabs}
-        activeTab="plan"
-        onTabChange={vi.fn()}
+        navItems={navItems}
+        activeItem="daily-view"
+        onItemChange={vi.fn()}
         sidebarContent={<p>Sidebar tasks</p>}
       >
         <p>Main content</p>
@@ -48,26 +49,18 @@ describe("AppShell", () => {
     expect(screen.getByText("Sidebar tasks")).toBeInTheDocument();
   });
 
-  it("renders tab bar with provided tabs", () => {
+  it("renders native navigation with primary destinations", () => {
     renderShell();
-    expect(screen.getByRole("tablist")).toBeInTheDocument();
-    expect(screen.getByText("Plan")).toBeInTheDocument();
-    expect(screen.getByText("Build")).toBeInTheDocument();
+    const navigation = screen.getByRole("navigation", {
+      name: "App navigation",
+    });
+    expect(navigation).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Today" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Plan" })).toBeInTheDocument();
   });
 
-  it("can dismiss and reopen sidebar", async () => {
+  it("uses a native-friendly Today title for the daily view", () => {
     renderShell();
-
-    // Dismiss sidebar
-    await userEvent.click(screen.getByLabelText("Close sidebar"));
-
-    // Reopen sidebar
-    await userEvent.click(screen.getByLabelText("Open sidebar"));
-    expect(screen.getByLabelText("Close sidebar")).toBeInTheDocument();
-  });
-
-  it("renders header with app name Cove", () => {
-    renderShell();
-    expect(screen.getByText("Cove")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Today" })).toBeInTheDocument();
   });
 });

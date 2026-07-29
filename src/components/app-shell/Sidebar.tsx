@@ -24,7 +24,7 @@ export default function Sidebar({ visible, onClose, children }: SidebarProps) {
       {/* Mobile backdrop */}
       {visible && (
         <div
-          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          className="task-sidebar-backdrop fixed inset-0 bg-black/40 z-40 md:hidden"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -32,6 +32,7 @@ export default function Sidebar({ visible, onClose, children }: SidebarProps) {
 
       <aside
         className={`
+          app-task-sidebar
           border-l border-cove-sidebar/20 bg-cove-sidebar text-cove-sidebar-text transition-all duration-300
           fixed top-0 right-0 h-full z-50 md:relative md:z-auto
           ${
