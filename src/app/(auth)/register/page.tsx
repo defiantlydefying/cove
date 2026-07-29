@@ -2,7 +2,7 @@ import RegisterForm from "@/components/auth/RegisterForm";
 
 export default function RegisterPage() {
   return (
-    <main className="auth-screen flex min-h-screen flex-col items-center justify-center px-4 bg-cove-offwhite">
+    <main className="auth-screen flex min-h-screen flex-col items-center justify-center px-4 bg-cove-offwhite" data-theme="light">
       <div className="auth-card w-full max-w-sm rounded-3xl bg-cove-card p-8 shadow-[0_4px_32px_rgba(61,56,50,0.06)]">
         <div className="auth-brand">
           <span className="auth-app-mark" aria-hidden="true">

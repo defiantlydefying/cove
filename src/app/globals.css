@@ -271,6 +271,10 @@ button, input, select, textarea {
   display: none;
 }
 
+.native-start-screen {
+  display: none;
+}
+
 @media (max-width: 767px) {
   .capacitor-native {
     overscroll-behavior: none;
@@ -289,6 +293,200 @@ button, input, select, textarea {
   .capacitor-native .app-shell {
     height: calc(100dvh - env(safe-area-inset-top));
     background: var(--cove-offwhite);
+  }
+
+  .capacitor-native .marketing-home {
+    display: none;
+  }
+
+  .capacitor-native .native-start-screen {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    min-height: calc(100dvh - env(safe-area-inset-top));
+    flex-direction: column;
+    overflow: hidden;
+    padding: 20px 24px calc(18px + env(safe-area-inset-bottom));
+    color: #2f352f;
+    color-scheme: light;
+    background:
+      radial-gradient(circle at 88% 8%, rgba(126, 170, 160, 0.34), transparent 32%),
+      radial-gradient(circle at 5% 55%, rgba(234, 240, 235, 0.9), transparent 40%),
+      linear-gradient(165deg, #f8f7f2 0%, #f1f5f1 54%, #f7f5f0 100%);
+  }
+
+  .capacitor-native .native-start-screen::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    right: -72px;
+    bottom: 22%;
+    width: 210px;
+    height: 210px;
+    border-radius: 50%;
+    border: 1px solid rgba(107, 143, 113, 0.14);
+  }
+
+  .capacitor-native .native-start-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #3d3832;
+    font-size: 18px;
+    font-weight: 720;
+    letter-spacing: -0.025em;
+  }
+
+  .capacitor-native .native-start-mark {
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 14px;
+    background: #4a5d4e;
+    color: #f7f5f0;
+    box-shadow: 0 10px 24px rgba(74, 93, 78, 0.2);
+  }
+
+  .capacitor-native .native-start-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    padding: 18px 0 22px;
+  }
+
+  .capacitor-native .native-start-visual {
+    position: relative;
+    width: min(62vw, 250px);
+    aspect-ratio: 1;
+    margin: 0 auto clamp(24px, 5vh, 42px);
+  }
+
+  .capacitor-native .native-start-orbit,
+  .capacitor-native .native-start-glow,
+  .capacitor-native .native-start-visual-mark {
+    position: absolute;
+    border-radius: 50%;
+  }
+
+  .capacitor-native .native-start-orbit {
+    inset: 0;
+    border: 1px solid rgba(107, 143, 113, 0.2);
+  }
+
+  .capacitor-native .native-start-orbit::after {
+    content: "";
+    position: absolute;
+    top: 16%;
+    right: 6%;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #7eaaa0;
+    box-shadow: 0 0 0 7px rgba(126, 170, 160, 0.12);
+  }
+
+  .capacitor-native .native-start-orbit-two {
+    inset: 14%;
+    border-color: rgba(126, 170, 160, 0.24);
+  }
+
+  .capacitor-native .native-start-orbit-two::after {
+    top: auto;
+    right: auto;
+    bottom: 2%;
+    left: 12%;
+    width: 8px;
+    height: 8px;
+    background: #8fa89a;
+  }
+
+  .capacitor-native .native-start-glow {
+    inset: 27%;
+    background: linear-gradient(145deg, #dbe9e2, #eff3ed);
+    box-shadow:
+      0 22px 55px rgba(74, 93, 78, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  }
+
+  .capacitor-native .native-start-visual-mark {
+    inset: 34%;
+    display: grid;
+    place-items: center;
+    background: #4a5d4e;
+    color: #f7f5f0;
+  }
+
+  .capacitor-native .native-start-copy {
+    max-width: 340px;
+  }
+
+  .capacitor-native .native-start-eyebrow {
+    margin-bottom: 12px;
+    color: #6b8f71;
+    font-size: 11px;
+    font-weight: 720;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .capacitor-native .native-start-copy h1 {
+    color: #2f352f;
+    font-size: clamp(44px, 13vw, 58px);
+    font-weight: 730;
+    letter-spacing: -0.055em;
+    line-height: 0.95;
+  }
+
+  .capacitor-native .native-start-description {
+    max-width: 315px;
+    margin-top: 18px;
+    color: #6f746d;
+    font-size: 17px;
+    line-height: 1.48;
+  }
+
+  .capacitor-native .native-start-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .capacitor-native .native-start-primary,
+  .capacitor-native .native-start-secondary {
+    display: flex;
+    min-height: 56px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    font-size: 16px;
+    font-weight: 650;
+  }
+
+  .capacitor-native .native-start-primary {
+    gap: 8px;
+    background: #4a5d4e;
+    color: #f7f5f0;
+    box-shadow: 0 12px 28px rgba(74, 93, 78, 0.22);
+  }
+
+  .capacitor-native .native-start-primary:active,
+  .capacitor-native .native-start-secondary:active {
+    transform: scale(0.98);
+  }
+
+  .capacitor-native .native-start-secondary {
+    color: #4a5d4e;
+    background: rgba(255, 253, 249, 0.76);
+    border: 1px solid rgba(74, 93, 78, 0.16);
+  }
+
+  .capacitor-native .native-start-actions > p {
+    margin-top: 2px;
+    color: #8a8e87;
+    font-size: 12px;
+    text-align: center;
   }
 
   .capacitor-native .mobile-nav-toggle,
@@ -580,6 +778,7 @@ button, input, select, textarea {
     background:
       radial-gradient(circle at 50% 2%, var(--cove-accent-light), transparent 38%),
       var(--cove-offwhite);
+    color-scheme: light;
   }
 
   .capacitor-native .auth-card {
