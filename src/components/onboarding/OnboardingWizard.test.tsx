@@ -1,74 +1,81 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import OnboardingWizard from "./OnboardingWizard";
 
+beforeEach(() => {
+  window.scrollTo = vi.fn();
+});
+
+async function advanceTo(step: "profile" | "companion" | "modules" | "theme" | "done") {
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("button", { name: /make cove mine/i }));
+
+  const order = ["profile", "companion", "modules", "theme", "done"];
+  for (let index = 0; index < order.indexOf(step); index += 1) {
+    await user.click(screen.getByRole("button", { name: /continue/i }));
+  }
+
+  return user;
+}
+
 describe("OnboardingWizard", () => {
-  it("renders welcome step initially", () => {
+  it("renders the light welcome experience initially", () => {
     render(<OnboardingWizard onComplete={vi.fn()} />);
+
     expect(screen.getByTestId("welcome-step")).toBeInTheDocument();
     expect(screen.getByText("Welcome to Cove")).toBeInTheDocument();
+    expect(screen.getByRole("main")).toHaveAttribute("data-theme", "light");
   });
 
-  it("navigates to profile step on Next", async () => {
-    const user = userEvent.setup();
+  it("navigates through the personal setup steps", async () => {
     render(<OnboardingWizard onComplete={vi.fn()} />);
 
-    await user.click(screen.getByText("Next"));
+    await advanceTo("profile");
     expect(screen.getByTestId("profile-step")).toBeInTheDocument();
-    expect(screen.getByText("About you")).toBeInTheDocument();
+    expect(screen.getByText("A little about you")).toBeInTheDocument();
   });
 
-  it("navigates to module selection", async () => {
+  it("shows compact module switches and updates their state", async () => {
     const user = userEvent.setup();
     render(<OnboardingWizard onComplete={vi.fn()} />);
 
-    await user.click(screen.getByText("Next"));
-    await user.click(screen.getByText("Next"));
+    await user.click(screen.getByRole("button", { name: /make cove mine/i }));
+    await user.click(screen.getByRole("button", { name: /continue/i }));
+    await user.click(screen.getByRole("button", { name: /continue/i }));
+
     expect(screen.getByTestId("modules-step")).toBeInTheDocument();
-    expect(screen.getByText("Choose your modules")).toBeInTheDocument();
+    const routinesSwitch = screen.getByRole("switch", { name: /enable routines/i });
+    expect(routinesSwitch).toHaveAttribute("aria-checked", "false");
+    await user.click(routinesSwitch);
+    expect(screen.getByRole("switch", { name: /disable routines/i })).toHaveAttribute("aria-checked", "true");
   });
 
-  it("navigates to theme selection", async () => {
-    const user = userEvent.setup();
+  it("offers explicit appearance choices", async () => {
     render(<OnboardingWizard onComplete={vi.fn()} />);
 
-    await user.click(screen.getByText("Next"));
-    await user.click(screen.getByText("Next"));
-    await user.click(screen.getByText("Next"));
+    await advanceTo("theme");
     expect(screen.getByTestId("theme-step")).toBeInTheDocument();
-    expect(screen.getByText("Customize your experience")).toBeInTheDocument();
+    expect(screen.getByText("Choose your style")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /light/i })).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("shows completion step", async () => {
-    const user = userEvent.setup();
+  it("shows a setup summary before entering Cove", async () => {
     render(<OnboardingWizard onComplete={vi.fn()} />);
 
-    await user.click(screen.getByText("Next"));
-    await user.click(screen.getByText("Next"));
-    await user.click(screen.getByText("Next"));
-    await user.click(screen.getByText("Next"));
+    await advanceTo("done");
     expect(screen.getByTestId("done-step")).toBeInTheDocument();
-    expect(screen.getByText("Your cove is ready")).toBeInTheDocument();
+    expect(screen.getByText("Your Cove is ready")).toBeInTheDocument();
   });
 
-  it("calls onComplete when Get Started clicked", async () => {
-    const user = userEvent.setup();
+  it("saves the setup and calls onComplete", async () => {
     const onComplete = vi.fn();
-
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({}),
-    });
-
+    global.fetch = vi.fn().mockResolvedValue({ ok: true });
     render(<OnboardingWizard onComplete={onComplete} />);
 
-    await user.click(screen.getByText("Next"));
-    await user.click(screen.getByText("Next"));
-    await user.click(screen.getByText("Next"));
-    await user.click(screen.getByText("Next"));
-    await user.click(screen.getByText("Get started"));
+    const user = await advanceTo("done");
+    await user.click(screen.getByRole("button", { name: /enter cove/i }));
 
-    expect(onComplete).toHaveBeenCalled();
+    expect(onComplete).toHaveBeenCalledOnce();
   });
 });

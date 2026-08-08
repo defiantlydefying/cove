@@ -2,6 +2,7 @@
 
 import { useState, memo } from "react";
 import { formatScheduleSummary } from "@/lib/reminder-presets";
+import CoveSwitch from "@/components/ui/CoveSwitch";
 import ReminderScheduleFields from "./ReminderScheduleFields";
 
 export interface Reminder {
@@ -64,21 +65,13 @@ export default memo(function ReminderItem({
       data-testid="reminder-item"
     >
       <div className="flex items-start gap-3 p-3 group">
-        <button
-          role="switch"
-          aria-checked={reminder.enabled}
-          aria-label={`Toggle ${reminder.title}`}
-          onClick={() => onToggle(reminder.id, !reminder.enabled)}
-          className={`mt-0.5 shrink-0 relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-cove-accent focus-visible:ring-offset-1 ${
-            reminder.enabled ? "bg-cove-accent" : "bg-cove-border"
-          }`}
-        >
-          <span
-            className={`inline-block h-5 w-5 rounded-full bg-cove-card shadow-sm transition-transform ${
-              reminder.enabled ? "translate-x-5" : "translate-x-0.5"
-            }`}
-          />
-        </button>
+        <CoveSwitch
+          checked={reminder.enabled}
+          onCheckedChange={(checked) => onToggle(reminder.id, checked)}
+          label={`Toggle ${reminder.title}`}
+          size="sm"
+          className="mt-0.5"
+        />
 
         <div className="flex-1 min-w-0">
           <span

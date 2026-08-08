@@ -2,66 +2,116 @@
 
 import { useState } from "react";
 import CompanionPicker from "@/components/companion/CompanionPicker";
+import CoveSwitch from "@/components/ui/CoveSwitch";
 import type { CompanionType } from "@/lib/companions";
+import { tapLight } from "@/lib/capacitor/haptics";
 
 const AVAILABLE_MODULES = [
   {
     id: "task-manager",
-    name: "Task Manager",
-    description: "Organize and track your tasks with priorities and deadlines.",
+    name: "Tasks",
+    description: "Capture what matters and turn it into doable next steps.",
     defaultEnabled: true,
     recommended: true,
+    icon: "check",
   },
   {
     id: "routine-builder",
-    name: "Routine Builder",
-    description: "Build consistent daily routines step by step.",
+    name: "Routines",
+    description: "Create gentle structures for the things you repeat.",
     defaultEnabled: false,
     recommended: false,
+    icon: "repeat",
   },
   {
     id: "wellness-tracker",
-    name: "Wellness Tracker",
-    description: "Monitor your mood, energy, and wellbeing over time.",
+    name: "Wellness",
+    description: "Notice patterns in mood, energy, sleep, and wellbeing.",
     defaultEnabled: false,
     recommended: false,
+    icon: "heart",
   },
   {
     id: "reminders",
     name: "Reminders",
-    description: "Gentle nudges to keep you on track throughout the day.",
+    description: "Receive low-pressure nudges at the moments you choose.",
     defaultEnabled: false,
     recommended: false,
+    icon: "bell",
   },
   {
     id: "gamification",
-    name: "Gamification",
-    description: "Earn points and streaks to stay motivated.",
+    name: "Progress",
+    description: "Use streaks and small wins when they feel motivating.",
     defaultEnabled: false,
     recommended: false,
+    icon: "spark",
   },
   {
     id: "community",
     name: "Community",
-    description: "Browse and share routines with other users. Completely optional.",
+    description: "Browse and share routines. This space is always optional.",
     defaultEnabled: false,
     recommended: false,
+    icon: "people",
   },
 ];
+
+const CONDITIONS = [
+  "ADHD",
+  "Autism / ASD",
+  "Anxiety",
+  "Depression",
+  "Dyslexia",
+  "Dyscalculia",
+  "OCD",
+  "PTSD",
+  "Bipolar",
+  "Other",
+];
+
+const STEP_LABELS = ["Welcome", "About you", "Companion", "Tools", "Style", "Ready"];
 
 interface OnboardingWizardProps {
   onComplete: () => void;
 }
 
+function ModuleIcon({ name }: { name: string }) {
+  const common = {
+    width: 22,
+    height: 22,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.9,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  if (name === "check") return <svg {...common}><path d="M4 6.5h16v13H4zM8 3.5v5M16 3.5v5M4 10h16" /><path d="m8 15 2 2 5-5" /></svg>;
+  if (name === "repeat") return <svg {...common}><path d="M4 7h12l-2.5-2.5M20 17H8l2.5 2.5M18 7a7 7 0 0 1 1 8M6 17a7 7 0 0 1-1-8" /></svg>;
+  if (name === "heart") return <svg {...common}><path d="M20 8.5c0 5-8 10.5-8 10.5S4 13.5 4 8.5a4.2 4.2 0 0 1 7.2-3l.8.8.8-.8A4.2 4.2 0 0 1 20 8.5Z" /></svg>;
+  if (name === "bell") return <svg {...common}><path d="M18 9a6 6 0 0 0-12 0c0 6-2.5 7.5-2.5 7.5h17S18 15 18 9ZM10 20h4" /></svg>;
+  if (name === "people") return <svg {...common}><circle cx="9" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0M14 15a4.5 4.5 0 0 1 6.5 4" /></svg>;
+  return <svg {...common}><path d="m12 2 1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2ZM18.5 15l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z" /></svg>;
+}
+
+function ChoiceCheck() {
+  return (
+    <span className="onboarding-choice-check" aria-hidden="true">
+      <svg width="13" height="13" viewBox="0 0 24 24">
+        <path d="m5 12 4 4L19 6" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </span>
+  );
+}
+
 export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
   const [step, setStep] = useState(0);
-  const [modules, setModules] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
-    for (const mod of AVAILABLE_MODULES) {
-      initial[mod.id] = mod.defaultEnabled;
-    }
-    return initial;
-  });
+  const [modules, setModules] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(AVAILABLE_MODULES.map((module) => [module.id, module.defaultEnabled]))
+  );
   const [theme, setTheme] = useState("light");
   const [density, setDensity] = useState("comfortable");
   const [animationsOn, setAnimationsOn] = useState(true);
@@ -70,309 +120,372 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
   const [medications, setMedications] = useState("");
   const [profileNotes, setProfileNotes] = useState("");
   const [companionType, setCompanionType] = useState<CompanionType>("fox");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
-  const toggleModule = (id: string) => {
-    setModules((prev) => ({ ...prev, [id]: !prev[id] }));
+  const goToStep = (nextStep: number) => {
+    void tapLight();
+    setStep(nextStep);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const toggleCondition = (condition: string) => {
-    setConditions((prev) =>
-      prev.includes(condition)
-        ? prev.filter((c) => c !== condition)
-        : [...prev, condition]
+    void tapLight();
+    setConditions((current) =>
+      current.includes(condition)
+        ? current.filter((item) => item !== condition)
+        : [...current, condition]
     );
   };
 
   const handleComplete = async () => {
-    const modulePromises = Object.entries(modules).map(([moduleId, enabled]) =>
-      fetch("/api/settings/modules", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ moduleId, enabled }),
-      })
-    );
+    setSaving(true);
+    setSaveError("");
 
-    const settingsPromise = fetch("/api/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ theme, density, animationsOn, companionType }),
-    });
+    try {
+      const responses = await Promise.all([
+        ...Object.entries(modules).map(([moduleId, enabled]) =>
+          fetch("/api/settings/modules", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ moduleId, enabled }),
+          })
+        ),
+        fetch("/api/settings", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ theme, density, animationsOn, companionType }),
+        }),
+        fetch("/api/profile", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            age: age ? Number.parseInt(age, 10) : null,
+            conditions,
+            medications: medications
+              ? medications.split(",").map((item) => item.trim()).filter(Boolean)
+              : [],
+            notes: profileNotes || null,
+          }),
+        }),
+      ]);
 
-    const profilePromise = fetch("/api/profile", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        age: age ? parseInt(age) : null,
-        conditions,
-        medications: medications ? medications.split(",").map((m) => m.trim()).filter(Boolean) : [],
-        notes: profileNotes || null,
-      }),
-    });
+      if (responses.some((response) => !response.ok)) {
+        throw new Error("One or more onboarding settings could not be saved");
+      }
 
-    await Promise.all([...modulePromises, settingsPromise, profilePromise]);
-    onComplete();
+      onComplete();
+    } catch {
+      setSaveError("We couldn’t save your setup. Check your connection and try again.");
+      setSaving(false);
+    }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-10">
-      {step === 0 && (
-        <div data-testid="welcome-step">
-          <h1 className="text-4xl font-light tracking-tight text-cove-accent mb-3">Welcome to Cove</h1>
-          <p className="text-cove-muted mb-10 text-lg leading-relaxed">
-            Your personal executive function companion. Calm by default,
-            customizable in every direction.
-          </p>
+    <main className="onboarding-shell" data-theme="light">
+      <header className="onboarding-header">
+        <div className="onboarding-brand">
+          <span className="onboarding-brand-mark" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 32 32"><path d="M5 24 13 10l4 6 4-4 6 12H5Z" fill="currentColor" /></svg>
+          </span>
+          <span>Cove</span>
         </div>
-      )}
-
-      {step === 1 && (
-        <div data-testid="profile-step">
-          <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-2">About you</h2>
-          <p className="text-cove-muted mb-2 leading-relaxed">
-            Help us personalize your experience. This is completely optional --
-            skip anything you are not comfortable sharing. You can always update this later in settings.
-          </p>
-          <p className="text-sm text-cove-blue mb-8">
-            None of these fields are mandatory. Leave them blank if you prefer.
-          </p>
-
-          <div className="space-y-6">
-            <div>
-              <label className="block font-medium text-cove-charcoal mb-2">Age</label>
-              <input
-                type="number"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                placeholder="Your age (optional)"
-                min="1"
-                max="120"
-                className="w-full max-w-[200px] px-4 py-2.5 border border-cove-border rounded-xl bg-cove-offwhite text-cove-charcoal placeholder:text-cove-muted/60 focus:outline-none focus:ring-2 focus:ring-cove-accent/20 focus:border-cove-accent transition-colors"
-              />
-            </div>
-
-            <div>
-              <label className="block font-medium text-cove-charcoal mb-2">
-                Conditions or diagnoses
-              </label>
-              <p className="text-sm text-cove-muted mb-3">
-                Select any that apply, or leave blank.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "ADHD",
-                  "Autism / ASD",
-                  "Anxiety",
-                  "Depression",
-                  "Dyslexia",
-                  "Dyscalculia",
-                  "OCD",
-                  "PTSD",
-                  "Bipolar",
-                  "Other",
-                ].map((condition) => (
-                  <button
-                    key={condition}
-                    type="button"
-                    onClick={() => toggleCondition(condition)}
-                    className={`px-4 py-2 rounded-xl text-sm transition-all duration-200 ${
-                      conditions.includes(condition)
-                        ? "bg-cove-heather text-white shadow-sm"
-                        : "bg-cove-card border border-cove-border text-cove-muted hover:border-cove-heather/40 hover:text-cove-charcoal"
-                    }`}
-                  >
-                    {condition}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block font-medium text-cove-charcoal mb-2">
-                Medications
-              </label>
-              <input
-                type="text"
-                value={medications}
-                onChange={(e) => setMedications(e.target.value)}
-                placeholder="e.g., Adderall, Lexapro (optional, comma-separated)"
-                className="w-full px-4 py-2.5 border border-cove-border rounded-xl bg-cove-offwhite text-cove-charcoal placeholder:text-cove-muted/60 focus:outline-none focus:ring-2 focus:ring-cove-accent/20 focus:border-cove-accent transition-colors"
-              />
-            </div>
-
-            <div>
-              <label className="block font-medium text-cove-charcoal mb-2">
-                Anything else you want us to know?
-              </label>
-              <textarea
-                value={profileNotes}
-                onChange={(e) => setProfileNotes(e.target.value)}
-                placeholder="Optional -- anything that helps us help you better"
-                rows={3}
-                className="w-full px-4 py-3 border border-cove-border rounded-xl bg-cove-offwhite text-cove-charcoal placeholder:text-cove-muted/60 focus:outline-none focus:ring-2 focus:ring-cove-accent/20 focus:border-cove-accent transition-colors resize-none"
-              />
-            </div>
-          </div>
+        <div className="onboarding-progress-copy">
+          <span>{STEP_LABELS[step]}</span>
+          <span>{step + 1} of {STEP_LABELS.length}</span>
         </div>
-      )}
-
-      {step === 2 && (
-        <div data-testid="companion-step">
-          <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-3">Choose your companion</h2>
-          <p className="text-cove-muted mb-8 leading-relaxed">
-            Your companion will be your guide through cove. Pick the personality that feels right for you — you can switch anytime.
-          </p>
-          <CompanionPicker selected={companionType} onSelect={setCompanionType} />
+        <div className="onboarding-progress" aria-label={`Step ${step + 1} of ${STEP_LABELS.length}`}>
+          <span style={{ width: `${((step + 1) / STEP_LABELS.length) * 100}%` }} />
         </div>
-      )}
+      </header>
 
-      {step === 3 && (
-        <div data-testid="modules-step">
-          <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-3">Choose your modules</h2>
-          <p className="text-cove-muted mb-8 leading-relaxed">
-            Select the tools you want to start with. You can always change these
-            later.
-          </p>
-          <div className="space-y-3">
-            {AVAILABLE_MODULES.map((mod) => (
-              <div
-                key={mod.id}
-                className="flex items-center justify-between p-5 border border-cove-border-light rounded-xl bg-cove-card shadow-[0_1px_4px_rgba(0,0,0,0.04)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.07)] transition-shadow"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-cove-charcoal">{mod.name}</span>
-                    {mod.recommended && (
-                      <span className="text-xs bg-cove-accent-light text-cove-accent px-2 py-0.5 rounded-md">
-                        Recommended
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-cove-muted mt-0.5">{mod.description}</p>
-                </div>
-                <button
-                  onClick={() => toggleModule(mod.id)}
-                  role="switch"
-                  aria-checked={modules[mod.id]}
-                  aria-label={`Toggle ${mod.name}`}
-                  className={`w-12 h-6 rounded-full relative transition-colors focus-visible:ring-2 focus-visible:ring-cove-accent focus-visible:ring-offset-1 ${
-                    modules[mod.id] ? "bg-cove-accent" : "bg-cove-border"
-                  }`}
-                >
-                  <span
-                    className={`block w-5 h-5 bg-cove-card rounded-full absolute top-0.5 transition-transform shadow-sm ${
-                      modules[mod.id] ? "translate-x-6" : "translate-x-0.5"
-                    }`}
-                  />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {step === 4 && (
-        <div data-testid="theme-step">
-          <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-6">Customize your experience</h2>
-          <div className="space-y-8">
-            <div>
-              <label className="block font-medium text-cove-charcoal mb-3">Theme</label>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setTheme("light")}
-                  className={`px-5 py-2.5 border rounded-lg transition-colors ${
-                    theme === "light"
-                      ? "border-cove-accent bg-cove-accent-light text-cove-accent"
-                      : "border-cove-border text-cove-muted hover:border-cove-accent/30"
-                  }`}
-                >
-                  Light
-                </button>
-                <button
-                  onClick={() => setTheme("dark")}
-                  className={`px-5 py-2.5 border rounded-lg transition-colors ${
-                    theme === "dark"
-                      ? "border-cove-accent bg-cove-accent-light text-cove-accent"
-                      : "border-cove-border text-cove-muted hover:border-cove-accent/30"
-                  }`}
-                >
-                  Dark
-                </button>
-              </div>
+      <div className="onboarding-body">
+        {step === 0 && (
+          <section className="onboarding-step onboarding-welcome" data-testid="welcome-step">
+            <div className="onboarding-welcome-visual" aria-hidden="true">
+              <span className="onboarding-welcome-ring ring-one" />
+              <span className="onboarding-welcome-ring ring-two" />
+              <span className="onboarding-welcome-core">
+                <svg width="46" height="46" viewBox="0 0 64 64"><path d="M8 47 25 20l9 12 9-9 13 24H8Z" fill="currentColor" /></svg>
+              </span>
             </div>
-            <div>
-              <label className="block font-medium text-cove-charcoal mb-3">Density</label>
-              <div className="flex gap-3">
-                {["compact", "comfortable", "spacious"].map((d) => (
-                  <button
-                    key={d}
-                    onClick={() => setDensity(d)}
-                    className={`px-5 py-2.5 border rounded-lg capitalize transition-colors ${
-                      density === d
-                        ? "border-cove-accent bg-cove-accent-light text-cove-accent"
-                        : "border-cove-border text-cove-muted hover:border-cove-accent/30"
-                    }`}
-                  >
-                    {d}
-                  </button>
-                ))}
-              </div>
+            <p className="onboarding-eyebrow">A calmer place to begin</p>
+            <h1>Welcome to Cove</h1>
+            <p className="onboarding-lede">
+              We’ll shape Cove around the way your brain works. Nothing here is permanent, and the personal parts are always optional.
+            </p>
+            <div className="onboarding-welcome-points">
+              <span><ChoiceCheck /> About two minutes</span>
+              <span><ChoiceCheck /> Change anything later</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-cove-charcoal">Animations</span>
-              <button
-                onClick={() => setAnimationsOn((v) => !v)}
-                role="switch"
-                aria-checked={animationsOn}
-                aria-label="Toggle animations"
-                className={`w-12 h-6 rounded-full relative transition-colors focus-visible:ring-2 focus-visible:ring-cove-accent focus-visible:ring-offset-1 ${
-                  animationsOn ? "bg-cove-accent" : "bg-cove-border"
-                }`}
-              >
-                <span
-                  className={`block w-5 h-5 bg-cove-card rounded-full absolute top-0.5 transition-transform shadow-sm ${
-                    animationsOn ? "translate-x-6" : "translate-x-0.5"
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {step === 5 && (
-        <div data-testid="done-step">
-          <h2 className="text-2xl font-light tracking-tight text-cove-charcoal mb-4">Your cove is ready</h2>
-          <p className="text-cove-muted mb-10 leading-relaxed">
-            Everything is set up. You can always adjust your settings later.
-          </p>
-          <button
-            onClick={handleComplete}
-            className="px-8 py-3 bg-cove-accent text-white rounded-lg font-medium shadow-sm hover:bg-cove-accent-hover transition-colors focus:outline-none focus:ring-2 focus:ring-cove-accent/40"
-          >
-            Get started
-          </button>
-        </div>
-      )}
-
-      <div className="flex justify-between mt-10">
-        {step > 0 && step < 5 && (
-          <button
-            onClick={() => setStep((s) => s - 1)}
-            className="px-5 py-2.5 border border-cove-border rounded-lg text-cove-muted hover:text-cove-charcoal hover:border-cove-accent/30 transition-colors"
-          >
-            Back
-          </button>
+          </section>
         )}
-        {step === 0 && <div />}
-        {step < 5 && (
-          <button
-            onClick={() => setStep((s) => s + 1)}
-            className="px-5 py-2.5 bg-cove-accent text-white rounded-lg ml-auto shadow-sm hover:bg-cove-accent-hover transition-colors focus:outline-none focus:ring-2 focus:ring-cove-accent/40"
-          >
-            Next
-          </button>
+
+        {step === 1 && (
+          <section className="onboarding-step" data-testid="profile-step">
+            <div className="onboarding-step-heading">
+              <p className="onboarding-eyebrow">Optional and private</p>
+              <h2>A little about you</h2>
+              <p>Share only what would help Cove respond more thoughtfully. Skipping everything is completely fine.</p>
+            </div>
+
+            <div className="onboarding-form-stack">
+              <div className="onboarding-field-card compact-field">
+                <div>
+                  <label htmlFor="onboarding-age">Your age</label>
+                  <p>Used only to adapt language and suggestions.</p>
+                </div>
+                <input
+                  id="onboarding-age"
+                  type="number"
+                  inputMode="numeric"
+                  value={age}
+                  onChange={(event) => setAge(event.target.value)}
+                  placeholder="Optional"
+                  min="13"
+                  max="120"
+                />
+              </div>
+
+              <div className="onboarding-field-card">
+                <div className="onboarding-field-heading">
+                  <div>
+                    <span className="onboarding-field-label">Conditions or diagnoses</span>
+                    <p>Select any that feel relevant.</p>
+                  </div>
+                  <span className="onboarding-optional-label">Optional</span>
+                </div>
+                <div className="onboarding-chip-grid">
+                  {CONDITIONS.map((condition) => {
+                    const selected = conditions.includes(condition);
+                    return (
+                      <button
+                        type="button"
+                        key={condition}
+                        aria-pressed={selected}
+                        onClick={() => toggleCondition(condition)}
+                        className={selected ? "is-selected" : ""}
+                      >
+                        {selected && <ChoiceCheck />}
+                        {condition}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="onboarding-field-card">
+                <label htmlFor="onboarding-medications">Medications</label>
+                <p>Add names separated by commas, or leave this blank.</p>
+                <input
+                  id="onboarding-medications"
+                  type="text"
+                  value={medications}
+                  onChange={(event) => setMedications(event.target.value)}
+                  placeholder="Example: Adderall, Lexapro"
+                />
+              </div>
+
+              <div className="onboarding-field-card">
+                <label htmlFor="onboarding-notes">Anything else?</label>
+                <p>A preference, challenge, or detail you’d like Cove to remember.</p>
+                <textarea
+                  id="onboarding-notes"
+                  value={profileNotes}
+                  onChange={(event) => setProfileNotes(event.target.value)}
+                  placeholder="Write as much or as little as you like"
+                  rows={3}
+                />
+              </div>
+            </div>
+          </section>
+        )}
+
+        {step === 2 && (
+          <section className="onboarding-step" data-testid="companion-step">
+            <div className="onboarding-step-heading">
+              <p className="onboarding-eyebrow">Your steady presence</p>
+              <h2>Choose a companion</h2>
+              <p>Pick the personality that feels easiest to have beside you. You can switch anytime.</p>
+            </div>
+            <CompanionPicker
+              selected={companionType}
+              onSelect={(type) => {
+                void tapLight();
+                setCompanionType(type);
+              }}
+              variant="onboarding"
+            />
+          </section>
+        )}
+
+        {step === 3 && (
+          <section className="onboarding-step" data-testid="modules-step">
+            <div className="onboarding-step-heading">
+              <p className="onboarding-eyebrow">Start simple</p>
+              <h2>Choose your tools</h2>
+              <p>Turn on only what sounds useful today. Cove stays calm when you keep the list small.</p>
+            </div>
+            <div className="onboarding-module-list">
+              {AVAILABLE_MODULES.map((module) => {
+                const enabled = modules[module.id];
+                return (
+                  <div
+                    key={module.id}
+                    className={`onboarding-module-card ${enabled ? "is-enabled" : ""}`}
+                  >
+                    <button
+                      type="button"
+                      className="onboarding-module-copy"
+                      onClick={() => setModules((current) => ({ ...current, [module.id]: !enabled }))}
+                    >
+                      <span className="onboarding-module-icon"><ModuleIcon name={module.icon} /></span>
+                      <span>
+                        <span className="onboarding-module-title">
+                          {module.name}
+                          {module.recommended && <span>Recommended</span>}
+                        </span>
+                        <span className="onboarding-module-description">{module.description}</span>
+                      </span>
+                    </button>
+                    <CoveSwitch
+                      checked={enabled}
+                      onCheckedChange={(checked) => {
+                        void tapLight();
+                        setModules((current) => ({ ...current, [module.id]: checked }));
+                      }}
+                      label={`${enabled ? "Disable" : "Enable"} ${module.name}`}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {step === 4 && (
+          <section className="onboarding-step" data-testid="theme-step">
+            <div className="onboarding-step-heading">
+              <p className="onboarding-eyebrow">Make it comfortable</p>
+              <h2>Choose your style</h2>
+              <p>Start with what feels easiest on your eyes. These controls stay in Settings.</p>
+            </div>
+
+            <div className="onboarding-preference-group">
+              <span className="onboarding-field-label">Appearance</span>
+              <div className="onboarding-theme-grid">
+                {[
+                  { id: "light", label: "Light", colors: ["#f7f5f0", "#fffdf9", "#6b8f71"] },
+                  { id: "dark", label: "Dark", colors: ["#1c1b18", "#242220", "#8db893"] },
+                ].map((option) => (
+                  <button
+                    type="button"
+                    key={option.id}
+                    aria-pressed={theme === option.id}
+                    onClick={() => {
+                      void tapLight();
+                      setTheme(option.id);
+                    }}
+                    className={theme === option.id ? "is-selected" : ""}
+                  >
+                    <span className="onboarding-theme-preview" style={{ background: option.colors[0] }}>
+                      <span style={{ background: option.colors[1] }} />
+                      <span style={{ background: option.colors[2] }} />
+                    </span>
+                    <span>{option.label}</span>
+                    {theme === option.id && <ChoiceCheck />}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="onboarding-preference-group">
+              <span className="onboarding-field-label">Spacing</span>
+              <div className="onboarding-segmented-control">
+                {["compact", "comfortable", "spacious"].map((option) => (
+                  <button
+                    type="button"
+                    key={option}
+                    aria-pressed={density === option}
+                    onClick={() => {
+                      void tapLight();
+                      setDensity(option);
+                    }}
+                    className={density === option ? "is-selected" : ""}
+                  >
+                    {option === "comfortable" ? "Balanced" : option}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="onboarding-preference-row">
+              <div>
+                <span className="onboarding-field-label">Gentle animations</span>
+                <p>Use subtle motion to make changes easier to follow.</p>
+              </div>
+              <CoveSwitch
+                checked={animationsOn}
+                onCheckedChange={setAnimationsOn}
+                label="Toggle animations"
+              />
+            </div>
+          </section>
+        )}
+
+        {step === 5 && (
+          <section className="onboarding-step onboarding-done" data-testid="done-step">
+            <div className="onboarding-done-mark" aria-hidden="true">
+              <svg width="42" height="42" viewBox="0 0 64 64"><path d="m16 33 10 10 23-25" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </div>
+            <p className="onboarding-eyebrow">That’s everything</p>
+            <h2>Your Cove is ready</h2>
+            <p>Start with one small thing. Your companion and tools will be waiting, and every choice can change later.</p>
+            <div className="onboarding-summary">
+              <div><span>Companion</span><strong className="capitalize">{companionType}</strong></div>
+              <div><span>Tools enabled</span><strong>{Object.values(modules).filter(Boolean).length}</strong></div>
+              <div><span>Appearance</span><strong className="capitalize">{theme}</strong></div>
+            </div>
+            {saveError && <p className="onboarding-save-error" role="alert">{saveError}</p>}
+          </section>
         )}
       </div>
-    </div>
+
+      <footer className="onboarding-actions">
+        <div className="onboarding-actions-inner">
+          {step > 0 && (
+            <button
+              type="button"
+              className="onboarding-back-button"
+              onClick={() => goToStep(step - 1)}
+              disabled={saving}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              Back
+            </button>
+          )}
+          {step < 5 ? (
+            <button
+              type="button"
+              className="onboarding-next-button"
+              onClick={() => goToStep(step + 1)}
+            >
+              {step === 0 ? "Make Cove mine" : "Continue"}
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="onboarding-next-button"
+              onClick={handleComplete}
+              disabled={saving}
+            >
+              {saving ? "Saving your Cove…" : "Enter Cove"}
+              {!saving && <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+            </button>
+          )}
+        </div>
+      </footer>
+    </main>
   );
 }

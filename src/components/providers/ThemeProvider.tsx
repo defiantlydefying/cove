@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { syncStatusBar } from "@/lib/capacitor/status-bar";
 
 const ACCENT_MAP: Record<string, { hover: string; light: string; sidebar: string }> = {
@@ -42,15 +43,27 @@ export function useTheme() {
 
 export default function ThemeProvider({ children }: { children: ReactNode }) {
   const { data: session } = useSession();
+  const pathname = usePathname();
   const [theme, setThemeState] = useState("light");
 
   useEffect(() => {
-    if (!session) return;
+    const isPreAppRoute =
+      pathname === "/" ||
+      pathname === "/login" ||
+      pathname === "/register" ||
+      pathname === "/onboarding" ||
+      pathname === "/age-check";
+
+    if (isPreAppRoute || !session) {
+      document.documentElement.setAttribute("data-theme", "light");
+      syncStatusBar("light");
+      return;
+    }
 
     fetch("/api/settings")
       .then((res) => res.json())
       .then((data) => {
-        if (data.theme) {
+        if (data.theme === "light" || data.theme === "dark") {
           setThemeState(data.theme);
           document.documentElement.setAttribute("data-theme", data.theme);
           syncStatusBar(data.theme);
@@ -66,7 +79,7 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
         }
       })
       .catch(() => {});
-  }, [session]);
+  }, [pathname, session]);
 
   const setTheme = (newTheme: string) => {
     setThemeState(newTheme);
