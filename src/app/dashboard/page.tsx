@@ -18,6 +18,11 @@ import CompanionScreen from "@/components/companion/CompanionScreen";
 import QuickCapture from "@/components/companion/QuickCapture";
 import type { CompanionType } from "@/lib/companions";
 import { useState, useEffect, useCallback, useRef } from "react";
+import {
+  isCanonicalModuleId,
+  toNavigationModuleId,
+  toPersistedModuleId,
+} from "@/lib/modules/ids";
 
 // SVG icons for nav items
 const icons = {
@@ -94,7 +99,7 @@ const defaultModuleStates: Record<string, boolean> = {
   gamification: true,
   productivity: true,
   "focus-habits": true,
-  community: false,
+  community: true,
 };
 
 export default function DashboardPage() {
@@ -113,8 +118,17 @@ export default function DashboardPage() {
       .then((modules: { moduleId: string; enabled: boolean }[]) => {
         if (Array.isArray(modules) && modules.length > 0) {
           const states: Record<string, boolean> = { ...defaultModuleStates };
+          // Read older navigation-keyed settings first, then let canonical
+          // settings from onboarding and Settings take precedence.
           for (const m of modules) {
-            states[m.moduleId] = m.enabled;
+            if (!isCanonicalModuleId(m.moduleId)) {
+              states[toNavigationModuleId(m.moduleId)] = m.enabled;
+            }
+          }
+          for (const m of modules) {
+            if (isCanonicalModuleId(m.moduleId)) {
+              states[toNavigationModuleId(m.moduleId)] = m.enabled;
+            }
           }
           setModuleStates(states);
         }
@@ -148,7 +162,7 @@ export default function DashboardPage() {
       fetch("/api/settings/modules", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ moduleId: tabId, enabled }),
+        body: JSON.stringify({ moduleId: toPersistedModuleId(tabId), enabled }),
       }).catch(() => {
         setModuleStates((prev) => ({ ...prev, [tabId]: !enabled }));
       });

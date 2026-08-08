@@ -45,10 +45,17 @@ describe("OnboardingWizard", () => {
     await user.click(screen.getByRole("button", { name: /continue/i }));
 
     expect(screen.getByTestId("modules-step")).toBeInTheDocument();
-    const routinesSwitch = screen.getByRole("switch", { name: /enable routines/i });
-    expect(routinesSwitch).toHaveAttribute("aria-checked", "false");
+    expect(screen.getAllByRole("switch")).toHaveLength(8);
+    for (const moduleSwitch of screen.getAllByRole("switch")) {
+      expect(moduleSwitch).toHaveAttribute("aria-checked", "true");
+    }
+    expect(screen.getByRole("switch", { name: /disable planner/i })).toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: /disable focus & habits/i })).toBeInTheDocument();
+
+    const routinesSwitch = screen.getByRole("switch", { name: /disable routines/i });
+    expect(routinesSwitch).toHaveAttribute("aria-checked", "true");
     await user.click(routinesSwitch);
-    expect(screen.getByRole("switch", { name: /disable routines/i })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("switch", { name: /enable routines/i })).toHaveAttribute("aria-checked", "false");
   });
 
   it("offers explicit appearance choices", async () => {
@@ -76,6 +83,28 @@ describe("OnboardingWizard", () => {
     const user = await advanceTo("done");
     await user.click(screen.getByRole("button", { name: /enter cove/i }));
 
+    expect(global.fetch).toHaveBeenCalledOnce();
+    expect(global.fetch).toHaveBeenCalledWith(
+      "/api/onboarding",
+      expect.objectContaining({ method: "PATCH" })
+    );
     expect(onComplete).toHaveBeenCalledOnce();
+  });
+
+  it("retries once when the database is waking up", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const onComplete = vi.fn();
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 503 })
+      .mockResolvedValueOnce({ ok: true, status: 200 });
+    render(<OnboardingWizard onComplete={onComplete} />);
+
+    const user = await advanceTo("done");
+    await user.click(screen.getByRole("button", { name: /enter cove/i }));
+
+    await vi.waitFor(() => expect(onComplete).toHaveBeenCalledOnce());
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
   });
 });

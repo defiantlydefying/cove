@@ -65,4 +65,21 @@ describe("SettingsPanel", () => {
       body: JSON.stringify({ theme: "dark" }),
     });
   });
+
+  it("treats modules without a saved preference as enabled", async () => {
+    render(<SettingsPanel />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("settings-panel")).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole("switch", { name: "Toggle Planner" })).toHaveAttribute(
+      "aria-checked",
+      "true"
+    );
+    expect(screen.getByRole("switch", { name: "Toggle Routine Builder" })).toHaveAttribute(
+      "aria-checked",
+      "false"
+    );
+  });
 });

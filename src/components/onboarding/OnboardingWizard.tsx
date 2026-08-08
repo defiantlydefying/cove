@@ -16,10 +16,26 @@ const AVAILABLE_MODULES = [
     icon: "check",
   },
   {
+    id: "productivity",
+    name: "Planner",
+    description: "See your week and give important work a place to land.",
+    defaultEnabled: true,
+    recommended: false,
+    icon: "calendar",
+  },
+  {
+    id: "focus-habits",
+    name: "Focus & habits",
+    description: "Use focus timers, habit check-ins, and weekly goals.",
+    defaultEnabled: true,
+    recommended: false,
+    icon: "focus",
+  },
+  {
     id: "routine-builder",
     name: "Routines",
     description: "Create gentle structures for the things you repeat.",
-    defaultEnabled: false,
+    defaultEnabled: true,
     recommended: false,
     icon: "repeat",
   },
@@ -27,7 +43,7 @@ const AVAILABLE_MODULES = [
     id: "wellness-tracker",
     name: "Wellness",
     description: "Notice patterns in mood, energy, sleep, and wellbeing.",
-    defaultEnabled: false,
+    defaultEnabled: true,
     recommended: false,
     icon: "heart",
   },
@@ -35,7 +51,7 @@ const AVAILABLE_MODULES = [
     id: "reminders",
     name: "Reminders",
     description: "Receive low-pressure nudges at the moments you choose.",
-    defaultEnabled: false,
+    defaultEnabled: true,
     recommended: false,
     icon: "bell",
   },
@@ -43,7 +59,7 @@ const AVAILABLE_MODULES = [
     id: "gamification",
     name: "Progress",
     description: "Use streaks and small wins when they feel motivating.",
-    defaultEnabled: false,
+    defaultEnabled: true,
     recommended: false,
     icon: "spark",
   },
@@ -51,7 +67,7 @@ const AVAILABLE_MODULES = [
     id: "community",
     name: "Community",
     description: "Browse and share routines. This space is always optional.",
-    defaultEnabled: false,
+    defaultEnabled: true,
     recommended: false,
     icon: "people",
   },
@@ -94,6 +110,8 @@ function ModuleIcon({ name }: { name: string }) {
   if (name === "heart") return <svg {...common}><path d="M20 8.5c0 5-8 10.5-8 10.5S4 13.5 4 8.5a4.2 4.2 0 0 1 7.2-3l.8.8.8-.8A4.2 4.2 0 0 1 20 8.5Z" /></svg>;
   if (name === "bell") return <svg {...common}><path d="M18 9a6 6 0 0 0-12 0c0 6-2.5 7.5-2.5 7.5h17S18 15 18 9ZM10 20h4" /></svg>;
   if (name === "people") return <svg {...common}><circle cx="9" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0M14 15a4.5 4.5 0 0 1 6.5 4" /></svg>;
+  if (name === "calendar") return <svg {...common}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /><path d="M8 14h3M13 14h3M8 17h3" /></svg>;
+  if (name === "focus") return <svg {...common}><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>;
   return <svg {...common}><path d="m12 2 1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2ZM18.5 15l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z" /></svg>;
 }
 
@@ -143,35 +161,32 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
     setSaveError("");
 
     try {
-      const responses = await Promise.all([
-        ...Object.entries(modules).map(([moduleId, enabled]) =>
-          fetch("/api/settings/modules", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ moduleId, enabled }),
-          })
-        ),
-        fetch("/api/settings", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ theme, density, animationsOn, companionType }),
-        }),
-        fetch("/api/profile", {
+      const saveSetup = () =>
+        fetch("/api/onboarding", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            age: age ? Number.parseInt(age, 10) : null,
-            conditions,
-            medications: medications
-              ? medications.split(",").map((item) => item.trim()).filter(Boolean)
-              : [],
-            notes: profileNotes || null,
+            modules,
+            settings: { theme, density, animationsOn, companionType },
+            profile: {
+              age: age ? Number.parseInt(age, 10) : null,
+              conditions,
+              medications: medications
+                ? medications.split(",").map((item) => item.trim()).filter(Boolean)
+                : [],
+              notes: profileNotes || null,
+            },
           }),
-        }),
-      ]);
+        });
 
-      if (responses.some((response) => !response.ok)) {
-        throw new Error("One or more onboarding settings could not be saved");
+      let response = await saveSetup();
+      if ([502, 503, 504].includes(response.status)) {
+        await new Promise((resolve) => window.setTimeout(resolve, 750));
+        response = await saveSetup();
+      }
+
+      if (!response.ok) {
+        throw new Error("Onboarding settings could not be saved");
       }
 
       onComplete();
@@ -324,7 +339,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
             <div className="onboarding-step-heading">
               <p className="onboarding-eyebrow">Start simple</p>
               <h2>Choose your tools</h2>
-              <p>Turn on only what sounds useful today. Cove stays calm when you keep the list small.</p>
+              <p>Everything starts on so you can explore Cove. Turn off anything you don&rsquo;t want right now.</p>
             </div>
             <div className="onboarding-module-list">
               {AVAILABLE_MODULES.map((module) => {

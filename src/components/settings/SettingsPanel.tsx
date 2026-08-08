@@ -284,7 +284,7 @@ export default function SettingsPanel() {
         <div className="space-y-2">
           {ALL_MODULES.map((mod) => {
             const moduleSetting = modules.find((m) => m.moduleId === mod.id);
-            const enabled = moduleSetting?.enabled ?? false;
+            const enabled = moduleSetting?.enabled ?? true;
             return (
               <div
                 key={mod.id}
