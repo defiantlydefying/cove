@@ -2,11 +2,8 @@
 
 import { motion } from "framer-motion";
 import MorphingBlob from "./MorphingBlob";
-import { useReducedMotion } from "@/lib/useReducedMotion";
 
 export default function EmpathyBreak() {
-  const reduced = useReducedMotion();
-
   const lines = [
     { text: "You don't need to work harder.", delay: 0 },
     { text: "You don't need another system that makes you feel behind.", delay: 0.2 },

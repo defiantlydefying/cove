@@ -1,57 +1,66 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import TaskItem, { Task } from "./TaskItem";
 
 const baseTask: Task = {
   id: "1",
   title: "Buy groceries",
   completed: false,
+  status: "active",
+  stage: "today",
+  priority: "medium",
+  sortOrder: 0,
+};
+
+const defaultProps = {
+  onToggle: vi.fn(),
+  onDelete: vi.fn(),
+  onUpdate: vi.fn(),
+  onAddSubTasks: vi.fn(),
 };
 
 describe("TaskItem", () => {
   it("renders task title", () => {
-    render(<TaskItem task={baseTask} onToggle={vi.fn()} onDelete={vi.fn()} />);
+    render(<TaskItem task={baseTask} {...defaultProps} />);
     expect(screen.getByText("Buy groceries")).toBeInTheDocument();
   });
 
   it("shows checkbox checked when completed", () => {
-    const task = { ...baseTask, completed: true };
-    render(<TaskItem task={task} onToggle={vi.fn()} onDelete={vi.fn()} />);
-    const checkbox = screen.getByRole("checkbox") as HTMLInputElement;
-    expect(checkbox.checked).toBe(true);
+    const task = { ...baseTask, completed: true, status: "completed" };
+    render(<TaskItem task={task} {...defaultProps} />);
+    expect(screen.getByRole("checkbox")).toBeChecked();
   });
 
   it("calls onToggle when checkbox clicked", async () => {
     const onToggle = vi.fn();
-    render(<TaskItem task={baseTask} onToggle={onToggle} onDelete={vi.fn()} />);
+    render(<TaskItem task={baseTask} {...defaultProps} onToggle={onToggle} />);
     await userEvent.click(screen.getByRole("checkbox"));
     expect(onToggle).toHaveBeenCalledWith("1");
   });
 
   it("calls onDelete when delete button clicked", async () => {
     const onDelete = vi.fn();
-    render(<TaskItem task={baseTask} onToggle={vi.fn()} onDelete={onDelete} />);
+    render(<TaskItem task={baseTask} {...defaultProps} onDelete={onDelete} />);
     await userEvent.click(screen.getByLabelText("Delete Buy groceries"));
     expect(onDelete).toHaveBeenCalledWith("1");
   });
 
-  it("shows deadline when present", () => {
-    const task = { ...baseTask, deadline: "2026-04-01" };
-    render(<TaskItem task={task} onToggle={vi.fn()} onDelete={vi.fn()} />);
-    expect(screen.getByText("2026-04-01")).toBeInTheDocument();
+  it("shows a formatted deadline", () => {
+    const task = { ...baseTask, deadline: "2999-04-01T12:00:00" };
+    render(<TaskItem task={task} {...defaultProps} />);
+    expect(screen.getByText(/Due Apr 1/)).toBeInTheDocument();
   });
 
-  it("shows energy level badge when present", () => {
+  it("shows the normalized energy label", () => {
     const task: Task = { ...baseTask, energyLevel: "low energy" };
-    render(<TaskItem task={task} onToggle={vi.fn()} onDelete={vi.fn()} />);
-    expect(screen.getByText("low energy")).toBeInTheDocument();
+    render(<TaskItem task={task} {...defaultProps} />);
+    expect(screen.getByText("Low")).toBeInTheDocument();
   });
 
   it("applies line-through styling when completed", () => {
-    const task = { ...baseTask, completed: true };
-    render(<TaskItem task={task} onToggle={vi.fn()} onDelete={vi.fn()} />);
-    const title = screen.getByText("Buy groceries");
-    expect(title.className).toContain("line-through");
+    const task = { ...baseTask, completed: true, status: "completed" };
+    render(<TaskItem task={task} {...defaultProps} />);
+    expect(screen.getByText("Buy groceries")).toHaveClass("line-through");
   });
 });

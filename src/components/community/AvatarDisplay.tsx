@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getAvatarByKey, getAvatarUrl } from "@/lib/avatars";
 
 interface AvatarDisplayProps {
@@ -19,11 +20,12 @@ export default function AvatarDisplay({ avatarKey, size = "md", className = "" }
   const { className: sizeClass, px } = sizeConfig[size];
 
   return (
-    <img
+    <Image
       src={getAvatarUrl(key, category, px * 2)}
       alt={avatar?.label ?? "Avatar"}
       width={px}
       height={px}
+      unoptimized
       className={`rounded-full bg-cove-offwhite border border-cove-border-light shrink-0 ${sizeClass} ${className}`}
     />
   );

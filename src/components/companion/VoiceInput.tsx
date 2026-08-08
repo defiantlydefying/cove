@@ -21,8 +21,11 @@ export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) 
   const SILENCE_TIMEOUT = 3500;
 
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    setSupported(!!SpeechRecognition);
+    const timer = window.setTimeout(() => {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      setSupported(Boolean(SpeechRecognition));
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   // Start volume monitoring via Web Audio API

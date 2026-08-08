@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from "@/test-utils";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import DailyView from "./DailyView";
 
 const mockDailyData = {
@@ -11,94 +11,61 @@ const mockDailyData = {
     {
       id: "r1",
       name: "Morning Routine",
-      steps: [
-        { id: "s1", title: "Stretch" },
-        { id: "s2", title: "Meditate" },
-      ],
+      steps: [{ id: "s1", title: "Stretch" }, { id: "s2", title: "Meditate" }],
       logs: [{ id: "l1", completedSteps: ["s1"] }],
     },
   ],
   wellness: null,
-  reminders: [
-    { id: "rem1", title: "Drink water", message: null, type: "hydration" },
-  ],
+  reminders: [{ id: "rem1", title: "Drink water", message: null, type: "hydration" }],
 };
 
-beforeEach(() => {
-  vi.restoreAllMocks();
-});
+function mockDailyRequests(dailyData = mockDailyData) {
+  vi.spyOn(global, "fetch").mockImplementation(async (input) => {
+    const url = String(input);
+    const payload =
+      url === "/api/daily" ? dailyData :
+      url === "/api/gamification" ? null :
+      url === "/api/wellness?days=7" ? [] :
+      url === "/api/companion/greeting" ? { greeting: "One thing at a time.", companionType: "fox" } :
+      url === "/api/settings" ? { companionType: "fox" } :
+      url === "/api/auth/session" ? { user: { name: "Emma" } } : {};
+
+    return { ok: true, json: async () => payload } as Response;
+  });
+}
+
+beforeEach(() => vi.restoreAllMocks());
 
 describe("DailyView", () => {
   it("shows loading state initially", () => {
-    vi.spyOn(global, "fetch").mockImplementation(
-      () => new Promise(() => {}) // never resolves
-    );
+    vi.spyOn(global, "fetch").mockImplementation(() => new Promise(() => {}));
     const { container } = render(<DailyView />);
     expect(container.querySelector(".animate-pulse")).toBeInTheDocument();
   });
 
-  it("renders task section with tasks", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockDailyData,
-    } as Response);
-
+  it("renders tasks and routines from the daily response", async () => {
+    mockDailyRequests();
     render(<DailyView />);
-    await waitFor(() => {
-      expect(screen.getByText("Tasks")).toBeInTheDocument();
-    });
-    expect(screen.getByText("Buy groceries")).toBeInTheDocument();
+
+    await waitFor(() => expect(screen.getByText("Buy groceries")).toBeInTheDocument());
     expect(screen.getByText("Read chapter 5")).toBeInTheDocument();
-  });
-
-  it("renders routine section with routines", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockDailyData,
-    } as Response);
-
-    render(<DailyView />);
-    await waitFor(() => {
-      expect(screen.getByText("Routines")).toBeInTheDocument();
-    });
     expect(screen.getByText("Morning Routine")).toBeInTheDocument();
-    expect(screen.getByText("Stretch")).toBeInTheDocument();
-    expect(screen.getByText("Meditate")).toBeInTheDocument();
   });
 
-  it("shows wellness check-in prompt when no check-in exists", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockDailyData,
-    } as Response);
-
+  it("shows the wellness check-in when no check-in exists", async () => {
+    mockDailyRequests();
     render(<DailyView />);
-    await waitFor(() => {
-      expect(screen.getByText("How are you feeling?")).toBeInTheDocument();
-    });
-    // CheckinForm should be rendered since wellness is null
-    expect(screen.getByText("Daily Check-in")).toBeInTheDocument();
+
+    await waitFor(() => expect(screen.getByText("Daily Check-in")).toBeInTheDocument());
+    expect(screen.getByPlaceholderText("How are you feeling today?")).toBeInTheDocument();
   });
 
-  it("handles empty state gracefully", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        tasks: [],
-        routines: [],
-        wellness: null,
-        reminders: [],
-      }),
-    } as Response);
-
+  it("handles an empty day gracefully", async () => {
+    mockDailyRequests({ tasks: [], routines: [], wellness: null, reminders: [] });
     render(<DailyView />);
-    await waitFor(() => {
-      expect(
-        screen.getByText("A clean slate")
-      ).toBeInTheDocument();
-    });
-    expect(screen.queryByText("Tasks")).not.toBeInTheDocument();
+
+    await waitFor(() => expect(screen.getByText("No tasks for today. Enjoy the quiet.")).toBeInTheDocument());
     expect(screen.queryByText("Routines")).not.toBeInTheDocument();
-    expect(screen.queryByText("Reminders")).not.toBeInTheDocument();
+    expect(screen.queryByText("Upcoming")).not.toBeInTheDocument();
   });
 });

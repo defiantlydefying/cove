@@ -65,15 +65,22 @@ export default memo(function RoutineCard({
     0
   );
 
-  // Calculate start times for each step
-  let cumulativeMinutes = 0;
-  const stepTimes = routine.steps.map((step) => {
-    const time = routine.startTime
-      ? addMinutes(routine.startTime, cumulativeMinutes)
-      : null;
-    cumulativeMinutes += step.durationMinutes ?? 0;
-    return time;
-  });
+  // Calculate start times for each step without mutating render-scoped state.
+  const stepTimes = routine.steps.reduce<{
+    times: Array<string | null>;
+    elapsedMinutes: number;
+  }>(
+    (result, step) => ({
+      times: [
+        ...result.times,
+        routine.startTime
+          ? addMinutes(routine.startTime, result.elapsedMinutes)
+          : null,
+      ],
+      elapsedMinutes: result.elapsedMinutes + (step.durationMinutes ?? 0),
+    }),
+    { times: [], elapsedMinutes: 0 }
+  ).times;
 
   return (
     <div

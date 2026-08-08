@@ -18,9 +18,10 @@ export default function WelcomeModal() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("welcome") === "1") {
-      setShow(true);
+      const timer = window.setTimeout(() => setShow(true), 0);
       // Clean up URL without reload
       window.history.replaceState({}, "", "/dashboard");
+      return () => window.clearTimeout(timer);
     }
   }, []);
 

@@ -162,7 +162,7 @@ export default function ImageCapture({ companionType, onComplete, onClose }: Ima
           <div className="flex items-center gap-2">
             <CompanionAvatar type={companionType} size="sm" />
             <p className="text-sm text-cove-charcoal">
-              Upload a screenshot and I'll pull out all the tasks and due dates for you.
+              Upload a screenshot and I&rsquo;ll pull out all the tasks and due dates for you.
             </p>
           </div>
           <button

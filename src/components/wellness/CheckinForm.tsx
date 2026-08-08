@@ -108,7 +108,6 @@ export default function CheckinForm({
     onChange: (v: number) => void,
     showFaces?: boolean
   ) => {
-    const selectedIndex = value ? value - 1 : -1;
     const fillPercent = value ? (value / 5) * 100 : 0;
 
     return (

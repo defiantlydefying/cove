@@ -155,14 +155,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       /* non-blocking */
     }
 
-    // Sync linked planner items (linkedTaskId field may not exist yet)
+    // Sync linked planner items.
     try {
-      await (prisma.plannerItem as any).updateMany({
+      await prisma.plannerItem.updateMany({
         where: { linkedTaskId: id },
         data: { completed: true },
       });
     } catch {
-      /* linkedTaskId field may not exist yet */
+      /* non-blocking */
     }
   }
 

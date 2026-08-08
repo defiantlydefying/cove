@@ -200,7 +200,7 @@ export default function BrainDump({ companionType, onComplete, onClose }: BrainD
           <div className="flex items-center gap-2">
             <CompanionAvatar type={companionType} size="sm" />
             <p className="text-sm text-cove-charcoal">
-              Empty your head. Type everything, no need to organize — I'll sort it out.
+              Empty your head. Type everything, no need to organize — I&rsquo;ll sort it out.
             </p>
           </div>
           <button

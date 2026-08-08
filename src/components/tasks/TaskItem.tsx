@@ -46,7 +46,6 @@ interface TaskItemProps {
   onUpdate: (id: string, data: Partial<Task>) => void;
   onAddSubTasks: (parentId: string, steps: { title: string }[]) => void;
   compact?: boolean;
-  draggable?: boolean;
   onDragStart?: () => void;
 }
 
@@ -77,7 +76,6 @@ export default memo(function TaskItem({
   onUpdate,
   onAddSubTasks,
   compact = false,
-  draggable = false,
   onDragStart,
 }: TaskItemProps) {
   const [expanded, setExpanded] = useState(false);

@@ -11,7 +11,6 @@ import BrainDump from "./BrainDump";
 import ImageCapture from "./ImageCapture";
 import CrisisResources from "./CrisisResources";
 import type { CompanionType } from "@/lib/companions";
-import { getCompanion } from "@/lib/companions";
 import { getCompanionCopy } from "@/lib/companionCopy";
 
 interface ChatMessage {
@@ -101,7 +100,6 @@ export default function CompanionScreen() {
       body: JSON.stringify({ companionType: type, companionChosen: true }),
     });
 
-    const companion = getCompanion(type);
     const intro = getCompanionCopy(type, "intro");
     setMessages([
       {

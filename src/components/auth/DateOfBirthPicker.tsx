@@ -67,15 +67,17 @@ export default function DateOfBirthPicker({
 
   // Stay in sync if the parent resets `value` to a complete date or to "".
   useEffect(() => {
-    if (value === "") {
-      setParts((p) => (p.year || p.month || p.day ? { year: 0, month: 0, day: 0 } : p));
-    } else {
-      const next = parse(value);
-      setParts((p) =>
-        p.year === next.year && p.month === next.month && p.day === next.day ? p : next,
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const timer = window.setTimeout(() => {
+      if (value === "") {
+        setParts((p) => (p.year || p.month || p.day ? { year: 0, month: 0, day: 0 } : p));
+      } else {
+        const next = parse(value);
+        setParts((p) =>
+          p.year === next.year && p.month === next.month && p.day === next.day ? p : next,
+        );
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [value]);
 
   const currentYear = new Date().getFullYear();

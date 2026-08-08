@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import type { PlannerItem as PlannerItemType } from "./ProductivityContext";
 import PlannerItem from "./PlannerItem";
@@ -102,7 +102,7 @@ export default function PlannerPriorityView({
     position: { top: number; left: number };
   } | null>(null);
 
-  const handleGridClick = useCallback((e: React.MouseEvent<HTMLDivElement>, dayDate: string) => {
+  const handleGridClick = (e: React.MouseEvent<HTMLDivElement>, dayDate: string) => {
     if (editor) return;
     const target = e.target as HTMLElement;
     if (target.closest("[data-event-block]") || target.closest("[data-event-editor]")) return;
@@ -124,9 +124,9 @@ export default function PlannerPriorityView({
       zone: "must",
       position: { top: e.clientY, left: e.clientX },
     });
-  }, [editor]);
+  };
 
-  const handleTaskDrop = useCallback((e: React.DragEvent, dayDate: string) => {
+  const handleTaskDrop = (e: React.DragEvent, dayDate: string) => {
     e.preventDefault();
     const taskData = e.dataTransfer.getData("application/cove-task");
     if (!taskData) return;
@@ -150,9 +150,9 @@ export default function PlannerPriorityView({
       zone,
       position: { top: e.clientY, left: e.clientX },
     });
-  }, []);
+  };
 
-  const handleBlockClick = useCallback((e: React.MouseEvent, item: PlannerItemType) => {
+  const handleBlockClick = (e: React.MouseEvent, item: PlannerItemType) => {
     e.stopPropagation();
     const itemDate = typeof item.date === "string" ? item.date.split("T")[0] : new Date(item.date).toISOString().split("T")[0];
     setEditor({
@@ -166,9 +166,9 @@ export default function PlannerPriorityView({
       recurrence: item.recurrence ?? "none",
       position: { top: e.clientY, left: e.clientX },
     });
-  }, []);
+  };
 
-  const handleEditorSave = useCallback((data: { id?: string; title: string; date?: string; startTime: string; endTime: string; zone: string; recurrence?: string }) => {
+  const handleEditorSave = (data: { id?: string; title: string; date?: string; startTime: string; endTime: string; zone: string; recurrence?: string }) => {
     if (editor?.mode === "edit" && data.id) {
       onUpdate({ id: data.id, title: data.title, date: data.date, startTime: data.startTime, endTime: data.endTime, zone: data.zone, recurrence: data.recurrence ?? "none" });
     } else {
@@ -177,12 +177,12 @@ export default function PlannerPriorityView({
     }
     pendingLinkedTaskId.current = null;
     setEditor(null);
-  }, [editor, onUpdate, onAdd]);
+  };
 
-  const handleEditorDelete = useCallback(() => {
+  const handleEditorDelete = () => {
     if (editor?.itemId) onDelete(editor.itemId);
     setEditor(null);
-  }, [editor, onDelete]);
+  };
 
   const handleZoneAdd = (zone: string) => {
     const title = newItems[zone]?.trim();

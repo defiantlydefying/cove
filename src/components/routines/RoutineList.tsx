@@ -185,7 +185,7 @@ export default function RoutineList() {
     }
   }
 
-  function handleEdit(_routineId: string) {
+  function handleEdit() {
     // Edit functionality not yet implemented
   }
 

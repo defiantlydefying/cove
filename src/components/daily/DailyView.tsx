@@ -191,31 +191,6 @@ export default function DailyView() {
     }
   }
 
-  async function handleStepToggle(routineId: string, stepId: string, checked: boolean) {
-    if (!data) return;
-    setData({
-      ...data,
-      routines: data.routines.map((r) => {
-        if (r.id !== routineId) return r;
-        const log = r.logs[0];
-        const currentSteps = log?.completedSteps ?? [];
-        const nextSteps = checked ? [...currentSteps, stepId] : currentSteps.filter((id) => id !== stepId);
-        return { ...r, logs: [{ id: log?.id ?? "temp", completedSteps: nextSteps }] };
-      }),
-    });
-    try {
-      const res = await fetch(`/api/routines/${routineId}/log`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stepId, checked }),
-      });
-      if (!res.ok) throw new Error();
-    } catch {
-      await fetchData();
-      toast("Couldn\u2019t save step progress. Try again.", "error");
-    }
-  }
-
   async function handleWellnessSubmit(checkinData: WellnessCheckinData) {
     try {
       const res = await fetch("/api/wellness", {

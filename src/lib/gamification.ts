@@ -219,8 +219,6 @@ async function checkAchievements(userId: string) {
   const focusTotal = streakMap.get("focus")?.totalXp || 0;
   const habitsStreak = streakMap.get("habits")?.currentStreak || 0;
   const wellnessStreak = streakMap.get("wellness")?.currentStreak || 0;
-  const routinesStreak = streakMap.get("routines")?.currentStreak || 0;
-
   // Count focus sessions and habit checks for milestone checks
   const [focusCount, habitCheckCount] = await Promise.all([
     prisma.focusSession.count({ where: { userId, sessionType: "focus" } }),

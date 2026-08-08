@@ -4,8 +4,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import TaskList from "./TaskList";
 
 const mockTasks = [
-  { id: "1", title: "Buy groceries", completed: false },
-  { id: "2", title: "Walk the dog", completed: true },
+  { id: "1", title: "Buy groceries", completed: false, status: "active", stage: "today", priority: "medium", sortOrder: 0 },
+  { id: "2", title: "Walk the dog", completed: true, status: "completed", stage: "today", priority: "medium", sortOrder: 1 },
 ];
 
 beforeEach(() => {
@@ -35,15 +35,23 @@ describe("TaskList", () => {
   });
 
   it("adds a new task via TaskInput", async () => {
-    vi.spyOn(global, "fetch")
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => [],
-      } as Response)
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ id: "3", title: "New task", completed: false }),
-      } as Response);
+    const createdTask = {
+      id: "3",
+      title: "New task",
+      completed: false,
+      status: "active",
+      stage: "today",
+      priority: "medium",
+      sortOrder: 0,
+    };
+    let tasks: typeof mockTasks = [];
+    vi.spyOn(global, "fetch").mockImplementation(async (input, init) => {
+      if (String(input) === "/api/tasks" && init?.method === "POST") {
+        tasks = [createdTask];
+        return { ok: true, json: async () => createdTask } as Response;
+      }
+      return { ok: true, json: async () => tasks } as Response;
+    });
 
     render(<TaskList />);
 
@@ -52,7 +60,7 @@ describe("TaskList", () => {
     });
 
     const input = screen.getByPlaceholderText("Add a task...");
-    await userEvent.type(input, "New task{Enter}");
+    await userEvent.type(input, "today: New task{Enter}");
 
     await waitFor(() => {
       expect(screen.getByText("New task")).toBeInTheDocument();

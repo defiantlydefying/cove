@@ -1,22 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
+
+function subscribeToConnection(callback: () => void) {
+  window.addEventListener("online", callback);
+  window.addEventListener("offline", callback);
+  return () => {
+    window.removeEventListener("online", callback);
+    window.removeEventListener("offline", callback);
+  };
+}
+
+function getOfflineSnapshot() {
+  return !navigator.onLine;
+}
 
 export default function OfflineBanner() {
-  const [offline, setOffline] = useState(false);
-
-  useEffect(() => {
-    function handleOnline() { setOffline(false); }
-    function handleOffline() { setOffline(true); }
-
-    setOffline(!navigator.onLine);
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
-  }, []);
+  const offline = useSyncExternalStore(
+    subscribeToConnection,
+    getOfflineSnapshot,
+    () => false
+  );
 
   if (!offline) return null;
 
@@ -25,7 +29,7 @@ export default function OfflineBanner() {
       role="status"
       className="bg-cove-amber/15 text-cove-charcoal text-sm text-center py-2 px-4 border-b border-cove-amber/30"
     >
-      You're offline - some features unavailable
+      You&rsquo;re offline - some features unavailable
     </div>
   );
 }

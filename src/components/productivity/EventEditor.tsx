@@ -86,8 +86,7 @@ export default function EventEditor({
   // Notify parent of changes for live preview
   useEffect(() => {
     onChange?.({ title, date, startTime, endTime, zone });
-  }, [title, date, startTime, endTime, zone]);
-  const [showDayPicker, setShowDayPicker] = useState(false);
+  }, [title, date, startTime, endTime, zone, onChange]);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
@@ -207,7 +206,7 @@ export default function EventEditor({
       <div className="px-3 pb-4 space-y-0">
         {/* Date + time row */}
         <button
-          onClick={() => { setShowTimePicker(!showTimePicker); setShowDayPicker(false); }}
+          onClick={() => setShowTimePicker(!showTimePicker)}
           className="w-full flex items-center gap-4 py-3 hover:bg-[#f1f3f4] px-3 rounded-md transition-colors"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5f6368" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

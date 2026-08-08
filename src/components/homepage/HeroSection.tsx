@@ -50,7 +50,10 @@ function SplitText({
   afterAccent?: string;
 }) {
   const [ready, setReady] = useState(false);
-  useEffect(() => setReady(true), []);
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setReady(true));
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   const line1WordCount = children.split(" ").length;
 
