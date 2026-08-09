@@ -322,9 +322,29 @@ button, input, select, textarea {
   min-height: 100dvh;
   color: var(--cove-charcoal);
   color-scheme: light;
-  background:
-    radial-gradient(circle at 85% 4%, rgba(126, 170, 160, 0.18), transparent 28%),
-    var(--cove-offwhite);
+  background-color: var(--cove-offwhite);
+  background-image: radial-gradient(circle at 85% 4%, rgba(126, 170, 160, 0.18), transparent 28%);
+}
+
+.onboarding-shell[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+.onboarding-shell[data-animations="on"],
+.onboarding-shell[data-animations="on"] .onboarding-header,
+.onboarding-shell[data-animations="on"] .onboarding-actions,
+.onboarding-shell[data-animations="on"] .onboarding-theme-grid > button,
+.onboarding-shell[data-animations="on"] .onboarding-segmented-control,
+.onboarding-shell[data-animations="on"] .onboarding-segmented-control button,
+.onboarding-shell[data-animations="on"] .onboarding-preference-row {
+  transition:
+    color 320ms ease,
+    background-color 320ms ease,
+    border-color 320ms ease,
+    box-shadow 320ms ease,
+    padding 260ms cubic-bezier(0.22, 0.8, 0.25, 1),
+    min-height 260ms cubic-bezier(0.22, 0.8, 0.25, 1),
+    margin 260ms cubic-bezier(0.22, 0.8, 0.25, 1);
 }
 
 .onboarding-header {
@@ -395,6 +415,43 @@ button, input, select, textarea {
   min-height: calc(100dvh - 214px);
   margin: 0 auto;
   padding: 32px 28px 42px;
+}
+
+.onboarding-shell[data-animations="on"] .onboarding-body,
+.onboarding-shell[data-animations="on"] .onboarding-step-heading,
+.onboarding-shell[data-animations="on"] .onboarding-preference-group {
+  transition:
+    padding 260ms cubic-bezier(0.22, 0.8, 0.25, 1),
+    margin 260ms cubic-bezier(0.22, 0.8, 0.25, 1);
+}
+
+.onboarding-shell[data-animations="on"] .onboarding-style-step h2,
+.onboarding-shell[data-animations="on"] .onboarding-style-step p,
+.onboarding-shell[data-animations="on"] .onboarding-style-step .onboarding-field-label,
+.onboarding-shell[data-animations="on"] .onboarding-style-step button {
+  transition:
+    color 320ms ease,
+    background-color 320ms ease,
+    border-color 320ms ease,
+    box-shadow 320ms ease;
+}
+
+.onboarding-shell[data-density="compact"] .onboarding-body {
+  padding-top: 22px;
+  padding-bottom: 30px;
+}
+
+.onboarding-shell[data-density="spacious"] .onboarding-body {
+  padding-top: 42px;
+  padding-bottom: 54px;
+}
+
+.onboarding-shell[data-density="compact"] .onboarding-step-heading {
+  margin-bottom: 20px;
+}
+
+.onboarding-shell[data-density="spacious"] .onboarding-step-heading {
+  margin-bottom: 36px;
 }
 
 .onboarding-step {
@@ -747,6 +804,16 @@ button, input, select, textarea {
   margin-top: 24px;
 }
 
+.onboarding-shell[data-density="compact"] .onboarding-preference-group + .onboarding-preference-group,
+.onboarding-shell[data-density="compact"] .onboarding-preference-row {
+  margin-top: 16px;
+}
+
+.onboarding-shell[data-density="spacious"] .onboarding-preference-group + .onboarding-preference-group,
+.onboarding-shell[data-density="spacious"] .onboarding-preference-row {
+  margin-top: 32px;
+}
+
 .onboarding-theme-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -769,6 +836,16 @@ button, input, select, textarea {
   text-align: left;
   font-size: 15px;
   font-weight: 650;
+}
+
+.onboarding-shell[data-density="compact"] .onboarding-theme-grid > button {
+  min-height: 76px;
+  padding: 9px;
+}
+
+.onboarding-shell[data-density="spacious"] .onboarding-theme-grid > button {
+  min-height: 102px;
+  padding: 16px;
 }
 
 .onboarding-theme-grid > button.is-selected {
@@ -825,6 +902,14 @@ button, input, select, textarea {
   text-transform: capitalize;
 }
 
+.onboarding-shell[data-density="compact"] .onboarding-segmented-control button {
+  min-height: 36px;
+}
+
+.onboarding-shell[data-density="spacious"] .onboarding-segmented-control button {
+  min-height: 50px;
+}
+
 .onboarding-segmented-control button.is-selected {
   color: var(--cove-charcoal);
   background: var(--cove-card);
@@ -836,6 +921,14 @@ button, input, select, textarea {
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+}
+
+.onboarding-shell[data-density="compact"] .onboarding-preference-row {
+  padding: 16px;
+}
+
+.onboarding-shell[data-density="spacious"] .onboarding-preference-row {
+  padding: 26px;
 }
 
 .onboarding-done {

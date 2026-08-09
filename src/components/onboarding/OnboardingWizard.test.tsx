@@ -61,10 +61,21 @@ describe("OnboardingWizard", () => {
   it("offers explicit appearance choices", async () => {
     render(<OnboardingWizard onComplete={vi.fn()} />);
 
-    await advanceTo("theme");
+    const user = await advanceTo("theme");
     expect(screen.getByTestId("theme-step")).toBeInTheDocument();
     expect(screen.getByText("Choose your style")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /light/i })).toHaveAttribute("aria-pressed", "true");
+
+    await user.click(screen.getByRole("button", { name: /dark/i }));
+    expect(screen.getByRole("main")).toHaveAttribute("data-theme", "dark");
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+
+    await user.click(screen.getByRole("button", { name: /spacious/i }));
+    expect(screen.getByRole("main")).toHaveAttribute("data-density", "spacious");
+    expect(document.documentElement).toHaveAttribute("data-density", "spacious");
+
+    await user.click(screen.getByRole("switch", { name: /toggle animations/i }));
+    expect(screen.getByRole("main")).toHaveAttribute("data-animations", "off");
   });
 
   it("shows a setup summary before entering Cove", async () => {

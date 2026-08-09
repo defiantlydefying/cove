@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CompanionPicker from "@/components/companion/CompanionPicker";
 import CoveSwitch from "@/components/ui/CoveSwitch";
 import type { CompanionType } from "@/lib/companions";
 import { tapLight } from "@/lib/capacitor/haptics";
+import { syncStatusBar } from "@/lib/capacitor/status-bar";
 
 const AVAILABLE_MODULES = [
   {
@@ -141,6 +142,15 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    void syncStatusBar(theme);
+  }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-density", density);
+  }, [density]);
+
   const goToStep = (nextStep: number) => {
     void tapLight();
     setStep(nextStep);
@@ -197,7 +207,12 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
   };
 
   return (
-    <main className="onboarding-shell" data-theme="light">
+    <main
+      className="onboarding-shell"
+      data-theme={theme}
+      data-density={density}
+      data-animations={animationsOn ? "on" : "off"}
+    >
       <header className="onboarding-header">
         <div className="onboarding-brand">
           <span className="onboarding-brand-mark" aria-hidden="true">
@@ -379,7 +394,7 @@ export default function OnboardingWizard({ onComplete }: OnboardingWizardProps) 
         )}
 
         {step === 4 && (
-          <section className="onboarding-step" data-testid="theme-step">
+          <section className="onboarding-step onboarding-style-step" data-testid="theme-step">
             <div className="onboarding-step-heading">
               <p className="onboarding-eyebrow">Make it comfortable</p>
               <h2>Choose your style</h2>
