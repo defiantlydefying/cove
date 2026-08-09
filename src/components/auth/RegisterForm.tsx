@@ -10,7 +10,7 @@ import {
   signInWithNativeGoogle,
 } from "@/lib/capacitor/google-auth";
 import DateOfBirthPicker from "@/components/auth/DateOfBirthPicker";
-import GoogleAuthLoading from "./GoogleAuthLoading";
+import AuthLoading from "./AuthLoading";
 
 export default function RegisterForm() {
   const [name, setName] = useState("");
@@ -56,7 +56,8 @@ export default function RegisterForm() {
         if (result?.error) {
           setError("Account created but sign-in failed. Please log in.");
         } else {
-          window.location.href = "/onboarding";
+          window.location.assign("/onboarding");
+          return;
         }
       }
     } catch {
@@ -88,9 +89,20 @@ export default function RegisterForm() {
     <form
       onSubmit={handleSubmit}
       className="w-full max-w-sm space-y-5"
-      aria-busy={googleLoading}
+      aria-busy={loading || googleLoading}
     >
-      {googleLoading && <GoogleAuthLoading message="Creating your Cove…" />}
+      {loading && (
+        <AuthLoading
+          message="Creating your Cove…"
+          detail="Setting up your account securely…"
+        />
+      )}
+      {googleLoading && (
+        <AuthLoading
+          message="Creating your Cove…"
+          detail="Finishing securely with Google…"
+        />
+      )}
       {error && (
         <p className="text-sm text-cove-error" role="alert">{error}</p>
       )}

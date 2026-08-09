@@ -8,7 +8,7 @@ import {
   isNativeGoogleCancel,
   signInWithNativeGoogle,
 } from "@/lib/capacitor/google-auth";
-import GoogleAuthLoading from "./GoogleAuthLoading";
+import AuthLoading from "./AuthLoading";
 
 // NextAuth redirects back to the sign-in page with ?error=<code> when OAuth fails.
 // Map the common codes to friendly text (and show the raw code so failures aren't silent).
@@ -81,7 +81,12 @@ export default function LoginForm() {
       className="w-full max-w-sm space-y-5"
       aria-busy={googleLoading}
     >
-      {googleLoading && <GoogleAuthLoading message="Signing you in…" />}
+      {googleLoading && (
+        <AuthLoading
+          message="Signing you in…"
+          detail="Finishing securely with Google…"
+        />
+      )}
       {error && (
         <p className="text-sm text-cove-error" role="alert">{error}</p>
       )}

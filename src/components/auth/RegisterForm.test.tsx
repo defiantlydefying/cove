@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, it, expect, vi } from "vitest";
+import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import RegisterForm from "./RegisterForm";
 
 const { isNativeMock, nativeGoogleSignInMock } = vi.hoisted(() => ({
@@ -35,6 +35,10 @@ beforeEach(() => {
   nativeGoogleSignInMock.mockReset();
 });
 
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
 describe("RegisterForm", () => {
   it("renders name, email, and password fields", () => {
     render(<RegisterForm />);
@@ -65,6 +69,25 @@ describe("RegisterForm", () => {
 
     expect(screen.getByRole("status")).toHaveTextContent("Creating your Cove");
     const loadingButton = screen.getByRole("button", { name: "Signing you in..." });
+    expect(loadingButton).toBeDisabled();
+    expect(loadingButton.closest("form")).toHaveAttribute("aria-busy", "true");
+  });
+
+  it("shows a loading screen while creating a manual account", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => new Promise(() => {})));
+    const user = userEvent.setup();
+    render(<RegisterForm />);
+
+    await user.type(screen.getByLabelText("Email"), "emma@example.com");
+    await user.type(screen.getByLabelText("Password"), "secure-password");
+    await user.selectOptions(screen.getByLabelText("Birth month"), "11");
+    await user.selectOptions(screen.getByLabelText("Birth day"), "7");
+    await user.selectOptions(screen.getByLabelText("Birth year"), "1999");
+    await user.click(screen.getByRole("button", { name: "Create account" }));
+
+    expect(screen.getByRole("status")).toHaveTextContent("Creating your Cove");
+    expect(screen.getByRole("status")).toHaveTextContent("Setting up your account securely");
+    const loadingButton = screen.getByRole("button", { name: "Creating account..." });
     expect(loadingButton).toBeDisabled();
     expect(loadingButton.closest("form")).toHaveAttribute("aria-busy", "true");
   });

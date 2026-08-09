@@ -1,8 +1,9 @@
-interface GoogleAuthLoadingProps {
+interface AuthLoadingProps {
   message: string;
+  detail: string;
 }
 
-export default function GoogleAuthLoading({ message }: GoogleAuthLoadingProps) {
+export default function AuthLoading({ message, detail }: AuthLoadingProps) {
   return (
     <div
       role="status"
@@ -15,7 +16,7 @@ export default function GoogleAuthLoading({ message }: GoogleAuthLoadingProps) {
       </div>
       <div>
         <p className="text-lg font-semibold text-cove-charcoal">{message}</p>
-        <p className="mt-1 text-sm text-cove-muted">Finishing securely with Google&hellip;</p>
+        <p className="mt-1 text-sm text-cove-muted">{detail}</p>
       </div>
     </div>
   );
